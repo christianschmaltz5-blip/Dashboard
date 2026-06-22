@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contract Drafter — Kevin Andreson</title>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    :root{--bg:#000;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.1);--text:#fff;--muted:rgba(255,255,255,0.5);--dim:rgba(255,255,255,0.25);}
+    body{font-family:'Josefin Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;}
+    nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.8);backdrop-filter:blur(12px);}
+    .nav-back{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;}
+    .nav-back:hover{color:var(--text);}
+    .nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+    .nav-title{font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+    main{max-width:860px;margin:0 auto;padding:3rem 2rem 4rem;}
+    .breadcrumb{font-size:11px;color:var(--dim);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:16px;}
+    .breadcrumb a{color:var(--dim);text-decoration:none;} .breadcrumb a:hover{color:var(--muted);}
+    .agent-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:14px;background:rgba(255,255,255,0.06);color:var(--muted);border:1px solid var(--border);}
+    h1{font-size:32px;font-weight:700;letter-spacing:0.02em;margin-bottom:10px;}
+    .subtitle{font-size:15px;color:var(--muted);max-width:600px;line-height:1.7;}
+    .divider{height:1px;background:var(--border);margin:2.5rem 0;}
+    .section{margin-bottom:2.5rem;}
+    .section-title{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--dim);margin-bottom:1rem;display:flex;align-items:center;gap:10px;}
+    .section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+    .what-it-does{font-size:14px;color:rgba(255,255,255,0.7);line-height:1.8;}
+    .config-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+    .config-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem;}
+    .config-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;}
+    .config-value{font-size:13px;color:var(--text);font-weight:500;}
+    .config-value code{font-family:monospace;font-size:12px;color:#A78BFA;}
+    .prompt-block{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:1.5rem;}
+    .prompt-block pre{font-family:monospace;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.8;white-space:pre-wrap;word-break:break-word;}
+    .steps{display:flex;flex-direction:column;gap:1rem;}
+    .step{display:flex;gap:16px;align-items:flex-start;}
+    .step-num{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;margin-top:1px;}
+    .step-body{font-size:13px;color:rgba(255,255,255,0.65);line-height:1.7;} .step-body strong{color:var(--text);}
+    .step-body code{font-family:monospace;font-size:11px;background:rgba(255,255,255,0.07);padding:2px 6px;border-radius:4px;color:#A78BFA;}
+    .progress-row{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-bottom:6px;}
+    .progress-bar{height:4px;background:rgba(255,255,255,0.08);border-radius:99px;overflow:hidden;}
+    .progress-fill{height:100%;background:linear-gradient(90deg,#3B82F6,#8B5CF6);border-radius:99px;}
+    .status-bar{display:flex;gap:2rem;margin-bottom:2.5rem;}
+    .stat{text-align:center;} .stat-value{font-size:22px;font-weight:700;} .stat-label{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);margin-top:2px;}
+  </style>
+</head>
+<body>
+<nav>
+  <a class="nav-back" href="../index.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back to Dashboard</a>
+  <div class="nav-title">Kevin Andreson · Operations</div>
+</nav>
+<main>
+  <div class="breadcrumb"><a href="../index.html">Dashboard</a> / Contract Drafter</div>
+  <div class="agent-badge" style="background:rgba(59,130,246,0.15);color:#60A5FA;border:1px solid rgba(96,165,250,0.25);">
+    <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor"/></svg>
+    Setting Up
+  </div>
+  <h1>Contract & Lease Drafter</h1>
+  <p class="subtitle">On-demand agent that generates draft contracts and lease agreements from a simple intake form — ready to review in minutes, not hours.</p>
+
+  <div class="divider"></div>
+
+  <div class="status-bar">
+    <div class="stat"><div class="stat-value">25%</div><div class="stat-label">Complete</div></div>
+    <div class="stat"><div class="stat-value">On Demand</div><div class="stat-label">Trigger</div></div>
+    <div class="stat"><div class="stat-value">Word / PDF</div><div class="stat-label">Output</div></div>
+    <div class="stat"><div class="stat-value">Black Hills</div><div class="stat-label">Market</div></div>
+  </div>
+  <div class="progress-row"><span>Build Progress</span><span>25%</span></div>
+  <div class="progress-bar"><div class="progress-fill" style="width:25%"></div></div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="section-title">What This Agent Does</div>
+    <p class="what-it-does">
+      Fill out a short web form with the deal details — property address, parties, terms, dates — and the agent generates a complete draft contract or lease agreement in seconds.<br><br>
+      The output is a formatted Word document (.docx) pre-filled with Kevin's standard terms, ready to review and send for signatures. Handles purchase agreements, lease agreements, and commercial contracts.<br><br>
+      Note: KW Command handles final compliance and signatures — this agent handles the drafting step only, saving hours of manual template work per deal.
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Configuration</div>
+    <div class="config-grid">
+      <div class="config-item"><div class="config-label">Name</div><div class="config-value">Contract & Lease Drafter</div></div>
+      <div class="config-item"><div class="config-label">Model</div><div class="config-value"><code>claude-sonnet-4-6</code></div></div>
+      <div class="config-item"><div class="config-label">Trigger</div><div class="config-value">Web form submission (on demand)</div></div>
+      <div class="config-item"><div class="config-label">Output</div><div class="config-value">Word document (.docx) emailed to Kevin</div></div>
+      <div class="config-item"><div class="config-label">Document Types</div><div class="config-value">Purchase Agreement · Lease Agreement · Commercial Contract</div></div>
+      <div class="config-item"><div class="config-label">Compliance</div><div class="config-value">Drafts only — final execution via KW Command</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">System Prompt</div>
+    <div class="prompt-block">
+      <pre>You are a real estate contract drafting assistant for Kevin Andreson, a Keller Williams agent in South Dakota.
+
+Given deal information from an intake form, draft a complete, professional real estate contract. Use standard South Dakota real estate contract language. Fill in all provided fields exactly as given.
+
+Rules:
+- Use precise legal language for all property descriptions and terms
+- Include all standard contingencies unless explicitly waived in the intake
+- Flag any missing information that would be required for a complete contract
+- Note that this is a DRAFT for attorney/broker review — include a header stating this
+- Do not invent deal terms — only use what was provided in the intake form
+
+Output a clean, formatted document ready for review.</pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Setup Steps</div>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Build intake form</strong> — Simple HTML form collecting property address, buyer/seller names, purchase price, closing date, contingencies, and special terms.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Connect to Claude API</strong> — Form submission triggers a Python script that sends the data to Claude with the system prompt and returns a formatted draft.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Document generation</strong> — Output is formatted as a .docx using the <code>python-docx</code> library and emailed to Kevin for review.</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Standard templates</strong> — Load Kevin's standard term clauses as reference documents so Claude can match existing language and style.</div></div>
+    </div>
+  </div>
+</main>
+<script src="../js/search.js"></script>
+</body>
+</html>

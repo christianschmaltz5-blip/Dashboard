@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Box Elder Prospects — Kevin Andreson</title>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    :root{--bg:#000;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.1);--text:#fff;--muted:rgba(255,255,255,0.5);--dim:rgba(255,255,255,0.25);}
+    body{font-family:'Josefin Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;}
+    nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.8);backdrop-filter:blur(12px);}
+    .nav-back{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;} .nav-back:hover{color:var(--text);}
+    .nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+    .nav-title{font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+    main{max-width:860px;margin:0 auto;padding:3rem 2rem 4rem;}
+    .breadcrumb{font-size:11px;color:var(--dim);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:16px;}
+    .breadcrumb a{color:var(--dim);text-decoration:none;} .breadcrumb a:hover{color:var(--muted);}
+    .agent-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:14px;background:rgba(59,130,246,0.15);color:#60A5FA;border:1px solid rgba(96,165,250,0.25);}
+    h1{font-size:32px;font-weight:700;letter-spacing:0.02em;margin-bottom:10px;}
+    .subtitle{font-size:15px;color:var(--muted);max-width:600px;line-height:1.7;}
+    .divider{height:1px;background:var(--border);margin:2.5rem 0;}
+    .section{margin-bottom:2.5rem;}
+    .section-title{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--dim);margin-bottom:1rem;display:flex;align-items:center;gap:10px;}
+    .section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+    .what-it-does{font-size:14px;color:rgba(255,255,255,0.7);line-height:1.8;}
+    .config-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+    .config-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem;}
+    .config-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;}
+    .config-value{font-size:13px;color:var(--text);font-weight:500;} .config-value code{font-family:monospace;font-size:12px;color:#A78BFA;}
+    .config-value a{color:#60A5FA;text-decoration:none;} .config-value a:hover{text-decoration:underline;}
+    .prompt-block{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:1.5rem;}
+    .prompt-block pre{font-family:monospace;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.8;white-space:pre-wrap;word-break:break-word;}
+    .steps{display:flex;flex-direction:column;gap:1rem;}
+    .step{display:flex;gap:16px;align-items:flex-start;}
+    .step-num{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;margin-top:1px;}
+    .step-body{font-size:13px;color:rgba(255,255,255,0.65);line-height:1.7;} .step-body strong{color:var(--text);}
+    .step-body code{font-family:monospace;font-size:11px;background:rgba(255,255,255,0.07);padding:2px 6px;border-radius:4px;color:#A78BFA;}
+    .prospect-table{width:100%;border-collapse:collapse;margin-top:1rem;}
+    .prospect-table th{text-align:left;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--dim);padding:0 0 10px;border-bottom:1px solid var(--border);}
+    .prospect-table td{padding:12px 0;font-size:12px;color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.05);}
+    .prospect-table td:first-child{color:var(--text);font-weight:600;}
+    .tag{display:inline-block;font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:0.08em;text-transform:uppercase;}
+    .tag-industrial{background:rgba(59,130,246,0.15);color:#60A5FA;}
+    .tag-commercial{background:rgba(139,92,246,0.15);color:#A78BFA;}
+    .tag-residential{background:rgba(16,185,129,0.15);color:#34D399;}
+    .source-link{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#60A5FA;text-decoration:none;padding:8px 16px;border:1px solid rgba(96,165,250,0.25);border-radius:8px;background:rgba(59,130,246,0.07);transition:all .2s;}
+    .source-link:hover{background:rgba(59,130,246,0.15);border-color:rgba(96,165,250,0.4);}
+    .source-link svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;}
+  </style>
+</head>
+<body>
+<nav>
+  <a class="nav-back" href="../index.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back to Dashboard</a>
+  <div class="nav-title">Kevin Andreson · Operations</div>
+</nav>
+<main>
+  <div class="breadcrumb"><a href="../index.html">Dashboard</a> / Box Elder Prospects</div>
+  <div class="agent-badge">
+    <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor"/></svg>
+    Setting Up
+  </div>
+  <h1>Box Elder Prospects</h1>
+  <p class="subtitle">Monitors Box Elder, South Dakota city planning and zoning activity — new permits, rezoning requests, subdivision plats, and development applications — and surfaces actionable prospects automatically.</p>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="section-title">What This Agent Does</div>
+    <p class="what-it-does">
+      This agent watches the <strong>Box Elder, SD Planning &amp; Zoning Department</strong> website for any new activity — rezoning requests, subdivision plats, building permits, conditional use permits, and development applications. When something new appears, it fires an alert with the key details so Kevin can act before the market does.<br><br>
+      Box Elder (57719) is a fast-growing city in Pennington County along the I-90 corridor near Ellsworth Air Force Base — light industrial, commercial, and residential development are all active here. The agent also cross-references Pennington County planning records since many projects affecting Box Elder go through county channels first.<br><br>
+      Data source: <strong>boxeldersd.gov/departments/planningandzoning</strong>. Checks for updates on Monday, Tuesday, and Thursday in sync with the planning commission and city council meeting schedule.
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Live Source</div>
+    <a class="source-link" href="https://www.boxeldersd.gov/departments/planningandzoning" target="_blank">
+      <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      boxeldersd.gov · Planning &amp; Zoning
+    </a>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Example Prospect Output</div>
+    <table class="prospect-table">
+      <thead><tr><th>Address</th><th>Type</th><th>Activity</th><th>Status</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>1840 Radar Hill Rd, Box Elder SD 57719</td>
+          <td><span class="tag tag-industrial">Industrial</span></td>
+          <td>Rezoning M-1</td>
+          <td>Planning Commission</td>
+          <td>8.4 acres, near EAFB perimeter, freight access</td>
+        </tr>
+        <tr>
+          <td>605 E Watertown St, Box Elder SD 57719</td>
+          <td><span class="tag tag-commercial">Commercial</span></td>
+          <td>Conditional Use Permit</td>
+          <td>City Council Review</td>
+          <td>2.1 acres, B-2 zone, high-traffic corridor</td>
+        </tr>
+        <tr>
+          <td>2200 Elk Vale Rd, Box Elder SD 57719</td>
+          <td><span class="tag tag-residential">Residential</span></td>
+          <td>Subdivision Plat</td>
+          <td>Approved</td>
+          <td>42-lot subdivision, R-2 zone, city utilities confirmed</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="font-size:11px;color:var(--dim);margin-top:10px;font-style:italic;">These are example rows — live data populates when the agent goes online.</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Configuration</div>
+    <div class="config-grid">
+      <div class="config-item"><div class="config-label">Name</div><div class="config-value">Box Elder Prospects Agent</div></div>
+      <div class="config-item"><div class="config-label">Model</div><div class="config-value"><code>claude-sonnet-4-6</code></div></div>
+      <div class="config-item"><div class="config-label">Target Area</div><div class="config-value">Box Elder, South Dakota 57719 (Pennington County)</div></div>
+      <div class="config-item"><div class="config-label">Primary Source</div><div class="config-value"><a href="https://www.boxeldersd.gov/departments/planningandzoning" target="_blank">boxeldersd.gov · Planning &amp; Zoning</a></div></div>
+      <div class="config-item"><div class="config-label">Secondary Source</div><div class="config-value"><a href="https://pennco.org/planning" target="_blank">pennco.org · Planning</a> — county-level permits and rezoning</div></div>
+      <div class="config-item"><div class="config-label">Asset Types</div><div class="config-value">Light Industrial · Commercial · Multi-Family Residential</div></div>
+      <div class="config-item"><div class="config-label">Alert Email</div><div class="config-value"><code>arecblackhills@gmail.com</code></div></div>
+      <div class="config-item"><div class="config-label">Schedule</div><div class="config-value">Monday, Tuesday, Thursday — aligns with planning commission and city council cycle</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">System Prompt</div>
+    <div class="prompt-block">
+      <pre>You are a real estate development monitor for Kevin Andreson, focused on Box Elder, South Dakota (57719).
+
+Each run, check the Box Elder Planning & Zoning Department page and Pennington County planning records for any new activity since the last check. Look for:
+
+- Rezoning requests or approvals
+- Subdivision plats (new or amended)
+- Conditional use permits
+- Building permits for commercial or industrial construction
+- City Council agenda items related to development
+- Any new planning documents, maps, or ordinance changes
+
+For each new item found:
+1. Address or parcel identifier
+2. Type of activity (rezoning, permit, plat, etc.)
+3. Current status (application filed, commission review, approved, denied)
+4. Why it's relevant to Kevin (development opportunity, market signal, competitor activity)
+5. Recommended next action (monitor, contact owner, attend meeting, etc.)
+
+Flag high-priority items (large parcels, industrial zoning, near Ellsworth AFB) at the top.
+Send a concise summary email — only include new items since last check.</pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Setup Steps</div>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Web scraper</strong> — Build a Python scraper that reads boxeldersd.gov/departments/planningandzoning and detects new agenda items, permits, or documents since the last run.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Pennington County feed</strong> — Add pennco.org/planning as a secondary source to catch county-level activity affecting Box Elder parcels.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Change detection</strong> — Store a hash of each page on each run. Only alert when content changes — no noise on quiet weeks.</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Alert email</strong> — Send formatted summary to <code>arecblackhills@gmail.com</code> when new items are detected, using the same Gmail setup as the market report.</div></div>
+    </div>
+  </div>
+</main>
+<script src="../js/search.js"></script>
+</body>
+</html>

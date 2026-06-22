@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kevin Andreson Operations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Josefin Sans', sans-serif;
+      background: #000;
+      color: #fff;
+      width: 100vw;
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: relative;
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      height: 56px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(12px);
+      flex-shrink: 0;
+    }
+
+    .nav-brand { display: flex; align-items: center; gap: 12px; }
+
+    .nav-logo {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, #8B5CF6, #3B82F6, #14B8A6);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .nav-logo svg { width: 18px; height: 18px; fill: white; }
+
+    .nav-name {
+      font-size: 15px; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: rgba(255,255,255,0.9);
+    }
+
+    .nav-right { display: flex; align-items: center; gap: 14px; }
+
+    .nav-date { font-size: 11px; color: rgba(255,255,255,0.35); letter-spacing: 0.05em; }
+
+    .nav-pill {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; padding: 4px 10px; border-radius: 20px;
+      background: rgba(139, 92, 246, 0.15);
+      color: #A78BFA;
+      border: 1px solid rgba(167, 139, 250, 0.25);
+    }
+
+    .hint {
+      font-size: 11px; color: rgba(255,255,255,0.2);
+      letter-spacing: 0.06em; text-align: center;
+      padding: 6px 0 0;
+      flex-shrink: 0;
+    }
+
+    /* ── CANVAS ── */
+    #scene {
+      height: calc(100vh - 82px);
+      flex-shrink: 0;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── ORBIT RING ── */
+    .orbit-ring {
+      position: absolute;
+      width: 420px; height: 420px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.08);
+      pointer-events: none;
+    }
+
+    /* ── CENTER ORB ── */
+    .center-orb {
+      position: absolute;
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #8B5CF6, #3B82F6, #14B8A6);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10;
+      animation: orbPulse 2.5s ease-in-out infinite;
+    }
+
+    .center-orb::before {
+      content: '';
+      position: absolute;
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.15);
+      animation: ping 2s ease-out infinite;
+    }
+
+    .center-orb::after {
+      content: '';
+      position: absolute;
+      width: 96px; height: 96px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.07);
+      animation: ping 2s ease-out infinite 0.5s;
+    }
+
+    .center-dot {
+      width: 28px; height: 28px;
+      background: rgba(255,255,255,0.85);
+      border-radius: 50%;
+      backdrop-filter: blur(8px);
+    }
+
+    @keyframes orbPulse {
+      0%, 100% { box-shadow: 0 0 20px rgba(139,92,246,0.4); }
+      50%       { box-shadow: 0 0 40px rgba(59,130,246,0.5); }
+    }
+
+    @keyframes ping {
+      0%   { transform: scale(1); opacity: 0.6; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+
+    /* ── NODES ── */
+    .node {
+      position: absolute;
+      width: 40px; height: 40px;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .node-circle {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.3);
+      background: #000;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .node:hover .node-circle,
+    .node.active .node-circle {
+      background: #fff;
+      border-color: #fff;
+      box-shadow: 0 0 20px rgba(255,255,255,0.3);
+      transform: scale(1.5);
+    }
+
+    .node.related .node-circle {
+      background: rgba(255,255,255,0.45);
+      border-color: #fff;
+      animation: relatedPulse 1s ease-in-out infinite;
+    }
+
+    @keyframes relatedPulse {
+      0%, 100% { box-shadow: 0 0 8px rgba(255,255,255,0.3); }
+      50%       { box-shadow: 0 0 18px rgba(255,255,255,0.6); }
+    }
+
+    .node-circle svg {
+      width: 15px; height: 15px;
+      stroke: rgba(255,255,255,0.8);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: stroke 0.3s;
+    }
+
+    .node:hover .node-circle svg,
+    .node.active .node-circle svg {
+      stroke: #000;
+    }
+
+    .node-aura {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      top: 50%; left: 50%;
+    }
+
+    .node-label {
+      position: absolute;
+      top: 48px;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.55);
+      transition: all 0.3s;
+      pointer-events: none;
+    }
+
+    .node.active .node-label,
+    .node:hover .node-label {
+      color: #fff;
+      transform: translateX(-50%) scale(1.15);
+    }
+
+    /* ── CARD ── */
+    .node-card {
+      position: absolute;
+      top: 68px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 260px;
+      background: rgba(10,10,10,0.92);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(255,255,255,0.04);
+      display: none;
+      z-index: 500;
+    }
+
+    .node-card::before {
+      content: '';
+      position: absolute;
+      top: -10px; left: 50%;
+      transform: translateX(-50%);
+      width: 1px; height: 10px;
+      background: rgba(255,255,255,0.3);
+    }
+
+    .node.active .node-card { display: block; }
+
+    .card-inner { padding: 14px 16px; }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .card-badge {
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 4px;
+    }
+
+    .badge-live      { background: rgba(16,185,129,0.2); color: #34D399; border: 1px solid rgba(52,211,153,0.3); }
+    .badge-building  { background: rgba(59,130,246,0.2); color: #60A5FA; border: 1px solid rgba(96,165,250,0.3); }
+    .badge-pending   { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.12); }
+
+    .card-date { font-size: 10px; color: rgba(255,255,255,0.3); font-family: monospace; }
+
+    .card-title {
+      font-size: 13px; font-weight: 600;
+      margin-bottom: 8px; color: #fff;
+      letter-spacing: 0.02em;
+    }
+
+    .card-body {
+      font-size: 11px; color: rgba(255,255,255,0.6);
+      line-height: 1.6;
+    }
+
+    .card-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.08);
+      margin: 12px 0;
+    }
+
+    .energy-label {
+      display: flex; justify-content: space-between;
+      font-size: 10px; color: rgba(255,255,255,0.4);
+      margin-bottom: 5px;
+    }
+
+    .energy-label span:first-child {
+      display: flex; align-items: center; gap: 4px;
+    }
+
+    .energy-bar {
+      height: 3px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .energy-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+      border-radius: 99px;
+    }
+
+    .card-connections { margin-top: 12px; }
+
+    .connections-label {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: rgba(255,255,255,0.3);
+      display: flex; align-items: center; gap: 4px;
+      margin-bottom: 6px;
+    }
+
+    .connection-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+
+    .chip {
+      font-size: 9px; font-weight: 600;
+      padding: 3px 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px;
+      color: rgba(255,255,255,0.6);
+      background: rgba(255,255,255,0.04);
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.04em;
+    }
+
+    .chip:hover {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      border-color: rgba(255,255,255,0.3);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+
+    /* ── SCROLL HINT ── */
+    .scroll-hint {
+      text-align: center;
+      padding: 2px 0 8px;
+      flex-shrink: 0;
+    }
+    .scroll-hint svg {
+      width: 16px; height: 16px;
+      stroke: rgba(255,255,255,0.13);
+      fill: none; stroke-width: 2;
+      stroke-linecap: round; stroke-linejoin: round;
+      animation: bounce 2.4s ease-in-out infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(5px); }
+    }
+
+    /* ── MARKET SECTION ── */
+    .market-section {
+      border-top: 1px solid rgba(255,255,255,0.07);
+      padding: 3.5rem 2rem 5rem;
+      background: #000;
+    }
+    .market-container { max-width: 900px; margin: 0 auto; }
+
+    .m-header {
+      display: flex; align-items: flex-end;
+      justify-content: space-between; margin-bottom: 2.5rem;
+    }
+    .m-title {
+      font-size: 20px; font-weight: 700;
+      letter-spacing: 0.06em; text-transform: uppercase; color: #fff;
+    }
+    .m-subtitle {
+      font-size: 11px; color: rgba(255,255,255,0.3);
+      letter-spacing: 0.06em; margin-top: 5px;
+    }
+    .m-generated { font-size: 11px; color: rgba(255,255,255,0.2); letter-spacing: 0.05em; }
+
+    .m-row { margin-bottom: 2.5rem; }
+    .m-section-label {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.16em;
+      text-transform: uppercase; color: rgba(255,255,255,0.22);
+      margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+    }
+    .m-section-label::after {
+      content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.05);
+    }
+
+    .m-rates {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1rem; max-width: 440px; position: relative;
+    }
+    .m-rate-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px; padding: 1.25rem 1.5rem;
+    }
+    .m-rate-name {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 6px;
+    }
+    .m-rate-value { font-size: 30px; font-weight: 700; color: #fff; line-height: 1; margin-bottom: 6px; }
+    .m-rate-change { font-size: 12px; color: rgba(255,255,255,0.45); }
+    .m-rate-source {
+      position: absolute; bottom: -20px; right: 0;
+      font-size: 9px; color: rgba(255,255,255,0.18); letter-spacing: 0.06em;
+    }
+
+    .m-metrics {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem;
+    }
+    .m-metric {
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px; padding: 1rem 1.1rem;
+    }
+    .m-metric-label {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: rgba(255,255,255,0.25); margin-bottom: 8px;
+    }
+    .m-metric-val { font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .m-metric-sub { font-size: 10px; color: rgba(255,255,255,0.3); }
+
+    .m-chart { display: flex; align-items: flex-end; gap: 6px; padding-bottom: 4px; }
+    .m-bar-col { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .m-bar-val { font-size: 9px; color: rgba(255,255,255,0.25); }
+    .m-bar { width: 44px; border-radius: 3px 3px 0 0; }
+    .m-bar-label { font-size: 9px; color: rgba(255,255,255,0.25); }
+
+    .m-bottom-grid {
+      display: grid; grid-template-columns: 1fr 1.3fr;
+      gap: 2.5rem; margin-top: 0.5rem;
+    }
+    .m-table { width: 100%; border-collapse: collapse; }
+    .m-th {
+      text-align: left; font-size: 9px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(255,255,255,0.22); padding: 0 12px 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .m-td {
+      padding: 9px 12px 9px 0; font-size: 12px;
+      color: rgba(255,255,255,0.55);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .m-td-city { font-weight: 600; color: #fff; }
+    .m-td small { font-size: 10px; display: block; color: rgba(255,255,255,0.35); }
+
+    .m-notice {
+      margin-top: 2.5rem;
+      background: rgba(251,191,36,0.05);
+      border: 1px solid rgba(251,191,36,0.18);
+      border-radius: 10px; padding: 1.25rem 1.5rem;
+    }
+    .m-notice-title {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: rgba(251,191,36,0.75); margin-bottom: 8px;
+    }
+    .m-notice-body { font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.75; }
+
+    .m-empty {
+      text-align: center; padding: 5rem 2rem;
+      color: rgba(255,255,255,0.25); font-size: 13px; line-height: 2.2;
+    }
+    .m-empty code {
+      font-family: monospace; font-size: 12px;
+      color: #A78BFA; background: rgba(255,255,255,0.06);
+      padding: 3px 8px; border-radius: 4px;
+    }
+
+    @media (max-width: 700px) {
+      .m-metrics { grid-template-columns: repeat(2, 1fr); }
+      .m-rates   { max-width: 100%; }
+      .m-bottom-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo">
+      <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/></svg>
+    </div>
+    <div class="nav-name">Kevin Andreson</div>
+  </div>
+  <div class="nav-right">
+    <div class="nav-date" id="nav-date"></div>
+    <div class="nav-pill">Summer 2026</div>
+  </div>
+</nav>
+
+<div id="scene">
+  <div class="orbit-ring"></div>
+  <div class="center-orb"><div class="center-dot"></div></div>
+  <!-- nodes injected by JS -->
+</div>
+
+<div class="hint">Click a node to expand &nbsp;·&nbsp; Click background to close</div>
+<div class="scroll-hint">
+  <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+</div>
+
+<div class="market-section" id="market-section">
+  <div class="market-container">
+    <div class="m-empty">
+      Loading market data&hellip;
+    </div>
+  </div>
+</div>
+
+<script>
+const NODES = [
+  {
+    id: 1,
+    title: "Market Report",
+    date: "WEEKLY",
+    status: "building",
+    energy: 72,
+    relatedIds: [2, 6],
+    page: "pages/market-report.html",
+    icon: `<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>`,
+  },
+  {
+    id: 2,
+    title: "Zoning Monitor",
+    date: "TWICE WEEKLY",
+    status: "pending",
+    energy: 40,
+    relatedIds: [1, 5, 6],
+    page: "pages/zoning-monitor.html",
+    icon: `<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>`,
+  },
+  {
+    id: 3,
+    title: "Contract Drafter",
+    date: "ON DEMAND",
+    status: "pending",
+    energy: 25,
+    relatedIds: [4],
+    page: "pages/contract-drafter.html",
+    icon: `<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>`,
+  },
+  {
+    id: 4,
+    title: "CRM Intake",
+    date: "ON DEMAND",
+    status: "pending",
+    energy: 20,
+    relatedIds: [3],
+    page: "pages/crm-intake.html",
+    icon: `<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>`,
+  },
+  {
+    id: 5,
+    title: "Site Evaluator",
+    date: "ON DEMAND",
+    status: "pending",
+    energy: 30,
+    relatedIds: [2, 6],
+    page: "pages/site-evaluator.html",
+    icon: `<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>`,
+  },
+  {
+    id: 6,
+    title: "Box Elder Prospects",
+    date: "WEEKLY",
+    status: "pending",
+    energy: 35,
+    relatedIds: [1, 2, 5],
+    page: "pages/box-elder-prospects.html",
+    icon: `<circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 00-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 00-8-8z"/>`,
+  },
+];
+
+const BADGE = { building: "building", live: "live", pending: "pending" };
+const BADGE_LABEL = { building: "Setting Up", live: "Live", pending: "Pending" };
+
+const scene = document.getElementById("scene");
+let rotationAngle = 0;
+let autoRotate = true;
+let activeId = null;
+const nodeEls = {};
+
+function getPos(index, total, angle) {
+  const a = ((index / total) * 360 + angle) % 360;
+  const r = 210;
+  const rad = (a * Math.PI) / 180;
+  const x = r * Math.cos(rad);
+  const y = r * Math.sin(rad);
+  const opacity = Math.max(0.35, Math.min(1, 0.35 + 0.65 * ((1 + Math.sin(rad)) / 2)));
+  const zIndex = Math.round(100 + 50 * Math.cos(rad));
+  return { x, y, opacity, zIndex };
+}
+
+function makeNode(item) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "node";
+  wrapper.dataset.id = item.id;
+
+  const aura = document.createElement("div");
+  aura.className = "node-aura";
+  const auraSize = item.energy * 0.5 + 40;
+  aura.style.cssText = `width:${auraSize}px;height:${auraSize}px;`;
+
+  const circle = document.createElement("div");
+  circle.className = "node-circle";
+  circle.innerHTML = `<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">${item.icon}</svg>`;
+
+  const label = document.createElement("div");
+  label.className = "node-label";
+  label.textContent = item.title;
+
+  const card = document.createElement("div");
+  card.className = "node-card";
+
+  const relChips = item.relatedIds.map(rid => {
+    const rel = NODES.find(n => n.id === rid);
+    return `<span class="chip" data-target="${rid}">${rel?.title}</span>`;
+  }).join("");
+
+  const connSection = item.relatedIds.length ? `
+    <div class="card-connections">
+      <div class="connections-label">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+        Connected Nodes
+      </div>
+      <div class="connection-chips">${relChips}</div>
+    </div>` : "";
+
+  card.innerHTML = `
+    <div class="card-inner">
+      <div class="card-top">
+        <span class="card-badge badge-${BADGE[item.status]}">${BADGE_LABEL[item.status]}</span>
+        <span class="card-date">${item.date}</span>
+      </div>
+      <div class="card-title">${item.title}</div>
+      <div class="card-body">${item.body}</div>
+      <div class="card-divider"></div>
+      <div class="energy-label">
+        <span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Progress
+        </span>
+        <span>${item.energy}%</span>
+      </div>
+      <div class="energy-bar"><div class="energy-fill" style="width:${item.energy}%"></div></div>
+      ${connSection}
+    </div>`;
+
+  wrapper.appendChild(aura);
+  wrapper.appendChild(circle);
+  wrapper.appendChild(label);
+  wrapper.appendChild(card);
+
+  wrapper.addEventListener("click", e => {
+    e.stopPropagation();
+    window.location.href = item.page;
+  });
+
+  card.querySelectorAll(".chip").forEach(chip => {
+    chip.addEventListener("click", e => {
+      e.stopPropagation();
+      toggleNode(parseInt(chip.dataset.target));
+    });
+  });
+
+  scene.appendChild(wrapper);
+  nodeEls[item.id] = wrapper;
+}
+
+function toggleNode(id) {
+  if (activeId === id) {
+    deactivateAll();
+    return;
+  }
+  deactivateAll();
+  activeId = id;
+  autoRotate = false;
+
+  const node = nodeEls[id];
+  node.classList.add("active");
+
+  const item = NODES.find(n => n.id === id);
+  item.relatedIds.forEach(rid => {
+    nodeEls[rid]?.classList.add("related");
+  });
+}
+
+function deactivateAll() {
+  activeId = null;
+  autoRotate = true;
+  Object.values(nodeEls).forEach(el => {
+    el.classList.remove("active", "related");
+  });
+}
+
+scene.addEventListener("click", e => {
+  if (e.target === scene || e.target.classList.contains("orbit-ring") || e.target.classList.contains("center-orb") || e.target.classList.contains("center-dot")) {
+    deactivateAll();
+  }
+});
+
+NODES.forEach(makeNode);
+
+function updatePositions() {
+  const total = NODES.length;
+  NODES.forEach((item, index) => {
+    const el = nodeEls[item.id];
+    if (!el) return;
+    const pos = getPos(index, total, rotationAngle);
+    el.style.left = `calc(50% + ${pos.x}px)`;
+    el.style.top  = `calc(50% + ${pos.y}px)`;
+    el.style.zIndex = el.classList.contains("active") ? 500 : pos.zIndex;
+    el.style.opacity = el.classList.contains("active") ? 1 : pos.opacity;
+  });
+}
+
+let last = 0;
+function tick(ts) {
+  if (autoRotate && ts - last > 50) {
+    rotationAngle = (rotationAngle + 0.3) % 360;
+    last = ts;
+  }
+  updatePositions();
+  requestAnimationFrame(tick);
+}
+
+requestAnimationFrame(tick);
+
+document.getElementById("nav-date").textContent =
+  new Date().toLocaleDateString("en-US", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+</script>
+<script src="js/market-data.js"></script>
+<script>
+(function renderMarket() {
+  const section = document.getElementById('market-section');
+  const data = window.MARKET_DATA;
+
+  if (!data) {
+    section.querySelector('.market-container').innerHTML = `
+      <div class="m-empty">
+        No live data yet.<br/>
+        Run <code>python3 ~/arc-dashboard/agents/mls_report/mls_report.py</code>
+        to load live market data into the dashboard.
+      </div>`;
+    return;
+  }
+
+  const { generated, rates, rapidCity: rc, trend, tiers, cities } = data;
+
+  function fc(v) { return v != null ? '$' + Number(v).toLocaleString() : 'N/A'; }
+  function fi(v) { return v != null ? Number(v).toLocaleString() : 'N/A'; }
+  function pct(v) {
+    if (v == null) return '';
+    const col = v >= 0 ? '#34D399' : '#F87171';
+    const arrow = v >= 0 ? '▲' : '▼';
+    return `<span style="color:${col}">${arrow} ${Math.abs(v).toFixed(1)}%</span>`;
+  }
+  function rateArrow(v) {
+    if (!v) return `<span style="color:rgba(255,255,255,0.35)">— unchanged</span>`;
+    const col = v > 0 ? '#F87171' : '#34D399';
+    const arrow = v > 0 ? '▲' : '▼';
+    return `<span style="color:${col}">${arrow} ${Math.abs(v).toFixed(2)}% WoW</span>`;
+  }
+
+  // Bar chart
+  let chartHtml = '';
+  if (trend && trend.length >= 2) {
+    const vals = trend.map(t => t.value);
+    const minV = Math.min(...vals) * 0.993;
+    const rng  = Math.max(...vals) - minV || 1;
+    chartHtml = trend.map((t, i) => {
+      const h   = Math.max(6, Math.round(((t.value - minV) / rng) * 64));
+      const col = i === trend.length - 1
+        ? 'rgba(139,92,246,0.85)' : 'rgba(59,130,246,0.45)';
+      return `<div class="m-bar-col">
+        <div class="m-bar-val">$${(t.value/1000).toFixed(0)}K</div>
+        <div class="m-bar" style="height:${h}px;background:${col}"></div>
+        <div class="m-bar-label">${t.month}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Tier rows
+  const tierRows = (tiers || []).map(t => `
+    <tr>
+      <td class="m-td">${t.label}</td>
+      <td class="m-td" style="font-weight:600">${fc(t.value)}</td>
+      <td class="m-td">${pct(t.change)} MoM</td>
+    </tr>`).join('');
+
+  // City rows
+  const cityRows = (cities || []).map(c => {
+    const icChange = c.inventoryChange != null
+      ? ` <small style="color:${c.inventoryChange > 0 ? '#F87171' : '#34D399'}">${c.inventoryChange > 0 ? '+' : ''}${c.inventoryChange}</small>`
+      : '';
+    return `<tr>
+      <td class="m-td m-td-city">${c.name}</td>
+      <td class="m-td">${fc(c.zhvi)}<small>${pct(c.zhviChange)} MoM</small></td>
+      <td class="m-td">${fi(c.inventory)}${icChange}</td>
+      <td class="m-td">${fi(c.newListings)}</td>
+    </tr>`;
+  }).join('');
+
+  const invSub = rc.inventoryChange != null
+    ? `<div class="m-metric-sub" style="color:${rc.inventoryChange > 0 ? '#F87171' : '#34D399'}">${rc.inventoryChange > 0 ? '+' : ''}${rc.inventoryChange} MoM</div>`
+    : '';
+
+  section.querySelector('.market-container').innerHTML = `
+    <div class="m-header">
+      <div>
+        <div class="m-title">Live Market Data</div>
+        <div class="m-subtitle">Rapid City · Spearfish · Hot Springs · Custer · Hermosa · Box Elder · Piedmont, SD &nbsp;&middot;&nbsp; Zillow + FRED</div>
+      </div>
+      <div class="m-generated">Updated ${generated}</div>
+    </div>
+
+    <div class="m-row">
+      <div class="m-section-label">Mortgage Rates</div>
+      <div class="m-rates">
+        <div class="m-rate-card">
+          <div class="m-rate-name">30-Year Fixed</div>
+          <div class="m-rate-value">${rates.rate30}%</div>
+          <div class="m-rate-change">${rateArrow(rates.change30)}</div>
+        </div>
+        <div class="m-rate-card">
+          <div class="m-rate-name">15-Year Fixed</div>
+          <div class="m-rate-value">${rates.rate15}%</div>
+          <div class="m-rate-change">${rateArrow(rates.change15)}</div>
+        </div>
+        <div class="m-rate-source">Federal Reserve FRED</div>
+      </div>
+    </div>
+
+    <div class="m-row" style="margin-top:2.5rem">
+      <div class="m-section-label">Rapid City &nbsp;&middot;&nbsp; Full Snapshot</div>
+      <div class="m-metrics">
+        <div class="m-metric">
+          <div class="m-metric-label">Home Value</div>
+          <div class="m-metric-val">${fc(rc.zhvi)}</div>
+          <div class="m-metric-sub">${pct(rc.zhviChange)} MoM</div>
+        </div>
+        <div class="m-metric">
+          <div class="m-metric-label">Median Sale</div>
+          <div class="m-metric-val">${fc(rc.salePrice)}</div>
+          <div class="m-metric-sub">${pct(rc.salePriceChange)} MoM</div>
+        </div>
+        <div class="m-metric">
+          <div class="m-metric-label">Active Inventory</div>
+          <div class="m-metric-val">${fi(rc.inventory)}</div>
+          ${invSub}
+        </div>
+        <div class="m-metric">
+          <div class="m-metric-label">New Listings</div>
+          <div class="m-metric-val">${fi(rc.newListings)}</div>
+        </div>
+        <div class="m-metric">
+          <div class="m-metric-label">Sold Above Ask</div>
+          <div class="m-metric-val">${rc.pctAbove != null ? rc.pctAbove + '%' : 'N/A'}</div>
+          <div class="m-metric-sub">of homes</div>
+        </div>
+      </div>
+    </div>
+
+    ${chartHtml ? `
+    <div class="m-row">
+      <div class="m-section-label">6-Month Trend &nbsp;&middot;&nbsp; Rapid City Home Values</div>
+      <div class="m-chart">${chartHtml}</div>
+    </div>` : ''}
+
+    <div class="m-bottom-grid">
+      ${tierRows ? `
+      <div>
+        <div class="m-section-label">By Bedroom Count</div>
+        <table class="m-table">
+          <thead><tr>
+            <th class="m-th">Size</th>
+            <th class="m-th">Typical Value</th>
+            <th class="m-th">MoM</th>
+          </tr></thead>
+          <tbody>${tierRows}</tbody>
+        </table>
+      </div>` : '<div></div>'}
+      <div>
+        <div class="m-section-label">Regional Breakdown</div>
+        <table class="m-table">
+          <thead><tr>
+            <th class="m-th">City</th>
+            <th class="m-th">ZHVI</th>
+            <th class="m-th">Inventory</th>
+            <th class="m-th">New</th>
+          </tr></thead>
+          <tbody>${cityRows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="m-notice">
+      <div class="m-notice-title">MLS Detail — Setup Required</div>
+      <div class="m-notice-body">
+        Active / Under Contract / Sold breakdowns by property type (SFR, Multi-Family, Industrial, Commercial)
+        and price band ($100K–$350K through $1M+) require Paragon saved searches →
+        weekly export → <strong style="color:rgba(255,255,255,0.65)">arecblackhills@gmail.com</strong>.
+        Set up in both Black Hills MLS and Mount Rushmore MLS to activate.
+      </div>
+    </div>`;
+})();
+</script>
+<script src="js/search.js"></script>
+</body>
+</html>

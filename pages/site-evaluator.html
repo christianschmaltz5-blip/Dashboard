@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Site Evaluator — Kevin Andreson</title>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    :root{--bg:#000;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.1);--text:#fff;--muted:rgba(255,255,255,0.5);--dim:rgba(255,255,255,0.25);}
+    body{font-family:'Josefin Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;}
+    nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.8);backdrop-filter:blur(12px);}
+    .nav-back{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;} .nav-back:hover{color:var(--text);}
+    .nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+    .nav-title{font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+    main{max-width:860px;margin:0 auto;padding:3rem 2rem 4rem;}
+    .breadcrumb{font-size:11px;color:var(--dim);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:16px;}
+    .breadcrumb a{color:var(--dim);text-decoration:none;} .breadcrumb a:hover{color:var(--muted);}
+    .agent-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:14px;background:rgba(59,130,246,0.15);color:#60A5FA;border:1px solid rgba(96,165,250,0.25);}
+    h1{font-size:32px;font-weight:700;letter-spacing:0.02em;margin-bottom:10px;}
+    .subtitle{font-size:15px;color:var(--muted);max-width:600px;line-height:1.7;}
+    .divider{height:1px;background:var(--border);margin:2.5rem 0;}
+    .section{margin-bottom:2.5rem;}
+    .section-title{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--dim);margin-bottom:1rem;display:flex;align-items:center;gap:10px;}
+    .section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+    .what-it-does{font-size:14px;color:rgba(255,255,255,0.7);line-height:1.8;}
+    .config-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+    .config-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem;}
+    .config-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;}
+    .config-value{font-size:13px;color:var(--text);font-weight:500;} .config-value code{font-family:monospace;font-size:12px;color:#A78BFA;}
+    .config-value a{color:#60A5FA;text-decoration:none;} .config-value a:hover{text-decoration:underline;}
+    .prompt-block{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:1.5rem;}
+    .prompt-block pre{font-family:monospace;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.8;white-space:pre-wrap;word-break:break-word;}
+    .steps{display:flex;flex-direction:column;gap:1rem;}
+    .step{display:flex;gap:16px;align-items:flex-start;}
+    .step-num{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;margin-top:1px;}
+    .step-body{font-size:13px;color:rgba(255,255,255,0.65);line-height:1.7;} .step-body strong{color:var(--text);}
+    .step-body code{font-family:monospace;font-size:11px;background:rgba(255,255,255,0.07);padding:2px 6px;border-radius:4px;color:#A78BFA;}
+    .output-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem;margin-top:.75rem;}
+    .output-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px;}
+    .output-desc{font-size:12px;color:var(--muted);line-height:1.6;}
+
+    /* Schedule table */
+    .schedule-table{width:100%;border-collapse:collapse;margin-top:4px;}
+    .schedule-table th{text-align:left;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--dim);padding:0 16px 10px 0;border-bottom:1px solid var(--border);}
+    .schedule-table td{padding:11px 16px 11px 0;font-size:12px;color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:top;}
+    .schedule-table td:first-child{color:var(--text);font-weight:600;white-space:nowrap;}
+    .schedule-table td:nth-child(2){color:rgba(255,255,255,0.8);font-weight:500;}
+    .sched-link{color:#60A5FA;text-decoration:none;} .sched-link:hover{text-decoration:underline;}
+    .day-pill{display:inline-block;font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:2px 8px;border-radius:4px;background:rgba(59,130,246,0.12);color:#60A5FA;border:1px solid rgba(96,165,250,0.2);}
+    .day-pill.anytime{background:rgba(139,92,246,0.12);color:#A78BFA;border-color:rgba(167,139,250,0.2);}
+  </style>
+</head>
+<body>
+<nav>
+  <a class="nav-back" href="../index.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back to Dashboard</a>
+  <div class="nav-title">Kevin Andreson · Operations</div>
+</nav>
+<main>
+  <div class="breadcrumb"><a href="../index.html">Dashboard</a> / Site Evaluator</div>
+  <div class="agent-badge">
+    <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor"/></svg>
+    Setting Up
+  </div>
+  <h1>Development Site Evaluator</h1>
+  <p class="subtitle">Monitors Rapid City and Pennington County planning channels for new development activity — and evaluates specific parcels on demand with a full feasibility report.</p>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="section-title">What This Agent Does</div>
+    <p class="what-it-does">
+      Two functions in one agent:<br><br>
+      <strong>1. Weekly monitoring</strong> — Checks Pennington County and Rapid City planning sources on a set schedule (see below). When something new appears — a rezoning, a plat, a conditional use permit, a major permit — it sends an alert so Kevin can act before it hits the open market.<br><br>
+      <strong>2. On-demand site analysis</strong> — Input any parcel address or APN in Rapid City, SD, and the agent returns a complete development feasibility report: zoning classification, comparable land sales, proforma model with estimated costs and returns, and a plain-English go/no-go recommendation.
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Monitoring Schedule</div>
+    <table class="schedule-table">
+      <thead>
+        <tr>
+          <th>Day</th>
+          <th>What to Check</th>
+          <th>What You're Looking For</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="day-pill">Monday</span></td>
+          <td><a class="sched-link" href="https://www.boxeldersd.gov/departments/planningandzoning" target="_blank">Box Elder Planning Commission Agendas</a></td>
+          <td>Rezoning requests, plats, subdivisions, apartment proposals, industrial projects</td>
+        </tr>
+        <tr>
+          <td><span class="day-pill">Monday</span></td>
+          <td><a class="sched-link" href="https://www.boxeldersd.gov/departments/planningandzoning" target="_blank">Box Elder Planning &amp; Zoning Department</a></td>
+          <td>Maps, planning documents, zoning changes, permit info</td>
+        </tr>
+        <tr>
+          <td><span class="day-pill">Monday</span></td>
+          <td><a class="sched-link" href="https://pennco.org/planning" target="_blank">Pennington County Planning Commission</a></td>
+          <td>County rezoning, conditional use permits, subdivisions outside city limits</td>
+        </tr>
+        <tr>
+          <td><span class="day-pill">Tuesday</span></td>
+          <td><a class="sched-link" href="https://www.boxeldersd.gov/departments/planningandzoning" target="_blank">Box Elder Building Permits</a></td>
+          <td>New commercial and residential construction permits</td>
+        </tr>
+        <tr>
+          <td><span class="day-pill">Wednesday</span></td>
+          <td><a class="sched-link" href="https://pennco.org/planning" target="_blank">Pennington County Planning Department</a></td>
+          <td>New plats, subdivision applications, zoning cases</td>
+        </tr>
+        <tr>
+          <td><span class="day-pill">Thursday</span></td>
+          <td><a class="sched-link" href="https://www.boxeldersd.gov/departments/planningandzoning" target="_blank">Box Elder City Council Meetings</a></td>
+          <td>Final approvals of developments, infrastructure projects</td>
+        </tr>
+        <tr>
+          <td><span class="day-pill">Thursday</span></td>
+          <td><a class="sched-link" href="https://pennco.org/planning" target="_blank">Pennington County Commissioners</a></td>
+          <td>Road projects, utility expansions, major development approvals</td>
+        </tr>
+        <tr>
+          <td><span class="day-pill anytime">Anytime</span></td>
+          <td><a class="sched-link" href="https://pennco.org/planning" target="_blank">Pennington County Zoning Ordinances</a></td>
+          <td>Understand what can be built where — reference for every site evaluation</td>
+        </tr>
+        <tr>
+          <td><span class="day-pill anytime">Anytime</span></td>
+          <td><a class="sched-link" href="https://pennco.org/planning" target="_blank">Transportation &amp; Infrastructure Projects</a></td>
+          <td>New roads and utilities that may create development opportunities</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">On-Demand Report Sections</div>
+    <div class="output-card"><div class="output-title">Site Overview</div><div class="output-desc">Address, APN, acreage, current zoning, allowable uses, utility access — pulled from Pennington County GIS.</div></div>
+    <div class="output-card"><div class="output-title">Comparable Sales</div><div class="output-desc">3–5 recent land sales within 5 miles, adjusted for size and zoning. Establishes land value range.</div></div>
+    <div class="output-card"><div class="output-title">Proforma Model</div><div class="output-desc">Estimated development cost, projected NOI, cap rate, and IRR for the most likely use case.</div></div>
+    <div class="output-card"><div class="output-title">Go / No-Go</div><div class="output-desc">Plain-English recommendation with key risk factors and the single biggest reason to proceed or pass.</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Configuration</div>
+    <div class="config-grid">
+      <div class="config-item"><div class="config-label">Name</div><div class="config-value">Development Site Evaluator</div></div>
+      <div class="config-item"><div class="config-label">Model</div><div class="config-value"><code>claude-sonnet-4-6</code></div></div>
+      <div class="config-item"><div class="config-label">Focus Market</div><div class="config-value">Rapid City, South Dakota (Pennington County)</div></div>
+      <div class="config-item"><div class="config-label">Primary Sources</div><div class="config-value"><a href="https://pennco.org/planning" target="_blank">pennco.org/planning</a> · <a href="https://www.boxeldersd.gov/departments/planningandzoning" target="_blank">boxeldersd.gov</a></div></div>
+      <div class="config-item"><div class="config-label">Data Sources</div><div class="config-value">Pennington County GIS · Zillow · FRED rates</div></div>
+      <div class="config-item"><div class="config-label">Alert Email</div><div class="config-value"><code>arecblackhills@gmail.com</code></div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">System Prompt</div>
+    <div class="prompt-block">
+      <pre>You are a real estate development analyst for Kevin Andreson, focused on Rapid City and Pennington County, South Dakota.
+
+MONITORING MODE — run on the schedule above:
+Check the assigned planning sources for new activity since the last check. For each new item:
+1. Address or parcel identifier
+2. Type of activity (rezoning, permit, plat, conditional use, etc.)
+3. Current status
+4. Why it matters (development opportunity, infrastructure signal, competitor activity)
+5. Recommended action
+
+SITE ANALYSIS MODE — triggered by a parcel address or APN:
+Produce a development feasibility report:
+1. Site Overview — zoning, acreage, current use, utility access (Pennington County GIS)
+2. Comparable Sales — 3-5 recent sales of similar parcels, adjusted for size and location
+3. Proforma Model — for the highest-and-best use:
+   - Estimated land cost (from comps)
+   - Estimated hard construction cost ($/sqft × buildable area)
+   - Soft costs (15% of hard)
+   - Total project cost
+   - Projected rental income or sale price at completion
+   - NOI, cap rate, projected IRR
+4. Go / No-Go — one paragraph, plain English
+
+Be conservative in estimates. Flag assumptions clearly. If data is unavailable, say so rather than guessing.</pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Setup Steps</div>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Web scrapers</strong> — Build Python scrapers for pennco.org/planning and boxeldersd.gov that detect new agenda items, permits, and documents since the last run using content hashing.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Scheduler</strong> — Add Monday, Tuesday, Wednesday, Thursday jobs to the macOS launchd schedule alongside the market report.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>GIS parcel lookup</strong> — Connect to Pennington County GIS for on-demand parcel data: zoning, ownership, acreage, utility access.</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Alert email</strong> — Send formatted summaries to <code>arecblackhills@gmail.com</code> using the same Gmail setup as the market report — only when new items are detected.</div></div>
+    </div>
+  </div>
+</main>
+<script src="../js/search.js"></script>
+</body>
+</html>
