@@ -1,4 +1,4 @@
-/* ARC Search — floating AI assistant widget, injected on every page */
+/* Search widget — injected on every page */
 (function () {
 
   // Detect if we're in the pages/ subdirectory
@@ -18,7 +18,7 @@
     {
       title: "Zoning & Planning Monitor",
       file: "pages/zoning-monitor.html",
-      tags: ["zoning", "planning", "permit", "variance", "county", "city", "rezone", "development", "box elder", "brigham city", "perry", "tremonton", "willard", "ordinance", "hearing", "agenda", "plat", "subdivision"],
+      tags: ["zoning", "planning", "permit", "variance", "county", "city", "rezone", "development", "box elder", "hermosa", "custer", "piedmont", "spearfish", "hot springs", "ordinance", "hearing", "agenda", "plat", "subdivision"],
       summary: "Scans county and city planning portals twice a week for new zoning changes, permits, and variance requests.",
       isAgent: true,
     },
@@ -46,7 +46,7 @@
     {
       title: "Box Elder Land Prospecting",
       file: "pages/box-elder-prospects.html",
-      tags: ["box elder", "prospecting", "land", "industrial", "multi-family", "parcels", "ownership", "brigham city", "perry", "tremonton", "willard", "i-15", "highway", "acres", "zoning", "m-1", "m-2", "r-3", "r-4", "leads", "outreach"],
+      tags: ["box elder", "prospecting", "land", "industrial", "multi-family", "parcels", "ownership", "rapid city", "spearfish", "hot springs", "custer", "hermosa", "box elder", "piedmont", "acres", "zoning", "m-1", "m-2", "r-3", "r-4", "leads", "outreach"],
       summary: "Weekly list of light industrial and multi-family land opportunities in Box Elder County with ownership data.",
       isAgent: true,
     },

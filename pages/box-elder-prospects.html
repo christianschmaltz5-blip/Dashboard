@@ -51,13 +51,13 @@
 <body>
 <nav>
   <a class="nav-back" href="../index.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back to Dashboard</a>
-  <div class="nav-title">Kevin Andreson · Operations</div>
+  <div class="nav-title">FOR KEVIN ANDRESON</div>
 </nav>
 <main>
   <div class="breadcrumb"><a href="../index.html">Dashboard</a> / Box Elder Prospects</div>
   <div class="agent-badge">
     <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor"/></svg>
-    Setting Up
+    Active
   </div>
   <h1>Box Elder Prospects</h1>
   <p class="subtitle">Monitors Box Elder, South Dakota city planning and zoning activity — new permits, rezoning requests, subdivision plats, and development applications — and surfaces actionable prospects automatically.</p>
@@ -74,10 +74,14 @@
   </div>
 
   <div class="section">
-    <div class="section-title">Live Source</div>
-    <a class="source-link" href="https://www.boxeldersd.gov/departments/planningandzoning" target="_blank">
+    <div class="section-title">Live Sources</div>
+    <a class="source-link" href="https://www.boxeldersd.gov/departments/planningandzoning" target="_blank" style="margin-right:10px;">
       <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
       boxeldersd.gov · Planning &amp; Zoning
+    </a>
+    <a class="source-link" href="https://www.pennco.org/services/planning/hearing_schedules.php" target="_blank">
+      <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      pennco.org · Planning Hearing Schedules
     </a>
   </div>
 
@@ -109,7 +113,7 @@
         </tr>
       </tbody>
     </table>
-    <div style="font-size:11px;color:var(--dim);margin-top:10px;font-style:italic;">These are example rows — live data populates when the agent goes online.</div>
+    <div style="font-size:11px;color:var(--dim);margin-top:10px;font-style:italic;">These are example rows showing the target format. The live agent currently sends a change-detection alert (page changed, here's the link) rather than parsed rows like this — structured parsing is a future upgrade.</div>
   </div>
 
   <div class="section">
@@ -119,7 +123,7 @@
       <div class="config-item"><div class="config-label">Model</div><div class="config-value"><code>claude-sonnet-4-6</code></div></div>
       <div class="config-item"><div class="config-label">Target Area</div><div class="config-value">Box Elder, South Dakota 57719 (Pennington County)</div></div>
       <div class="config-item"><div class="config-label">Primary Source</div><div class="config-value"><a href="https://www.boxeldersd.gov/departments/planningandzoning" target="_blank">boxeldersd.gov · Planning &amp; Zoning</a></div></div>
-      <div class="config-item"><div class="config-label">Secondary Source</div><div class="config-value"><a href="https://pennco.org/planning" target="_blank">pennco.org · Planning</a> — county-level permits and rezoning</div></div>
+      <div class="config-item"><div class="config-label">Secondary Source</div><div class="config-value"><a href="https://www.pennco.org/services/planning/hearing_schedules.php" target="_blank">pennco.org · Planning Hearing Schedules</a> — county-level permits and rezoning</div></div>
       <div class="config-item"><div class="config-label">Asset Types</div><div class="config-value">Light Industrial · Commercial · Multi-Family Residential</div></div>
       <div class="config-item"><div class="config-label">Alert Email</div><div class="config-value"><code>arecblackhills@gmail.com</code></div></div>
       <div class="config-item"><div class="config-label">Schedule</div><div class="config-value">Monday, Tuesday, Thursday — aligns with planning commission and city council cycle</div></div>

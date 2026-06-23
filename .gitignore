@@ -1,6 +1,9 @@
 agents/mls_report/config.py
 agents/mls_report/preview_report.html
 agents/mls_report/__pycache__/
+agents/box_elder_prospects/config.py
+agents/box_elder_prospects/state.json
+agents/box_elder_prospects/__pycache__/
 preview_report.html
 .claude-flow/
 **/.claude-flow/

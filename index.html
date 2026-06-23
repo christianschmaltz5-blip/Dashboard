@@ -485,7 +485,7 @@
     <div class="nav-logo">
       <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/></svg>
     </div>
-    <div class="nav-name">Kevin Andreson</div>
+    <div class="nav-name">FOR KEVIN ANDRESON</div>
   </div>
   <div class="nav-right">
     <div class="nav-date" id="nav-date"></div>
@@ -806,6 +806,35 @@ document.getElementById("nav-date").textContent =
     </tr>`;
   }).join('');
 
+  // MLS detail table — price band x status, per property category
+  let mlsDetailHtml = '';
+  if (data.mlsDetail) {
+    const { categories, priceBands, statuses, data: detail } = data.mlsDetail;
+    const statusCols = statuses.map(s => `<th class="m-th">${s}</th>`).join('');
+    const categoryTables = categories.map(cat => {
+      const rows = priceBands.map(band => {
+        const cells = statuses.map(s => {
+          const val = detail && detail[cat] && detail[cat][band] ? detail[cat][band][s] : null;
+          return `<td class="m-td">${val != null ? fi(val) : '—'}</td>`;
+        }).join('');
+        return `<tr><td class="m-td m-td-city">${band}</td>${cells}</tr>`;
+      }).join('');
+      return `
+        <div style="margin-bottom:1.25rem">
+          <div style="font-size:12px;font-weight:600;color:#fff;margin-bottom:8px">${cat}</div>
+          <table class="m-table">
+            <thead><tr><th class="m-th">Price Band</th>${statusCols}</tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+    }).join('');
+    mlsDetailHtml = `
+    <div class="m-row" style="margin-top:2.5rem">
+      <div class="m-section-label">MLS Detail &nbsp;&middot;&nbsp; Current Week by Price Band</div>
+      ${categoryTables}
+    </div>`;
+  }
+
   const invSub = rc.inventoryChange != null
     ? `<div class="m-metric-sub" style="color:${rc.inventoryChange > 0 ? '#F87171' : '#34D399'}">${rc.inventoryChange > 0 ? '+' : ''}${rc.inventoryChange} MoM</div>`
     : '';
@@ -899,13 +928,16 @@ document.getElementById("nav-date").textContent =
       </div>
     </div>
 
+    ${mlsDetailHtml}
+
     <div class="m-notice">
       <div class="m-notice-title">MLS Detail — Setup Required</div>
       <div class="m-notice-body">
-        Active / Under Contract / Sold breakdowns by property type (SFR, Multi-Family, Industrial, Commercial)
-        and price band ($100K–$350K through $1M+) require Paragon saved searches →
-        weekly export → <strong style="color:rgba(255,255,255,0.65)">arecblackhills@gmail.com</strong>.
-        Set up in both Black Hills MLS and Mount Rushmore MLS to activate.
+        Table above shows the live shape (price band &times; status, per property category).
+        Cells read "—" until Paragon saved searches &rarr; weekly export &rarr;
+        <strong style="color:rgba(255,255,255,0.65)">arecblackhills@gmail.com</strong> are set up
+        in both Black Hills MLS and Mount Rushmore MLS (logins are already connected) and the
+        agent's email parser is built to read those exports.
       </div>
     </div>`;
 })();

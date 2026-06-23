@@ -110,6 +110,51 @@ window.MARKET_DATA = {
       "inventory": 35,
       "inventoryChange": 3,
       "newListings": 14
+    },
+    {
+      "name": "Hermosa",
+      "zhvi": 541461,
+      "zhviChange": -0.4,
+      "inventory": 6,
+      "inventoryChange": 2,
+      "newListings": null
+    },
+    {
+      "name": "Custer",
+      "zhvi": 488776,
+      "zhviChange": -0.0,
+      "inventory": 32,
+      "inventoryChange": 3,
+      "newListings": 10
+    },
+    {
+      "name": "Piedmont",
+      "zhvi": null,
+      "zhviChange": null,
+      "inventory": 23,
+      "inventoryChange": 4,
+      "newListings": 10
     }
-  ]
+  ],
+  "mlsDetail": {
+    "categories": [
+      "Residential Resale (Single Family)",
+      "Commercial \u2014 Multi-Family",
+      "Commercial \u2014 Industrial",
+      "Commercial \u2014 General Commercial"
+    ],
+    "priceBands": [
+      "$100K\u2013$350K",
+      "$350K\u2013$500K",
+      "$500K\u2013$800K",
+      "$800K\u2013$1.0M",
+      "$1.0M+"
+    ],
+    "statuses": [
+      "Active",
+      "Under Contract",
+      "Sold"
+    ],
+    "data": null
+  }
 };

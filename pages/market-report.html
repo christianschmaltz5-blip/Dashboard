@@ -66,7 +66,7 @@
     <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
     Back to Dashboard
   </a>
-  <div class="nav-title">Kevin Andreson · Operations</div>
+  <div class="nav-title">FOR KEVIN ANDRESON</div>
 </nav>
 
 <main>
@@ -176,7 +176,7 @@ Keep language direct and professional. Avoid jargon. Flag notable changes (rate 
     <div class="steps">
       <div class="step"><div class="step-num">1</div><div class="step-body"><strong>FRED API Key</strong> — Paste your key into <code>agents/mls_report/config.py</code> at <code>FRED_API_KEY</code>. Already done.</div></div>
       <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Gmail App Password</strong> — Go to myaccount.google.com → Security → 2-Step Verification → App passwords. Generate a 16-character code and paste into <code>config.py</code> at <code>GMAIL_APP_PASSWORD</code>. <em>Required to send email.</em></div></div>
-      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Scheduler</strong> — Already registered as a macOS launchd job (<code>com.arc.mls-report</code>). Fires every Monday at 6:00 AM automatically. Mac must be awake.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Scheduler</strong> — Already registered as a macOS background job. Fires every Monday at 6:00 AM automatically. Mac must be awake.</div></div>
       <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Test run</strong> — Open Terminal and run <code>python3 ~/arc-dashboard/agents/mls_report/mls_report.py</code> to generate a preview. Add <code>--send</code> to trigger the email.</div></div>
     </div>
   </div>

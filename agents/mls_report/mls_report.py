@@ -21,6 +21,7 @@ DASHBOARD_JS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../j
 from config import (
     FRED_API_KEY, FROM_EMAIL, TO_EMAIL, GMAIL_APP_PASSWORD,
     TARGET_CITIES, TARGET_STATE, MARKET_LABEL,
+    PRICE_BANDS, MLS_STATUSES, MLS_DETAIL_CATEGORIES,
 )
 
 PREVIEW_FILE = "preview_report.html"
@@ -243,6 +244,72 @@ def build_bar_chart_html(monthly_data, title="6-Month Home Value Trend — Rapid
     </div>"""
 
 
+def get_mls_detail():
+    """
+    Active / Under Contract / Sold counts per price band, per MLS_DETAIL_CATEGORIES.
+    Returns None until the Paragon saved-search email parser exists.
+
+    Blocked on two things, in order:
+      1. Saved searches set up in both Black Hills MLS and Mount Rushmore MLS
+         (Paragon 5), each set to weekly-email its export to arecblackhills@gmail.com.
+      2. An IMAP-based parser here that reads those export emails and returns:
+           { category: { band_label: {"Active": n, "Under Contract": n, "Sold": n}, ... }, ... }
+         where category is one of MLS_DETAIL_CATEGORIES and band_label matches
+         a label in PRICE_BANDS. A sample export email is needed to build the parser
+         against Paragon's actual CSV/column format.
+    """
+    return None
+
+
+def build_mls_detail_section(mls_detail=None):
+    """Renders the price-band x status table for every MLS_DETAIL_CATEGORIES entry.
+    Cells show "—" until get_mls_detail() returns real counts."""
+    th = ("text-align:left;padding:8px 12px;font-size:10px;color:#a0aec0;"
+          "text-transform:uppercase;letter-spacing:0.6px;font-family:Arial,sans-serif;"
+          "border-bottom:2px solid #edf2f7;")
+    td = ("padding:8px 12px;font-size:12px;color:#2d3748;font-family:Arial,sans-serif;"
+          "border-bottom:1px solid #f7fafc;")
+
+    status_cols = "".join(f'<th style="{th}">{s}</th>' for s in MLS_STATUSES)
+
+    category_tables = ""
+    for category in MLS_DETAIL_CATEGORIES:
+        rows = ""
+        for band_label, lo, hi in PRICE_BANDS:
+            cells = ""
+            for status in MLS_STATUSES:
+                val = (mls_detail or {}).get(category, {}).get(band_label, {}).get(status)
+                cells += f'<td style="{td}">{val if val is not None else "—"}</td>'
+            rows += f'<tr><td style="{td}font-weight:600;color:#1a202c;">{band_label}</td>{cells}</tr>'
+        category_tables += f"""
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;font-weight:700;color:#1a202c;margin-bottom:6px;
+            font-family:Arial,sans-serif;">{category}</div>
+          <table style="width:100%;border-collapse:collapse;">
+            <thead><tr><th style="{th}">Price Band</th>{status_cols}</tr></thead>
+            <tbody>{rows}</tbody>
+          </table>
+        </div>"""
+
+    pending_note = "" if mls_detail else """
+      <div style="font-size:11px;color:#b7791f;background:#fffbeb;border:1px solid #f6e05e;
+        border-radius:8px;padding:10px 14px;margin-top:2px;font-family:Arial,sans-serif;">
+        <strong>Pending:</strong> cells show "—" until Paragon saved searches (Black Hills MLS +
+        Mount Rushmore MLS) are set to weekly-export &rarr; arecblackhills@gmail.com, and the
+        agent's email parser is built to read them.
+      </div>"""
+
+    return f"""
+    <div style="margin-bottom:24px;">
+      <div style="font-size:10px;font-weight:700;color:#718096;text-transform:uppercase;
+        letter-spacing:0.8px;margin-bottom:12px;font-family:Arial,sans-serif;">
+        MLS Detail &mdash; Current Week by Price Band
+      </div>
+      {category_tables}
+      {pending_note}
+    </div>"""
+
+
 # ── REPORT BUILDER ───────────────────────────────────────────────────────────
 
 def build_html(rates, city_data, trend_data=None, tier_data=None):
@@ -364,24 +431,8 @@ def build_html(rates, city_data, trend_data=None, tier_data=None):
           <td style="{td}">{fi(d.get('new_listings','N/A'))}</td>
         </tr>"""
 
-    # ── MLS detail section (pending Paragon email setup)
-    mls_pending = """
-    <div style="background:#fffbeb;border:1px solid #f6e05e;border-radius:10px;
-      padding:18px 24px;margin-bottom:24px;">
-      <div style="font-size:11px;font-weight:700;color:#b7791f;text-transform:uppercase;
-        letter-spacing:0.8px;margin-bottom:10px;font-family:Arial,sans-serif;">
-        ⚙ MLS Category Detail — Setup Required
-      </div>
-      <div style="font-size:13px;color:#744210;line-height:1.7;font-family:Arial,sans-serif;">
-        <strong>Coming soon:</strong> Active / Under Contract / Sold breakdowns by property type and price band.<br/><br/>
-        <strong>Residential Resale (Single Family)</strong> · Active · Under Contract · Sold<br/>
-        <strong>Commercial</strong> · Multi-Family · Industrial · General Commercial<br/>
-        <strong>Price Bands:</strong> $100K–$350K · $350K–$500K · $500K–$800K · $800K–$1.0M · $1.0M+<br/><br/>
-        <strong>To activate:</strong> In both Paragon systems (Black Hills MLS + Mount Rushmore MLS),
-        create saved searches for each category and set weekly email export → arecblackhills@gmail.com.
-        The agent will detect and parse these automatically.
-      </div>
-    </div>"""
+    # ── MLS detail section (real table shape; cells pending Paragon email parser)
+    mls_pending = build_mls_detail_section(get_mls_detail())
 
     return f"""<!DOCTYPE html>
 <html>
@@ -543,6 +594,12 @@ def save_dashboard_js(rates, city_data, trend_data, tier_data):
         "trend":  trend,
         "tiers":  tiers,
         "cities": cities,
+        "mlsDetail": {
+            "categories": MLS_DETAIL_CATEGORIES,
+            "priceBands": [label for label, lo, hi in PRICE_BANDS],
+            "statuses":   MLS_STATUSES,
+            "data":       get_mls_detail(),  # None until Paragon export parser exists
+        },
     }
 
     with open(DASHBOARD_JS, "w") as f:
