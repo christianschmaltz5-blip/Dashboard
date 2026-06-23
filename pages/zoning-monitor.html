@@ -18,7 +18,10 @@
     .breadcrumb{font-size:11px;color:var(--dim);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:16px;}
     .breadcrumb a{color:var(--dim);text-decoration:none;}
     .breadcrumb a:hover{color:var(--muted);}
-    .agent-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:14px;background:rgba(255,255,255,0.06);color:var(--muted);border:1px solid var(--border);}
+    .agent-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:14px;background:rgba(59,130,246,0.15);color:#60A5FA;border:1px solid rgba(96,165,250,0.25);}
+    .source-link{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#60A5FA;text-decoration:none;padding:8px 16px;border:1px solid rgba(96,165,250,0.25);border-radius:8px;background:rgba(59,130,246,0.07);transition:all .2s;margin-right:10px;margin-bottom:10px;}
+    .source-link:hover{background:rgba(59,130,246,0.15);border-color:rgba(96,165,250,0.4);}
+    .source-link svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;}
     h1{font-size:32px;font-weight:700;letter-spacing:0.02em;margin-bottom:10px;}
     .subtitle{font-size:15px;color:var(--muted);max-width:600px;line-height:1.7;}
     .divider{height:1px;background:var(--border);margin:2.5rem 0;}
@@ -67,30 +70,56 @@
   <div class="breadcrumb"><a href="../index.html">Dashboard</a> / Zoning Monitor</div>
   <div class="agent-badge">
     <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor"/></svg>
-    Setting Up
+    Active
   </div>
   <h1>Zoning & Planning Monitor</h1>
-  <p class="subtitle">Scans Pennington County and Black Hills city planning portals multiple times a week — delivers plain-English summaries of new zoning changes, variance requests, and permit filings.</p>
-
-  <div class="divider"></div>
-
-  <div class="status-bar">
-    <div class="stat"><div class="stat-value">40%</div><div class="stat-label">Complete</div></div>
-    <div class="stat"><div class="stat-value">Tue / Fri</div><div class="stat-label">Runs</div></div>
-    <div class="stat"><div class="stat-value">Black Hills</div><div class="stat-label">Market</div></div>
-    <div class="stat"><div class="stat-value">Email</div><div class="stat-label">Output</div></div>
-  </div>
-  <div class="progress-row"><span>Build Progress</span><span>40%</span></div>
-  <div class="progress-bar"><div class="progress-fill" style="width:40%"></div></div>
+  <p class="subtitle">Scans Pennington County and Black Hills city planning portals every Tuesday and Friday — delivers plain-English summaries of new zoning changes, variance requests, and permit filings.</p>
 
   <div class="divider"></div>
 
   <div class="section">
     <div class="section-title">What This Agent Does</div>
     <p class="what-it-does">
-      Multiple times a week, this agent scans public planning portals for the <strong>Black Hills region of South Dakota</strong> — Rapid City, Spearfish, Hot Springs, Custer, Hermosa, Box Elder, and Piedmont — for new activity: rezoning applications, variance requests, conditional use permits, and subdivision plats.<br><br>
-      Instead of dumping raw agenda PDFs, it summarizes each item in plain English: what the parcel is, what's being requested, and why it matters for development. Kevin gets an alert email with only the relevant items, so he can act on zoning intelligence before it becomes public knowledge.
+      Every Tuesday and Friday morning, this agent checks eight planning portals across the <strong>Black Hills region of South Dakota</strong> — Pennington County, Rapid City, Spearfish, Hot Springs, Custer, Box Elder, Piedmont, and Hermosa — for new activity: rezoning applications, variance requests, conditional use permits, and subdivision plats.<br><br>
+      When a source's page changes, it also follows any newly-posted agenda/packet PDF links, extracts their text, and has Claude write a plain-English digest: what the parcel is, what's being requested, and why it matters for development. Kevin gets one email with only the items that actually have development significance — routine administrative items are filtered out automatically.<br><br>
+      Box Elder is also covered by the dedicated <a href="box-elder-prospects.html" style="color:#60A5FA;">Box Elder Prospects</a> agent — intentionally overlapping here rather than risking a gap. Hermosa's town site is checked for reachability each run but excluded from automated change-detection: its page serves a randomized subset of content on every request, so diffing it reliably isn't possible — worth a manual check periodically.
     </p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Live Sources</div>
+    <a class="source-link" href="https://www.pennco.org/services/planning/hearing_schedules.php" target="_blank">
+      <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      pennco.org · Planning Hearing Schedules
+    </a>
+    <a class="source-link" href="https://www.boxeldersd.gov/departments/planningandzoning" target="_blank">
+      <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      boxeldersd.gov · Planning &amp; Zoning
+    </a>
+    <a class="source-link" href="https://www.rcgov.org/agenda-items/planning-commission-agenda-items.html" target="_blank">
+      <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      rcgov.org · Rapid City Planning Commission
+    </a>
+    <a class="source-link" href="https://www.spearfish.gov/AgendaCenter/Planning-Commission-5" target="_blank">
+      <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      spearfish.gov · Planning Commission
+    </a>
+    <a class="source-link" href="https://hotspringssd.gov/government/advisory_commissions_committees/pz.php" target="_blank">
+      <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      hotspringssd.gov · Planning &amp; Zoning Commission
+    </a>
+    <a class="source-link" href="https://www.cityofcuster.com/meetings/recent?department=36" target="_blank">
+      <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      cityofcuster.com · Planning Department Meetings
+    </a>
+    <a class="source-link" href="http://www.piedmontsd.com/2026-agenda.html" target="_blank">
+      <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      piedmontsd.com · Planning &amp; Zoning Agendas
+    </a>
+    <a class="source-link" href="https://www.hermosasd.com/meeting-documentation" target="_blank">
+      <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      hermosasd.com · Town Meeting Documents (reachability only)
+    </a>
   </div>
 
   <div class="section">
@@ -116,9 +145,9 @@
     <div class="config-grid">
       <div class="config-item"><div class="config-label">Name</div><div class="config-value">Zoning & Planning Monitor</div></div>
       <div class="config-item"><div class="config-label">Model</div><div class="config-value"><code>claude-sonnet-4-6</code></div></div>
-      <div class="config-item"><div class="config-label">Schedule</div><div class="config-value">Tuesday & Friday mornings</div></div>
-      <div class="config-item"><div class="config-label">Markets</div><div class="config-value">Rapid City · Spearfish · Hot Springs · Custer · Hermosa · Box Elder · Piedmont, SD</div></div>
-      <div class="config-item"><div class="config-label">Data Sources</div><div class="config-value">Pennington County Planning · boxeldersd.gov · pennco.org/planning · SD State GIS</div></div>
+      <div class="config-item"><div class="config-label">Schedule</div><div class="config-value">Tuesday & Friday, 7:00 AM</div></div>
+      <div class="config-item"><div class="config-label">Markets</div><div class="config-value">Pennington County · Rapid City · Spearfish · Hot Springs · Custer · Box Elder · Piedmont · Hermosa, SD</div></div>
+      <div class="config-item"><div class="config-label">Data Sources</div><div class="config-value">8 portals — see Live Sources above</div></div>
       <div class="config-item"><div class="config-label">Alert Email</div><div class="config-value"><code>arecblackhills@gmail.com</code></div></div>
     </div>
   </div>
@@ -134,20 +163,9 @@ For each new item found:
 3. Flag development relevance: potential acquisition opportunity, competitive threat, or background context?
 4. Note the hearing date or decision status
 
-Markets: Rapid City · Spearfish · Hot Springs · Custer · Hermosa · Box Elder · Piedmont, SD (Pennington County and surrounding area)
-
 Skip routine administrative items. Only surface items with development significance.
-Output as a clean email digest — one paragraph per item, sorted by urgency.</pre>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Setup Steps</div>
-    <div class="steps">
-      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Identify portal URLs</strong> — Confirm planning portal URLs for Pennington County, Rapid City, Spearfish, and smaller Black Hills cities. Some require scraping PDFs from agenda pages.</div></div>
-      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Build scraper</strong> — Python script to pull new agenda items, extract text from PDFs, and pass to Claude for summarization.</div></div>
-      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Schedule</strong> — Add launchd job to run every Tuesday and Friday at 7:00 AM alongside the market report.</div></div>
-      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Email delivery</strong> — Uses same Gmail sender as market report. No additional config needed once market report email is working.</div></div>
+Output as a clean digest, one paragraph per item, sorted by urgency.
+If nothing in the supplied text has development significance, respond with exactly: NONE</pre>
     </div>
   </div>
 </main>
