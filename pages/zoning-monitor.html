@@ -81,7 +81,7 @@
     <div class="section-title">What This Agent Does</div>
     <p class="what-it-does">
       Every Friday morning, this agent checks five planning portals across the <strong>Black Hills region of South Dakota</strong> — Pennington County, Rapid City, Custer, Box Elder, and Piedmont — for new activity: rezoning applications, variance requests, conditional use permits, and subdivision plats.<br><br>
-      When a source's page changes, it also follows any newly-posted agenda/packet PDF links, extracts their text, and has Claude write a plain-English digest: what the parcel is, what's being requested, and why it matters for development. Kevin gets one email with only the items that actually have development significance — routine administrative items are filtered out automatically.<br><br>
+      When a source's page changes, it also follows any newly-posted agenda/packet PDF links, extracts their text, and has Claude write a plain-English digest: the parcel, what's being requested, and &mdash; when minutes or packets are available &mdash; what was actually said about it at the meeting (arguments, conditions, vote outcome). Kevin gets one email with only the items that actually have development significance — routine administrative items are filtered out automatically.<br><br>
       Box Elder is also covered by the dedicated <a href="box-elder-prospects.html" style="color:#60A5FA;">Box Elder Prospects</a> agent — intentionally overlapping here rather than risking a gap.
     </p>
   </div>
@@ -145,11 +145,17 @@
     <div class="prompt-block">
       <pre>You monitor county and city planning portals for real estate development intelligence in the Black Hills region of South Dakota.
 
-For each new item found:
+Kevin cares about three things, in this order:
+1. New parcels &mdash; any address, subdivision, or plat appearing for the first time.
+2. New land development activity on those parcels &mdash; rezonings, conditional use permits, building permits, plats, variances, annexations.
+3. The discussion around it &mdash; if the supplied text includes meeting minutes, agenda packets, staff reports, or commissioner/public comments, summarize what was actually said: arguments for/against, conditions attached, vote outcome, staff recommendation. Don't just report that a hearing happened &mdash; report what happened at it, when that detail is available.
+
+For each item found:
 1. Identify the parcel (address, APN, acreage if available)
 2. Summarize what is being requested in plain English (2-3 sentences max)
-3. Flag development relevance: potential acquisition opportunity, competitive threat, or background context?
-4. Note the hearing date or decision status
+3. Summarize the discussion/outcome if the source text contains it
+4. Flag development relevance: potential acquisition opportunity, competitive threat, or background context?
+5. Note the hearing date or decision status
 
 Skip routine administrative items. Only surface items with development significance.
 Output as a clean digest, one paragraph per item, sorted by urgency.

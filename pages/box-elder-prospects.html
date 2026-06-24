@@ -67,7 +67,7 @@
   <div class="section">
     <div class="section-title">What This Agent Does</div>
     <p class="what-it-does">
-      This agent watches the <strong>Box Elder, SD Planning &amp; Zoning Department</strong> website for any new activity — rezoning requests, subdivision plats, building permits, conditional use permits, and development applications. When something new appears, it fires an alert with the key details so Kevin can act before the market does.<br><br>
+      This agent watches the <strong>Box Elder, SD Planning &amp; Zoning Department</strong> website for any new activity — rezoning requests, subdivision plats, building permits, conditional use permits, and development applications. When a source changes, it also follows any newly-posted agenda/packet PDF links and has Claude write a plain-English digest: the new parcel, what's being requested, and — when minutes or packets are available — what was actually discussed at the meeting, so Kevin can act before the market does.<br><br>
       Box Elder (57719) is a fast-growing city in Pennington County along the I-90 corridor near Ellsworth Air Force Base — light industrial, commercial, and residential development are all active here. The agent also cross-references Pennington County planning records since many projects affecting Box Elder go through county channels first.<br><br>
       Data source: <strong>boxeldersd.gov/departments/planningandzoning</strong>. Checks for updates every Friday morning.
     </p>
@@ -113,7 +113,7 @@
         </tr>
       </tbody>
     </table>
-    <div style="font-size:11px;color:var(--dim);margin-top:10px;font-style:italic;">These are example rows showing the target format. The live agent currently sends a change-detection alert (page changed, here's the link) rather than parsed rows like this — structured parsing is a future upgrade.</div>
+    <div style="font-size:11px;color:var(--dim);margin-top:10px;font-style:italic;">These are example rows showing the target format. The live agent sends an AI-summarized digest per source (parcel, request, discussion, relevance) rather than a literal table — structured row-level parsing like this is a future upgrade.</div>
   </div>
 
   <div class="section">
@@ -133,26 +133,23 @@
   <div class="section">
     <div class="section-title">System Prompt</div>
     <div class="prompt-block">
-      <pre>You are a real estate development monitor for Kevin Andreson, focused on Box Elder, South Dakota (57719).
+      <pre>You monitor planning and zoning activity for Box Elder, South Dakota (57719) and Pennington County hearings affecting it, on behalf of Kevin Andreson, a Keller Williams agent prospecting light industrial and multi-family land near Ellsworth Air Force Base and the I-90 corridor.
 
-Each run, check the Box Elder Planning & Zoning Department page and Pennington County planning records for any new activity since the last check. Look for:
+Kevin cares about three things, in this order:
+1. New parcels &mdash; any address, subdivision, or plat appearing for the first time.
+2. New land development activity on those parcels &mdash; rezonings, conditional use permits, building permits, plats, variances, annexations.
+3. The discussion around it &mdash; if the supplied text includes meeting minutes, agenda packets, staff reports, or commissioner/public comments, summarize what was actually said: arguments for/against, conditions attached, vote outcome, staff recommendation. Don't just report that a hearing happened &mdash; report what happened at it, when that detail is available.
 
-- Rezoning requests or approvals
-- Subdivision plats (new or amended)
-- Conditional use permits
-- Building permits for commercial or industrial construction
-- City Council agenda items related to development
-- Any new planning documents, maps, or ordinance changes
+For each item found:
+1. Identify the parcel (address, APN, acreage if available)
+2. Summarize what is being requested in plain English (2-3 sentences max)
+3. Summarize the discussion/outcome if the source text contains it
+4. Flag why it matters to Kevin (development opportunity, market signal, competitor activity) &mdash; industrial and multi-family first
+5. Note the hearing date or decision status
 
-For each new item found:
-1. Address or parcel identifier
-2. Type of activity (rezoning, permit, plat, etc.)
-3. Current status (application filed, commission review, approved, denied)
-4. Why it's relevant to Kevin (development opportunity, market signal, competitor activity)
-5. Recommended next action (monitor, contact owner, attend meeting, etc.)
-
-Flag high-priority items (large parcels, industrial zoning, near Ellsworth AFB) at the top.
-Send a concise summary email — only include new items since last check.</pre>
+Skip routine administrative items with no parcel or development content. Only surface items with real development significance.
+Output as a clean digest, one paragraph per item, sorted by urgency &mdash; large parcels and industrial zoning near Ellsworth AFB first.
+If nothing in the supplied text has development significance, respond with exactly: NONE</pre>
     </div>
   </div>
 
@@ -161,8 +158,8 @@ Send a concise summary email — only include new items since last check.</pre>
     <div class="steps">
       <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Web scraper</strong> — Build a Python scraper that reads boxeldersd.gov/departments/planningandzoning and detects new agenda items, permits, or documents since the last run.</div></div>
       <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Pennington County feed</strong> — Add pennco.org/planning as a secondary source to catch county-level activity affecting Box Elder parcels.</div></div>
-      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Change detection</strong> — Store a hash of each page on each run. Only alert when content changes — no noise on quiet weeks.</div></div>
-      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Alert email</strong> — Send formatted summary to <code>arecblackhills@gmail.com</code> when new items are detected, using the same Gmail setup as the market report.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Change detection + significance filter</strong> — Store a hash of each page on each run, diff it, and follow any newly-posted agenda/PDF links. Claude reads the changed text and only flags it if there's a real new parcel or development item — no noise on quiet weeks.</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Alert email</strong> — Send an AI-summarized digest to <code>arecblackhills@gmail.com</code> when development-significant items are detected, using the same Gmail setup as the market report.</div></div>
     </div>
   </div>
 </main>
