@@ -73,16 +73,16 @@
     Active
   </div>
   <h1>Zoning & Planning Monitor</h1>
-  <p class="subtitle">Scans Pennington County and Black Hills city planning portals every Tuesday and Friday — delivers plain-English summaries of new zoning changes, variance requests, and permit filings.</p>
+  <p class="subtitle">Scans Pennington County and Black Hills city planning portals every Friday morning — delivers plain-English summaries of new zoning changes, variance requests, and permit filings.</p>
 
   <div class="divider"></div>
 
   <div class="section">
     <div class="section-title">What This Agent Does</div>
     <p class="what-it-does">
-      Every Tuesday and Friday morning, this agent checks eight planning portals across the <strong>Black Hills region of South Dakota</strong> — Pennington County, Rapid City, Spearfish, Hot Springs, Custer, Box Elder, Piedmont, and Hermosa — for new activity: rezoning applications, variance requests, conditional use permits, and subdivision plats.<br><br>
+      Every Friday morning, this agent checks five planning portals across the <strong>Black Hills region of South Dakota</strong> — Pennington County, Rapid City, Custer, Box Elder, and Piedmont — for new activity: rezoning applications, variance requests, conditional use permits, and subdivision plats.<br><br>
       When a source's page changes, it also follows any newly-posted agenda/packet PDF links, extracts their text, and has Claude write a plain-English digest: what the parcel is, what's being requested, and why it matters for development. Kevin gets one email with only the items that actually have development significance — routine administrative items are filtered out automatically.<br><br>
-      Box Elder is also covered by the dedicated <a href="box-elder-prospects.html" style="color:#60A5FA;">Box Elder Prospects</a> agent — intentionally overlapping here rather than risking a gap. Hermosa's town site is checked for reachability each run but excluded from automated change-detection: its page serves a randomized subset of content on every request, so diffing it reliably isn't possible — worth a manual check periodically.
+      Box Elder is also covered by the dedicated <a href="box-elder-prospects.html" style="color:#60A5FA;">Box Elder Prospects</a> agent — intentionally overlapping here rather than risking a gap.
     </p>
   </div>
 
@@ -100,14 +100,6 @@
       <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
       rcgov.org · Rapid City Planning Commission
     </a>
-    <a class="source-link" href="https://www.spearfish.gov/AgendaCenter/Planning-Commission-5" target="_blank">
-      <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-      spearfish.gov · Planning Commission
-    </a>
-    <a class="source-link" href="https://hotspringssd.gov/government/advisory_commissions_committees/pz.php" target="_blank">
-      <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-      hotspringssd.gov · Planning &amp; Zoning Commission
-    </a>
     <a class="source-link" href="https://www.cityofcuster.com/meetings/recent?department=36" target="_blank">
       <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
       cityofcuster.com · Planning Department Meetings
@@ -115,10 +107,6 @@
     <a class="source-link" href="http://www.piedmontsd.com/2026-agenda.html" target="_blank">
       <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
       piedmontsd.com · Planning &amp; Zoning Agendas
-    </a>
-    <a class="source-link" href="https://www.hermosasd.com/meeting-documentation" target="_blank">
-      <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-      hermosasd.com · Town Meeting Documents (reachability only)
     </a>
   </div>
 
@@ -131,7 +119,7 @@
       </div>
       <div class="alert-item permit">
         <div class="alert-type">Permit Filed</div>
-        <div class="alert-body">Spearfish — Commercial build permit filed at 1800 N Avenue H. 9,500 sq ft light industrial shell. Estimated value: $1.4M.</div>
+        <div class="alert-body">Box Elder — Commercial build permit filed at 1800 E Watertown St. 9,500 sq ft light industrial shell. Estimated value: $1.4M.</div>
       </div>
       <div class="alert-item variance">
         <div class="alert-type">Variance Request</div>
@@ -145,9 +133,9 @@
     <div class="config-grid">
       <div class="config-item"><div class="config-label">Name</div><div class="config-value">Zoning & Planning Monitor</div></div>
       <div class="config-item"><div class="config-label">Model</div><div class="config-value"><code>claude-sonnet-4-6</code></div></div>
-      <div class="config-item"><div class="config-label">Schedule</div><div class="config-value">Tuesday & Friday, 7:00 AM</div></div>
-      <div class="config-item"><div class="config-label">Markets</div><div class="config-value">Pennington County · Rapid City · Spearfish · Hot Springs · Custer · Box Elder · Piedmont · Hermosa, SD</div></div>
-      <div class="config-item"><div class="config-label">Data Sources</div><div class="config-value">8 portals — see Live Sources above</div></div>
+      <div class="config-item"><div class="config-label">Schedule</div><div class="config-value">Friday only, 7:00 AM</div></div>
+      <div class="config-item"><div class="config-label">Markets</div><div class="config-value">Pennington County · Rapid City · Custer · Box Elder · Piedmont, SD</div></div>
+      <div class="config-item"><div class="config-label">Data Sources</div><div class="config-value">5 portals — see Live Sources above</div></div>
       <div class="config-item"><div class="config-label">Alert Email</div><div class="config-value"><code>arecblackhills@gmail.com</code></div></div>
     </div>
   </div>
