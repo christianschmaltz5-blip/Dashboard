@@ -316,226 +316,187 @@ def build_html(rates, city_data, trend_data=None, tier_data=None):
     today = datetime.now().strftime("%B %d, %Y")
     r30   = rates["30yr"]
     r15   = rates["15yr"]
+    rc    = city_data.get("Rapid City", {})
 
-    th = ("text-align:left;padding:9px 14px;font-size:11px;color:#a0aec0;"
-          "font-weight:700;text-transform:uppercase;letter-spacing:0.5px;"
-          "border-bottom:2px solid #edf2f7;font-family:Arial,sans-serif;")
-    td = "padding:11px 14px;color:#2d3748;font-size:13px;font-family:Arial,sans-serif;"
+    S = "font-family:Arial,sans-serif;"  # base style shorthand
 
-    # ── Rapid City spotlight
-    rc = city_data.get("Rapid City", {})
-
-    def inv_badge(d):
-        if "inventory_change" not in d:
+    def inv_delta(d):
+        ic = d.get("inventory_change")
+        if ic is None:
             return ""
-        ic  = d["inventory_change"]
-        col = "#38a169" if ic < 0 else "#e53e3e"
-        return f' <span style="color:{col};font-size:11px;font-family:Arial,sans-serif;">({ic:+.0f} MoM)</span>'
+        col = "#16a34a" if ic < 0 else "#dc2626"
+        return f'<span style="color:{col};font-size:11px;{S}"> ({ic:+.0f} MoM)</span>'
 
     def pct_above_fmt(d):
         val = d.get("pct_above")
         if val is None:
-            return "N/A"
+            return "—"
         try:
             v   = float(val) * 100
-            col = "#38a169" if v >= 50 else "#e53e3e"
+            col = "#16a34a" if v >= 50 else "#dc2626"
             return f'<span style="color:{col};font-weight:700;">{v:.0f}%</span>'
         except Exception:
-            return "N/A"
+            return "—"
+
+    # ── Rapid City stat grid (table-based — works in all email clients)
+    def stat_cell(label, value, sub="", border_right=True):
+        br = "border-right:1px solid #e2e8f0;" if border_right else ""
+        return f"""<td width="33%" valign="top" style="padding:18px 20px;{br}{S}">
+          <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;
+            letter-spacing:0.6px;margin-bottom:8px;{S}">{label}</div>
+          <div style="font-size:22px;font-weight:800;color:#0f172a;line-height:1;{S}">{value}</div>
+          {"" if not sub else f'<div style="font-size:12px;color:#64748b;margin-top:5px;{S}">{sub}</div>'}
+        </td>"""
 
     rc_block = f"""
-    <div style="background:#f0f7ff;border:1px solid #bee3f8;border-radius:10px;
-      padding:20px 24px;margin-bottom:8px;">
-      <div style="font-size:11px;font-weight:700;color:#2b6cb0;
-        text-transform:uppercase;letter-spacing:0.8px;margin-bottom:14px;
-        font-family:Arial,sans-serif;">★ Rapid City — Full Market Snapshot</div>
-      <div style="display:flex;gap:24px;flex-wrap:wrap;">
-        <div>
-          <div style="font-size:10px;color:#718096;text-transform:uppercase;
-            letter-spacing:0.5px;margin-bottom:3px;font-family:Arial,sans-serif;">Home Value (ZHVI)</div>
-          <div style="font-size:18px;font-weight:800;color:#1a202c;font-family:Arial,sans-serif;">{fc(rc.get('zhvi','N/A'))}</div>
-          <div style="font-size:12px;font-family:Arial,sans-serif;">{fpct(rc.get('zhvi_change','N/A'))} MoM</div>
-        </div>
-        <div>
-          <div style="font-size:10px;color:#718096;text-transform:uppercase;
-            letter-spacing:0.5px;margin-bottom:3px;font-family:Arial,sans-serif;">Median Sale Price</div>
-          <div style="font-size:18px;font-weight:800;color:#1a202c;font-family:Arial,sans-serif;">{fc(rc.get('sale_price','N/A'))}</div>
-          <div style="font-size:12px;font-family:Arial,sans-serif;">{fpct(rc.get('sale_price_change','N/A'))} MoM</div>
-        </div>
-        <div>
-          <div style="font-size:10px;color:#718096;text-transform:uppercase;
-            letter-spacing:0.5px;margin-bottom:3px;font-family:Arial,sans-serif;">Active Inventory</div>
-          <div style="font-size:18px;font-weight:800;color:#1a202c;font-family:Arial,sans-serif;">{fi(rc.get('inventory','N/A'))}</div>
-          <div style="font-size:12px;color:#718096;font-family:Arial,sans-serif;">{inv_badge(rc)}</div>
-        </div>
-        <div>
-          <div style="font-size:10px;color:#718096;text-transform:uppercase;
-            letter-spacing:0.5px;margin-bottom:3px;font-family:Arial,sans-serif;">New Listings</div>
-          <div style="font-size:18px;font-weight:800;color:#1a202c;font-family:Arial,sans-serif;">{fi(rc.get('new_listings','N/A'))}</div>
-        </div>
-        <div>
-          <div style="font-size:10px;color:#718096;text-transform:uppercase;
-            letter-spacing:0.5px;margin-bottom:3px;font-family:Arial,sans-serif;">Sold Above List</div>
-          <div style="font-size:18px;font-weight:800;color:#1a202c;font-family:Arial,sans-serif;">{pct_above_fmt(rc)}</div>
-          <div style="font-size:11px;color:#718096;font-family:Arial,sans-serif;">of homes closed over ask</div>
-        </div>
-      </div>
-    </div>"""
+    <table width="100%" cellpadding="0" cellspacing="0"
+      style="border:1px solid #e2e8f0;border-radius:10px;border-collapse:separate;
+             border-spacing:0;margin-bottom:24px;overflow:hidden;">
+      <tr style="border-bottom:1px solid #e2e8f0;">
+        {stat_cell("Home Value (ZHVI)", fc(rc.get("zhvi","—")),
+                   f'{fpct(rc.get("zhvi_change",""))} MoM')}
+        {stat_cell("Median Sale Price", fc(rc.get("sale_price","—")),
+                   f'{fpct(rc.get("sale_price_change",""))} MoM')}
+        {stat_cell("Active Inventory", fi(rc.get("inventory","—")),
+                   inv_delta(rc), border_right=False)}
+      </tr>
+      <tr>
+        {stat_cell("New Listings", fi(rc.get("new_listings","—")))}
+        {stat_cell("Sold Above Asking", pct_above_fmt(rc), "of closings over list price")}
+        <td width="33%" style="padding:18px 20px;{S}"></td>
+      </tr>
+    </table>"""
 
     # ── Trend chart
     chart_html = ""
     if trend_data:
         chart_html = build_bar_chart_html(trend_data[-6:])
 
-    # ── Price tier table
+    # ── Price tiers
     tier_html = ""
     if tier_data:
         tier_rows = ""
         for label, data in tier_data.items():
-            tier_rows += f"""
-            <tr style="border-bottom:1px solid #f7fafc;">
-              <td style="{td}font-weight:600;">{label}</td>
-              <td style="{td}font-weight:800;">{fc(data['value'])}</td>
-              <td style="{td}">{fpct(data['change'])} MoM</td>
+            tier_rows += f"""<tr style="border-bottom:1px solid #f1f5f9;">
+              <td style="padding:10px 14px;font-size:13px;font-weight:600;color:#1e293b;{S}">{label}</td>
+              <td style="padding:10px 14px;font-size:13px;font-weight:800;color:#0f172a;{S}">{fc(data["value"])}</td>
+              <td style="padding:10px 14px;font-size:13px;{S}">{fpct(data["change"])} MoM</td>
             </tr>"""
-
         tier_html = f"""
-        <div style="margin-bottom:24px;">
-          <div style="font-size:11px;font-weight:700;color:#718096;text-transform:uppercase;
-            letter-spacing:0.8px;margin-bottom:10px;font-family:Arial,sans-serif;">
-            Home Values by Bedroom Count — Rapid City (Zillow)
-          </div>
-          <table style="width:100%;border-collapse:collapse;">
-            <thead><tr>
-              <th style="{th}">Home Size</th>
-              <th style="{th}">Typical Value</th>
-              <th style="{th}">Month-over-Month</th>
-            </tr></thead>
-            <tbody>{tier_rows}</tbody>
-          </table>
-          <div style="font-size:10px;color:#a0aec0;margin-top:8px;font-family:Arial,sans-serif;">
-            Bedroom-count ZHVI approximates price bands. Exact $100K–$350K / $350K–$500K / etc. breakdowns
-            require Paragon MLS exports → arecblackhills@gmail.com (see setup section below).
-          </div>
-        </div>"""
+        <table width="100%" cellpadding="0" cellspacing="0"
+          style="border-collapse:collapse;margin-bottom:28px;">
+          <thead><tr style="border-bottom:2px solid #e2e8f0;">
+            <th style="text-align:left;padding:8px 14px;font-size:10px;font-weight:700;
+              color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;{S}">Home Size</th>
+            <th style="text-align:left;padding:8px 14px;font-size:10px;font-weight:700;
+              color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;{S}">Typical Value</th>
+            <th style="text-align:left;padding:8px 14px;font-size:10px;font-weight:700;
+              color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;{S}">Month-over-Month</th>
+          </tr></thead>
+          <tbody>{tier_rows}</tbody>
+        </table>"""
 
     # ── Regional breakdown
     city_rows = ""
     for city, d in city_data.items():
-        city_rows += f"""
-        <tr style="border-bottom:1px solid #f7fafc;">
-          <td style="{td}font-weight:700;color:#1a202c;">{city}</td>
-          <td style="{td}">{fc(d.get('zhvi','N/A'))}<br/>
-            <span style="font-size:12px;font-family:Arial,sans-serif;">{fpct(d.get('zhvi_change','N/A'))} MoM</span></td>
-          <td style="{td}">{fi(d.get('inventory','N/A'))}{inv_badge(d)}</td>
-          <td style="{td}">{fi(d.get('new_listings','N/A'))}</td>
+        zhvi_chg = d.get("zhvi_change")
+        chg_html = f'&nbsp;{fpct(zhvi_chg)} MoM' if zhvi_chg is not None else ""
+        city_rows += f"""<tr style="border-bottom:1px solid #f1f5f9;">
+          <td style="padding:11px 14px;font-size:13px;font-weight:700;color:#0f172a;{S}">{city}</td>
+          <td style="padding:11px 14px;font-size:13px;color:#334155;{S}">{fc(d.get("zhvi","—"))}{chg_html}</td>
+          <td style="padding:11px 14px;font-size:13px;color:#334155;{S}">{fi(d.get("inventory","—"))}{inv_delta(d)}</td>
+          <td style="padding:11px 14px;font-size:13px;color:#334155;{S}">{fi(d.get("new_listings","—"))}</td>
         </tr>"""
-
-    # ── MLS detail section (real table shape; cells pending Paragon email parser)
-    mls_pending = build_mls_detail_section(get_mls_detail())
 
     return f"""<!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8"/>
-  <title>Market Report — {today} — Kevin Andreson</title>
+<head><meta charset="UTF-8"/>
+<title>Black Hills Market Report — {today}</title>
 </head>
-<body style="margin:0;padding:0;background:#f0f4f8;
-  font-family:Arial,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-<div style="max-width:720px;margin:0 auto;padding:24px;">
+<body style="margin:0;padding:0;background:#f1f5f9;{S}">
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr><td align="center" style="padding:24px 16px;">
+<table width="640" cellpadding="0" cellspacing="0" style="max-width:640px;">
 
   <!-- HEADER -->
-  <div style="background:#0f2942;border-radius:12px 12px 0 0;padding:32px 36px 28px;">
-    <div style="color:#7fb3e0;font-size:11px;font-weight:700;
-      letter-spacing:1.2px;text-transform:uppercase;margin-bottom:6px;">
-      Weekly Market Report
+  <tr><td style="background:#0f172a;border-radius:12px 12px 0 0;padding:32px 36px 26px;">
+    <div style="color:#7fb3e0;font-size:10px;font-weight:700;letter-spacing:1.4px;
+      text-transform:uppercase;margin-bottom:8px;{S}">Weekly Market Report</div>
+    <div style="color:#ffffff;font-size:28px;font-weight:800;line-height:1.15;{S}">
+      Black Hills Market Update</div>
+    <div style="color:#94a3b8;font-size:13px;margin-top:8px;{S}">
+      {today} &nbsp;&bull;&nbsp; {MARKET_LABEL} &nbsp;&bull;&nbsp; Kevin Andreson, Keller Williams
     </div>
-    <div style="color:white;font-size:26px;font-weight:800;line-height:1.2;">
-      Black Hills Market Update
-    </div>
-    <div style="color:#90b8d8;font-size:13px;margin-top:8px;">
-      {today} &bull; {MARKET_LABEL} &bull; Kevin Andreson, Keller Williams
-    </div>
-  </div>
+  </td></tr>
 
-  <!-- RATE BAR -->
-  <div style="background:#1a3a5c;padding:22px 36px;border-bottom:1px solid #1d5080;">
-    <div style="display:flex;gap:48px;flex-wrap:wrap;">
-      <div>
-        <div style="color:#7fb3e0;font-size:10px;font-weight:700;
-          text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;">30-Year Fixed</div>
-        <div>
-          <span style="color:white;font-size:30px;font-weight:800;">{r30['rate']}%</span>
-          <span style="font-size:13px;margin-left:10px;">{frate_change(r30['change'])}</span>
-        </div>
-      </div>
-      <div>
-        <div style="color:#7fb3e0;font-size:10px;font-weight:700;
-          text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;">15-Year Fixed</div>
-        <div>
-          <span style="color:white;font-size:30px;font-weight:800;">{r15['rate']}%</span>
-          <span style="font-size:13px;margin-left:10px;">{frate_change(r15['change'])}</span>
-        </div>
-      </div>
-      <div style="margin-left:auto;align-self:flex-end;">
-        <div style="color:#4a7fa8;font-size:10px;">Source: Federal Reserve (FRED)</div>
-      </div>
-    </div>
-  </div>
+  <!-- MORTGAGE RATES -->
+  <tr><td style="background:#1e3a5f;padding:0;">
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td width="50%" style="padding:22px 28px 22px 36px;border-right:1px solid #2d4f7c;">
+          <div style="color:#7fb3e0;font-size:10px;font-weight:700;text-transform:uppercase;
+            letter-spacing:0.8px;margin-bottom:6px;{S}">30-Year Fixed</div>
+          <span style="color:#fff;font-size:32px;font-weight:800;{S}">{r30["rate"]}%</span>
+          <span style="font-size:13px;margin-left:10px;">{frate_change(r30["change"])}</span>
+        </td>
+        <td width="50%" style="padding:22px 36px 22px 28px;">
+          <div style="color:#7fb3e0;font-size:10px;font-weight:700;text-transform:uppercase;
+            letter-spacing:0.8px;margin-bottom:6px;{S}">15-Year Fixed</div>
+          <span style="color:#fff;font-size:32px;font-weight:800;{S}">{r15["rate"]}%</span>
+          <span style="font-size:13px;margin-left:10px;">{frate_change(r15["change"])}</span>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
 
-  <!-- MARKET DATA -->
-  <div style="background:white;padding:28px 36px;border-top:3px solid #1d7eea;">
-    <div style="margin-bottom:6px;">
-      <span style="background:#ebf4ff;color:#2b6cb0;font-size:12px;font-weight:700;
-        padding:4px 12px;border-radius:6px;font-family:Arial,sans-serif;">ZILLOW RESEARCH</span>
-    </div>
-    <div style="color:#718096;font-size:12px;margin-bottom:20px;font-family:Arial,sans-serif;">
-      Black Hills Region, SD — Rapid City · Spearfish · Sturgis · Hot Springs · Box Elder · Hermosa · Custer · Piedmont
-    </div>
+  <!-- BODY -->
+  <tr><td style="background:#ffffff;padding:32px 36px;border-left:1px solid #e2e8f0;
+    border-right:1px solid #e2e8f0;">
+
+    <!-- Section label -->
+    <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;
+      letter-spacing:1px;margin-bottom:18px;{S}">Rapid City — Full Snapshot</div>
 
     {rc_block}
     {chart_html}
-    {tier_html}
 
-    <div style="font-size:11px;font-weight:700;color:#718096;text-transform:uppercase;
-      letter-spacing:0.8px;margin-bottom:12px;margin-top:24px;font-family:Arial,sans-serif;">
-      Regional Breakdown
-    </div>
-    <table style="width:100%;border-collapse:collapse;">
-      <thead><tr>
-        <th style="{th}">City</th>
-        <th style="{th}">Home Value (ZHVI)</th>
-        <th style="{th}">Active Inventory</th>
-        <th style="{th}">New Listings</th>
+    {"" if not tier_data else f'''
+    <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;
+      letter-spacing:1px;margin-bottom:14px;{S}">Value by Bedroom Count</div>
+    {tier_html}'''}
+
+    <!-- Regional -->
+    <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;
+      letter-spacing:1px;margin-bottom:14px;margin-top:8px;{S}">Regional Breakdown</div>
+    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+      <thead><tr style="border-bottom:2px solid #e2e8f0;">
+        <th style="text-align:left;padding:8px 14px;font-size:10px;font-weight:700;
+          color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;{S}">City</th>
+        <th style="text-align:left;padding:8px 14px;font-size:10px;font-weight:700;
+          color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;{S}">Home Value</th>
+        <th style="text-align:left;padding:8px 14px;font-size:10px;font-weight:700;
+          color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;{S}">Inventory</th>
+        <th style="text-align:left;padding:8px 14px;font-size:10px;font-weight:700;
+          color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;{S}">New Listings</th>
       </tr></thead>
       <tbody>{city_rows}</tbody>
     </table>
-  </div>
 
-  <!-- MLS DETAIL SECTION -->
-  <div style="background:white;padding:0 36px 28px;">
-    {mls_pending}
-  </div>
-
-  <!-- LEGEND -->
-  <div style="background:#f7fafc;padding:16px 36px;border-top:1px solid #edf2f7;">
-    <div style="font-size:11px;color:#a0aec0;line-height:1.9;font-family:Arial,sans-serif;">
-      <strong style="color:#718096;">ZHVI</strong> = Zillow estimated home value &nbsp;&bull;&nbsp;
-      <strong style="color:#718096;">Tiers</strong> = lower / mid / upper thirds of the market &nbsp;&bull;&nbsp;
-      <strong style="color:#718096;">Sold Above List</strong> = % of homes closed over asking
-    </div>
-  </div>
+  </td></tr>
 
   <!-- FOOTER -->
-  <div style="background:#f0f4f8;border-radius:0 0 12px 12px;
-    padding:18px 36px;text-align:center;border-top:1px solid #e2e8f0;">
-    <div style="font-size:11px;color:#a0aec0;line-height:1.8;font-family:Arial,sans-serif;">
-      Data: Zillow Research &bull; Federal Reserve FRED<br/>
-      Kevin Andreson, Keller Williams &bull; Auto-generated every Monday 6:00 AM
+  <tr><td style="background:#f8fafc;border:1px solid #e2e8f0;border-top:none;
+    border-radius:0 0 12px 12px;padding:16px 36px;text-align:center;">
+    <div style="font-size:11px;color:#94a3b8;line-height:1.8;{S}">
+      Data: Zillow Research &nbsp;&bull;&nbsp; Federal Reserve FRED<br/>
+      ZHVI = Zillow estimated home value &nbsp;&bull;&nbsp; Sold Above List = % of homes closed over asking<br/>
+      Auto-generated every Monday 6:00 AM
     </div>
-  </div>
+  </td></tr>
 
-</div>
+</table>
+</td></tr>
+</table>
 </body>
 </html>"""
 
