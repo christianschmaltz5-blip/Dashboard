@@ -139,9 +139,23 @@ def summarize(client, source_name, new_text):
     return msg.content[0].text.strip()
 
 
+def _digest_subject(digests):
+    """Pull the top finding from the first digest as the email headline."""
+    if not digests:
+        return f"Box Elder — New Activity — {datetime.now().strftime('%b %d')}"
+    # First sentence of the first (highest-priority) digest
+    import re
+    text = digests[0][1]
+    m = re.search(r'([A-Z][^.!?\n]{20,}[.!?])', text)
+    headline = m.group(1).strip() if m else text[:80].strip()
+    if len(headline) > 90:
+        headline = headline[:87] + "..."
+    return f"{headline} · {datetime.now().strftime('%b %d')}"
+
+
 def send_email(digests, unreachable):
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"Box Elder Prospects — Activity Detected — {datetime.now().strftime('%B %d, %Y')}"
+    msg["Subject"] = _digest_subject(digests)
     msg["From"] = FROM_EMAIL
     msg["To"]   = TO_EMAIL
 

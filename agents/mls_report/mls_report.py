@@ -610,9 +610,9 @@ def save_dashboard_js(rates, city_data, trend_data, tier_data):
 
 # ── EMAIL ────────────────────────────────────────────────────────────────────
 
-def send_email(html):
+def send_email(html, subject):
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"Market Report — {datetime.now().strftime('%B %d, %Y')} — Black Hills, SD"
+    msg["Subject"] = subject
     msg["From"]    = FROM_EMAIL
     msg["To"]      = TO_EMAIL
     msg.attach(MIMEText(html, "html"))
@@ -655,13 +655,24 @@ def main():
 
     save_dashboard_js(rates, city_data, trend_data, tier_data)
 
+    rc = city_data.get("Rapid City", {})
+    zhvi_chg = rc.get("zhvi_change") or 0
+    sign = "+" if zhvi_chg > 0 else ""
+    r30  = rates["30yr"]["rate"]
+    subject = (
+        f"Black Hills Market · 30yr at {r30}% · "
+        f"Rapid City {sign}{zhvi_chg:.1f}% · {datetime.now().strftime('%b %d')}"
+    )
+
     if preview_only:
-        print("\n  PREVIEW MODE — email not sent.")
+        print(f"\n  PREVIEW MODE — email not sent.")
+        print(f"  Subject would be: {subject}")
         print("  Open preview_report.html in your browser to review.")
         print("  To send: python3 mls_report.py --send")
     else:
-        print("\n  Sending email...")
-        send_email(html)
+        print(f"\n  Sending email...")
+        print(f"  Subject: {subject}")
+        send_email(html, subject)
 
     print("\nDone.\n")
 
