@@ -72,22 +72,22 @@
 <main>
   <div class="page-header">
     <div class="breadcrumb"><a href="../index.html">Dashboard</a> / Market Report</div>
-    <div class="agent-badge badge-building">
+    <div class="agent-badge badge-live">
       <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor"/></svg>
-      Setting Up
+      Running
     </div>
     <h1>Market Report Agent</h1>
     <p class="subtitle">Auto-generates a weekly real estate market update every Monday at 6:00 AM — mortgage rates, home values, 6-month trend chart, price tier breakdown, and MLS category detail for the Black Hills region of South Dakota.</p>
   </div>
 
   <div class="status-bar">
-    <div class="stat"><div class="stat-value">72%</div><div class="stat-label">Complete</div></div>
+    <div class="stat"><div class="stat-value" style="color:#34D399;">Live</div><div class="stat-label">Phase 1</div></div>
     <div class="stat"><div class="stat-value">Monday</div><div class="stat-label">Runs Every</div></div>
     <div class="stat"><div class="stat-value">6:00 AM</div><div class="stat-label">Fire Time</div></div>
     <div class="stat"><div class="stat-value">Email</div><div class="stat-label">Output</div></div>
   </div>
-  <div class="progress-row"><span>Build Progress</span><span>72%</span></div>
-  <div class="progress-bar"><div class="progress-fill" style="width:72%"></div></div>
+  <div class="progress-row"><span>Phase 1 — Zillow + FRED + Email</span><span style="color:#34D399;">Complete</span></div>
+  <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
 
   <div class="divider"></div>
 
@@ -172,12 +172,38 @@ Keep language direct and professional. Avoid jargon. Flag notable changes (rate 
   </div>
 
   <div class="section">
-    <div class="section-title">Setup Steps</div>
+    <div class="section-title">Active Components</div>
     <div class="steps">
-      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>FRED API Key</strong> — Paste your key into <code>agents/mls_report/config.py</code> at <code>FRED_API_KEY</code>. Already done.</div></div>
-      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Gmail App Password</strong> — Go to myaccount.google.com → Security → 2-Step Verification → App passwords. Generate a 16-character code and paste into <code>config.py</code> at <code>GMAIL_APP_PASSWORD</code>. <em>Required to send email.</em></div></div>
-      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Scheduler</strong> — Already registered as a macOS background job. Fires every Monday at 6:00 AM automatically. Mac must be awake.</div></div>
-      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Test run</strong> — Open Terminal and run <code>python3 ~/arc-dashboard/agents/mls_report/mls_report.py</code> to generate a preview. Add <code>--send</code> to trigger the email.</div></div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(16,185,129,0.12);border-color:rgba(52,211,153,0.3);color:#34D399;">✓</div>
+        <div class="step-body"><strong>FRED mortgage rates</strong> — 30-yr and 15-yr fixed pulled from the Federal Reserve every run. API key configured in <code>agents/mls_report/config.py</code>.</div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(16,185,129,0.12);border-color:rgba(52,211,153,0.3);color:#34D399;">✓</div>
+        <div class="step-body"><strong>Zillow Research data</strong> — ZHVI home values, median sale price, active inventory, new listings, and % sold above asking for all 8 Black Hills cities. 6-month trend chart and bedroom-count price tiers included.</div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(16,185,129,0.12);border-color:rgba(52,211,153,0.3);color:#34D399;">✓</div>
+        <div class="step-body"><strong>Email delivery</strong> — Formatted HTML report sends to <code>arecblackhills@gmail.com</code> via Gmail. Run <code>python3 agents/mls_report/mls_report.py --send</code> to trigger manually.</div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(16,185,129,0.12);border-color:rgba(52,211,153,0.3);color:#34D399;">✓</div>
+        <div class="step-body"><strong>Scheduler</strong> — Registered as <code>com.arc.mls-report</code> in macOS launchd. Fires automatically every Monday at 6:00 AM — no manual action needed. Mac must be awake.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Phase 2 — Pending</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num" style="background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3);color:#F59E0B;">2</div>
+        <div class="step-body"><strong>Paragon MLS saved-search exports</strong> — Kevin needs to create saved searches inside Black Hills MLS and Mount Rushmore MLS (both on Paragon 5) set to weekly-email their CSV export to <code>arecblackhills@gmail.com</code>. Once those emails arrive, an IMAP parser will read them and populate the Active / Under Contract / Sold counts by price band and property type in the report.</div>
+      </div>
+      <div class="step">
+        <div class="step-num" style="background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3);color:#F59E0B;">2</div>
+        <div class="step-body"><strong>LoopNet commercial alerts</strong> — Set up a saved search on LoopNet → weekly email alert → <code>arecblackhills@gmail.com</code>. The same email-parsing step will pull commercial listing activity into the report's commercial section.</div>
+      </div>
     </div>
   </div>
 </main>
