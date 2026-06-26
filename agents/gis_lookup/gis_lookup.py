@@ -40,7 +40,7 @@ GIS_BASE_URL = "https://gis.pennco.org/arcgis/rest/services/Parcels/MapServer/0/
 # Fallback: South Dakota statewide parcel service (GeoJSON parcels layer)
 SD_STATE_GIS_URL = "https://sdgis.sd.gov/arcgis/rest/services/SD_All/MapServer/0/query"
 
-HEADERS = {"User-Agent": "Mozilla/5.0 (ARC Parcel Lookup — Kevin Andreson)"}
+HEADERS = {"User-Agent": "Mozilla/5.0 (KW Parcel Lookup — Kevin Andreson)"}
 
 # Fields to request from the parcel layer.
 # Standard Pennington County ArcGIS field names — adjust if their schema differs.

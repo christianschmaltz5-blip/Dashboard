@@ -37,7 +37,7 @@ def generate_listing_copy(properties: list[str], extra_message: str) -> list[dic
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
     results = []
     for prop in properties:
-        prompt = f"""You are a commercial real estate marketing copywriter for ARC Real Estate Company / Keller Williams Black Hills in Rapid City, SD.
+        prompt = f"""You are a commercial real estate marketing copywriter for Kevin Andreson at Keller Williams Realty Black Hills in Rapid City, SD.
 
 Write a short, professional marketing blurb for this listing to include in a monthly email newsletter sent to apartment developers, investors, and commercial operators in the Black Hills region.
 
@@ -106,7 +106,7 @@ def build_html(listings: list[dict], extra_message: str) -> str:
   <!-- Header -->
   <tr><td style="background:#0f172a;padding:20px 28px;">
     <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
-      <td style="font-size:11px;font-weight:bold;letter-spacing:0.12em;text-transform:uppercase;color:#94a3b8;">ARC REAL ESTATE COMPANY</td>
+      <td style="font-size:11px;font-weight:bold;letter-spacing:0.12em;text-transform:uppercase;color:#94a3b8;">KELLER WILLIAMS REALTY BLACK HILLS</td>
       <td align="right" style="font-size:11px;color:#475569;letter-spacing:0.04em;">Keller Williams Black Hills</td>
     </tr></table>
   </td></tr>
@@ -140,7 +140,7 @@ def build_html(listings: list[dict], extra_message: str) -> str:
       <td><p style="margin:0;font-size:12px;font-weight:bold;color:#fff;">Kevin Andreson</p>
           <p style="margin:3px 0 0;font-size:11px;color:#64748b;">Keller Williams Realty Black Hills &nbsp;·&nbsp;
           <a href="mailto:arecblackhills@gmail.com" style="color:#60a5fa;text-decoration:none;">arecblackhills@gmail.com</a> &nbsp;·&nbsp; 605-646-5409</p></td>
-      <td align="right"><p style="margin:0;font-size:10px;color:#475569;">ARCREALESTATECOMPANY.COM</p></td>
+      <td align="right"><p style="margin:0;font-size:10px;color:#475569;">KWBLACKHILLS.COM</p></td>
     </tr></table>
     <p style="margin:14px 0 0;font-size:9px;color:#334155;line-height:1.6;">
       You are receiving this as part of our commercial real estate investor network.
@@ -169,7 +169,7 @@ def send(subject: str, html: str, dry_run: bool = False, send_all: bool = False)
         print(f"\n── Preview send ──────────────────")
         msg = MIMEMultipart("alternative")
         msg["Subject"] = f"[PREVIEW] {subject}"
-        msg["From"]    = f"Kevin Andreson — AREC Black Hills <{FROM_EMAIL}>"
+        msg["From"]    = f"Kevin Andreson | Keller Williams Black Hills <{FROM_EMAIL}>"
         msg["To"]      = REPLY_TO
         msg["Reply-To"] = REPLY_TO
         msg.attach(MIMEText(html, "html"))

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Monthly Listing Newsletter — Kevin Andreson</title>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    :root{--bg:#000;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.1);--text:#fff;--muted:rgba(255,255,255,0.5);--dim:rgba(255,255,255,0.25);}
+    body{font-family:'Josefin Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;}
+    nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.8);backdrop-filter:blur(12px);}
+    .nav-back{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;} .nav-back:hover{color:var(--text);}
+    .nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+    .nav-title{font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+    main{max-width:860px;margin:0 auto;padding:3rem 2rem 5rem;}
+    .breadcrumb{font-size:11px;color:var(--dim);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:16px;}
+    .breadcrumb a{color:var(--dim);text-decoration:none;} .breadcrumb a:hover{color:var(--muted);}
+    .agent-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:14px;background:rgba(16,185,129,0.15);color:#34D399;border:1px solid rgba(52,211,153,0.25);}
+    h1{font-size:32px;font-weight:700;letter-spacing:0.02em;margin-bottom:10px;}
+    .subtitle{font-size:15px;color:var(--muted);max-width:600px;line-height:1.7;}
+    .divider{height:1px;background:var(--border);margin:2.5rem 0;}
+    .section{margin-bottom:2.5rem;}
+    .section-title{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--dim);margin-bottom:1rem;display:flex;align-items:center;gap:10px;}
+    .section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+    /* How it works */
+    .flow{display:flex;flex-direction:column;gap:0;}
+    .flow-step{display:flex;gap:20px;align-items:flex-start;padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+    .flow-step:last-child{border-bottom:none;}
+    .flow-num{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;margin-top:1px;}
+    .flow-body{font-size:13px;color:rgba(255,255,255,0.65);line-height:1.7;}
+    .flow-body strong{color:var(--text);}
+    .flow-body code{font-family:monospace;font-size:11px;background:rgba(255,255,255,0.07);padding:2px 6px;border-radius:4px;color:#A78BFA;}
+
+    /* Send notice */
+    .send-notice{background:rgba(245,158,11,0.1);border:1.5px solid rgba(245,158,11,0.45);border-radius:12px;padding:1.5rem 1.75rem;margin-bottom:2.5rem;}
+    .send-notice-header{display:flex;align-items:center;gap:10px;margin-bottom:1rem;}
+    .send-notice-icon{width:32px;height:32px;background:rgba(245,158,11,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .send-notice-title{font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#F59E0B;}
+    .send-table{width:100%;border-collapse:collapse;}
+    .send-table th{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(245,158,11,0.6);padding:0 0 8px 0;text-align:left;}
+    .send-table td{font-size:12px;padding:8px 0;border-top:1px solid rgba(245,158,11,0.12);vertical-align:top;}
+    .send-table td:first-child{width:58%;padding-right:16px;}
+    .send-table code{font-family:monospace;font-size:11px;background:rgba(0,0,0,0.3);padding:3px 8px;border-radius:4px;color:#FCD34D;white-space:nowrap;}
+    .send-table .what{color:rgba(255,255,255,0.55);font-size:12px;line-height:1.5;}
+
+    /* Example box */
+    .example-box{background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:12px;padding:1.5rem 1.75rem;margin-bottom:2rem;}
+    .example-title{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#60A5FA;margin-bottom:12px;}
+    .example-cmd{font-family:monospace;font-size:12px;color:#A78BFA;background:rgba(0,0,0,0.3);border-radius:8px;padding:14px 16px;line-height:1.7;word-break:break-all;}
+    .example-desc{font-size:12px;color:rgba(255,255,255,0.5);margin-top:10px;line-height:1.6;}
+
+    /* AI badge */
+    .ai-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:4px 10px;border-radius:6px;background:rgba(139,92,246,0.15);color:#A78BFA;border:1px solid rgba(139,92,246,0.25);margin-bottom:12px;}
+
+    /* Config grid */
+    .config-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+    .config-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem;}
+    .config-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;}
+    .config-value{font-size:13px;color:var(--text);font-weight:500;} .config-value code{font-family:monospace;font-size:12px;color:#A78BFA;}
+
+    /* Status bar */
+    .status-bar{display:flex;gap:2rem;margin-bottom:2.5rem;}
+    .stat{text-align:center;}
+    .stat-value{font-size:22px;font-weight:700;color:var(--text);}
+    .stat-label{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);margin-top:2px;}
+
+    /* AI notice */
+    .ai-notice{background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.25);border-radius:10px;padding:1.25rem 1.5rem;margin-bottom:2rem;}
+    .ai-notice-title{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#A78BFA;margin-bottom:8px;}
+    .ai-notice-body{font-size:12px;color:rgba(255,255,255,0.5);line-height:1.7;}
+
+    .tip{font-size:11px;color:var(--dim);line-height:1.6;margin-top:1rem;}
+  </style>
+</head>
+<body>
+<nav>
+  <a class="nav-back" href="../index.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back to Dashboard</a>
+  <div class="nav-title">FOR KEVIN ANDRESON</div>
+</nav>
+<main>
+  <div class="breadcrumb"><a href="../index.html">Dashboard</a> / Monthly Listing Newsletter</div>
+  <div class="agent-badge">
+    <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor"/></svg>
+    Live
+  </div>
+  <h1>Monthly Listing Newsletter</h1>
+  <p class="subtitle">You name the properties — the agent writes the copy, builds the email with photos, and sends it to your investor and developer list. Powered by Claude AI.</p>
+
+  <div class="divider"></div>
+
+  <div class="status-bar">
+    <div class="stat"><div class="stat-value">AI</div><div class="stat-label">Copy Writer</div></div>
+    <div class="stat"><div class="stat-value">32</div><div class="stat-label">Recipients</div></div>
+    <div class="stat"><div class="stat-value">Monthly</div><div class="stat-label">Cadence</div></div>
+    <div class="stat"><div class="stat-value">Email</div><div class="stat-label">Channel</div></div>
+  </div>
+
+  <!-- How it works -->
+  <div class="section">
+    <div class="section-title">How It Works</div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-body"><strong>You provide the property addresses</strong> — just paste them comma-separated on the command line. Add an optional intro message for context this month.</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-body"><strong>Claude writes the copy</strong> — for each property it generates a punchy headline, 2–3 sentence investment description, and a call-to-action. Professional commercial real estate tone, focused on what developers and investors care about.</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-body"><strong>Preview sent to you first</strong> — the email always goes to <code>arecblackhills@gmail.com</code> with a [PREVIEW] tag. Review it in Gmail before it goes to anyone else.</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-body"><strong>Add <code>--send-all</code> when ready</strong> — delivers to all 32 investors and developers on the list.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI info -->
+  <div class="ai-notice">
+    <div class="ai-notice-title">Claude AI — Copy Generation</div>
+    <div class="ai-notice-body">
+      The agent calls the Anthropic API (Claude claude-sonnet-4-6) to write marketing copy for each property you list.
+      You need to set the <code>ANTHROPIC_API_KEY</code> environment variable before running:<br/><br/>
+      <code style="font-family:monospace;font-size:11px;color:#A78BFA;">export ANTHROPIC_API_KEY="your-key-here"</code><br/><br/>
+      If the key is not set, the agent falls back to plain property addresses in the email (no AI copy).
+      Get your key at <strong>console.anthropic.com</strong>.
+    </div>
+  </div>
+
+  <!-- Send Instructions -->
+  <div class="send-notice">
+    <div class="send-notice-header">
+      <div class="send-notice-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </div>
+      <div>
+        <div class="send-notice-title">How to Send</div>
+        <div style="font-size:11px;color:rgba(245,158,11,0.6);margin-top:2px;">Run from: <code style="font-family:monospace;font-size:10px;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:3px;color:#FCD34D;">~/arc-dashboard/agents/listing_newsletter/</code></div>
+      </div>
+    </div>
+    <table class="send-table">
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>What happens</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>python3 generate_newsletter.py --properties "addr1, addr2" --dry-run</code></td>
+          <td class="what">No emails — saves <strong style="color:#FCD34D;">preview_listing_newsletter.html</strong> you can open in your browser to review the full layout</td>
+        </tr>
+        <tr>
+          <td><code>python3 generate_newsletter.py --properties "addr1, addr2"</code></td>
+          <td class="what">Sends <strong style="color:#FCD34D;">only to arecblackhills@gmail.com</strong> with [PREVIEW] tag — check it in Gmail before sending to the list</td>
+        </tr>
+        <tr>
+          <td><code>python3 generate_newsletter.py --properties "addr1, addr2" --send-all</code></td>
+          <td class="what">Preview to Kevin first, then delivers to <strong style="color:#FCD34D;">all 32 recipients</strong></td>
+        </tr>
+        <tr>
+          <td><code>python3 generate_newsletter.py --properties "..." --message "..." --send-all</code></td>
+          <td class="what">Adds a custom intro paragraph at the top of the email before the property listings</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Real example -->
+  <div class="section">
+    <div class="section-title">Example — This Month</div>
+    <div class="example-box">
+      <div class="example-title">Sample Command</div>
+      <div class="example-cmd">python3 generate_newsletter.py \<br/>
+  --properties "Highway 1416 Box Elder SD 24.75 acres commercial, 123 Tower Rd Rapid City SD multifamily site" \<br/>
+  --message "Strong buyer demand heading into Q3. Ellsworth corridor continues to attract institutional capital." \<br/>
+  --subject "Black Hills Commercial — July 2026 Featured Listings"</div>
+      <div class="example-desc">This runs Claude on each property address, generates a headline + 2–3 sentence pitch + CTA for each, and assembles a single branded email. Add <code>--dry-run</code> to preview first, <code>--send-all</code> when ready to send.</div>
+    </div>
+
+    <div class="example-box" style="border-color:rgba(52,211,153,0.2);background:rgba(16,185,129,0.06);">
+      <div class="example-title" style="color:#34D399;">Dry Run — See It Before Sending</div>
+      <div class="example-cmd" style="color:#34D399;">python3 generate_newsletter.py \<br/>
+  --properties "Highway 1416 Box Elder SD" \<br/>
+  --dry-run</div>
+      <div class="example-desc">Saves <code>preview_listing_newsletter.html</code> in the same folder. Open it in any browser — shows the exact email layout with AI-generated copy. No emails sent.</div>
+    </div>
+  </div>
+
+  <!-- Config -->
+  <div class="section">
+    <div class="section-title">Configuration</div>
+    <div class="config-grid">
+      <div class="config-item"><div class="config-label">Send From</div><div class="config-value"><code>arecblackhills@gmail.com</code></div></div>
+      <div class="config-item"><div class="config-label">Preview To</div><div class="config-value"><code>arecblackhills@gmail.com</code></div></div>
+      <div class="config-item"><div class="config-label">AI Model</div><div class="config-value">Claude claude-sonnet-4-6</div></div>
+      <div class="config-item"><div class="config-label">Recipients</div><div class="config-value">Shared with Hwy 1416 list — 32 contacts</div></div>
+    </div>
+    <p class="tip">Recipients, email credentials, and the Anthropic API key are all stored in <code style="font-family:monospace;font-size:11px;background:rgba(255,255,255,0.07);padding:2px 6px;border-radius:4px;color:#A78BFA;">agents/hwy1416_newsletter/config.py</code> (gitignored — never committed).</p>
+  </div>
+
+  <!-- Setup steps -->
+  <div class="section">
+    <div class="section-title">One-Time Setup</div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-body"><strong>Get an Anthropic API key</strong> — go to <code>console.anthropic.com</code>, create an account, and copy your API key. Add it to your shell: <code>export ANTHROPIC_API_KEY="sk-ant-..."</code></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-body"><strong>Install dependencies (one time)</strong> — <code>pip3 install anthropic</code></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-body"><strong>Test with dry run</strong> — run the sample command above with <code>--dry-run</code>, open the preview HTML, confirm it looks right.</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-body"><strong>Send to yourself first</strong> — run without <code>--send-all</code> to get the preview email at <code>arecblackhills@gmail.com</code>, review in Gmail, then add <code>--send-all</code> to go live.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+<script src="../js/search.js"></script>
+</body>
+</html>

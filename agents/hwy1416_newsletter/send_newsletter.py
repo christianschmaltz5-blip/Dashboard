@@ -120,7 +120,7 @@ def build_html(message: str) -> str:
       <td style="background:#0f172a;padding:14px 28px;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
           <tr>
-            <td style="font-size:11px;font-weight:bold;letter-spacing:0.12em;text-transform:uppercase;color:#94a3b8;">ARECBLACKHILLS.COM</td>
+            <td style="font-size:11px;font-weight:bold;letter-spacing:0.12em;text-transform:uppercase;color:#94a3b8;">KELLER WILLIAMS REALTY BLACK HILLS</td>
             <td align="right" style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#475569;">Keller Williams Realty Black Hills</td>
           </tr>
         </table>
@@ -221,7 +221,7 @@ def build_html(message: str) -> str:
             </td>
             <td align="right">
               <p style="margin:0;font-size:11px;color:#475569;">Rapid City &amp; Black Hills, SD</p>
-              <p style="margin:4px 0 0 0;font-size:11px;color:#334155;"><a href="https://christianschmaltz5-blip.github.io/Dashboard/" style="color:#475569;text-decoration:none;">arecblackhills.com</a></p>
+              <p style="margin:4px 0 0 0;font-size:11px;color:#334155;"><a href="https://christianschmaltz5-blip.github.io/Dashboard/" style="color:#475569;text-decoration:none;">kwblackhills.com</a></p>
             </td>
           </tr>
         </table>
@@ -316,7 +316,7 @@ def build_pdf(message: str) -> bytes | None:
         logo_text_y = hd_y + 38
         c.line(logo_text_x, logo_text_y + 11, logo_text_x + 185, logo_text_y + 11)
 
-        text("ARC REAL ESTATE", logo_text_x, logo_text_y, "Helvetica-Bold", 14, BLACK)
+        text("KEVIN ANDRESON", logo_text_x, logo_text_y, "Helvetica-Bold", 14, BLACK)
 
         c.setLineWidth(0.8)
         c.line(logo_text_x, logo_text_y - 3, logo_text_x + 185, logo_text_y - 3)
@@ -491,12 +491,12 @@ def build_pdf(message: str) -> bytes | None:
         c.setFont("Helvetica-Bold", 14)
         c.drawCentredString(W * 0.5, ft_y + FT_H / 2 - 5, "w")
         c.setFont("Helvetica-Bold", 13)
-        c.drawCentredString(W * 0.62, ft_y + FT_H / 2 - 4, "ARCREALESTATECOMPANY.COM")
+        c.drawCentredString(W * 0.62, ft_y + FT_H / 2 - 4, "KWBLACKHILLS.COM")
 
         # QR Code
         try:
             qr = _qrcode.QRCode(box_size=3, border=1)
-            qr.add_data("https://arcrealestatecompany.com")
+            qr.add_data("https://kwblackhills.com")
             qr.make(fit=True)
             qr_img = qr.make_image(fill_color="black", back_color="white")
             qr_buf = io.BytesIO()
@@ -527,7 +527,7 @@ def build_pdf(message: str) -> bytes | None:
 def _send_one(smtp, subject: str, html: str, to: str, pdf_bytes: bytes | None = None):
     outer = MIMEMultipart("mixed")
     outer["Subject"] = subject
-    outer["From"]    = f"Kevin Andreson — AREC Black Hills <{FROM_EMAIL}>"
+    outer["From"]    = f"Kevin Andreson | Keller Williams Black Hills <{FROM_EMAIL}>"
     outer["To"]      = to
     outer["Reply-To"] = REPLY_TO
 

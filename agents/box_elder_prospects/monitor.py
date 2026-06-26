@@ -46,7 +46,7 @@ LINK_KEYWORDS = ("agenda", "packet", "minutes", ".pdf")
 
 
 def fetch(url):
-    r = requests.get(url, headers={"User-Agent": "Mozilla/5.0 (ARC Box Elder Prospects monitor)"}, timeout=20)
+    r = requests.get(url, headers={"User-Agent": "Mozilla/5.0 (KW Box Elder Prospects monitor)"}, timeout=20)
     r.raise_for_status()
     return r
 
