@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Highway 1416 — Modern Minimalist</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+@page{size:11in 8.5in landscape;margin:0;}
+@media print{
+  .no-print{display:none!important;}
+  body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+}
+body{font-family:'Arial',sans-serif;background:#ccc;}
+.page{
+  width:1100px;height:850px;display:flex;
+  flex-direction:row;background:#fff;
+  margin:0 auto;overflow:hidden;
+}
+@media print{body{background:none;}.page{width:100%;height:100%;margin:0;}}
+
+/* ── LEFT SIDEBAR ──────────────────────────────── */
+.sidebar{
+  flex:0 0 400px;
+  background:#0A2342;
+  display:flex;flex-direction:column;
+  padding:36px 32px;
+  position:relative;overflow:hidden;
+}
+.sidebar::after{
+  content:'';position:absolute;bottom:-60px;right:-60px;
+  width:200px;height:200px;border-radius:50%;
+  background:rgba(255,255,255,0.04);
+}
+.sb-tag{
+  font-size:10px;font-weight:700;letter-spacing:0.18em;
+  text-transform:uppercase;color:#60A5FA;margin-bottom:12px;
+}
+.sb-type{
+  font-size:36px;font-weight:900;color:#fff;line-height:1.05;
+  letter-spacing:-0.01em;margin-bottom:4px;
+}
+.sb-type .red{color:#E53E3E;}
+.sb-location{
+  font-size:11px;color:#94A3B8;letter-spacing:0.08em;
+  text-transform:uppercase;margin-bottom:28px;
+  padding-bottom:28px;border-bottom:1px solid rgba(255,255,255,0.12);
+}
+
+.price-block{margin-bottom:28px;}
+.price-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#64748B;margin-bottom:4px;}
+.price-value{font-size:38px;font-weight:900;color:#fff;letter-spacing:-0.02em;}
+
+.specs-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:16px;
+  margin-bottom:28px;padding-bottom:28px;
+  border-bottom:1px solid rgba(255,255,255,0.12);
+}
+.spec-item{}
+.spec-label{font-size:8px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#64748B;margin-bottom:3px;}
+.spec-value{font-size:16px;font-weight:900;color:#fff;}
+
+.highlights{margin-bottom:auto;}
+.hl-title{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#64748B;margin-bottom:10px;}
+.hl-item{
+  display:flex;align-items:flex-start;gap:8px;
+  font-size:10px;color:#CBD5E1;line-height:1.5;margin-bottom:7px;
+}
+.hl-dot{width:5px;height:5px;border-radius:50%;background:#3B82F6;flex-shrink:0;margin-top:4px;}
+
+.agent-card{
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
+  border-radius:8px;padding:14px 16px;margin-top:20px;
+}
+.agent-name{font-size:15px;font-weight:900;color:#fff;letter-spacing:0.02em;}
+.agent-co{font-size:8px;color:#94A3B8;letter-spacing:0.08em;text-transform:uppercase;margin-top:2px;}
+.agent-details{display:flex;gap:16px;margin-top:8px;}
+.agent-detail{font-size:9px;color:#CBD5E1;}
+.agent-detail span{color:#60A5FA;font-weight:700;}
+
+/* ── RIGHT PHOTO AREA ──────────────────────────── */
+.photo-area{
+  flex:1;display:flex;flex-direction:column;
+  position:relative;
+}
+.hero-img{
+  flex:0 0 520px;position:relative;overflow:hidden;
+}
+.hero-img img{width:100%;height:100%;object-fit:cover;display:block;}
+.hero-overlay{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(transparent,rgba(10,35,66,0.8));
+  padding:24px;
+}
+.hero-address{font-size:13px;font-weight:700;color:#fff;letter-spacing:0.06em;text-transform:uppercase;}
+.hero-coord{font-size:10px;color:rgba(255,255,255,0.6);margin-top:2px;}
+
+.photo-grid{
+  flex:1;display:grid;grid-template-columns:repeat(5,1fr);gap:3px;
+  background:#0A2342;
+}
+.photo-grid img{width:100%;height:100%;object-fit:cover;display:block;}
+
+/* ── TOP ACCENT BAR ───────────────────────────── */
+.accent-bar{
+  position:absolute;top:0;left:400px;right:0;height:5px;
+  background:linear-gradient(90deg,#0066CC,#E53E3E);z-index:10;
+}
+
+/* ── PRINT BUTTON ─────────────────────────────── */
+.print-btn{
+  position:fixed;bottom:28px;right:28px;
+  background:#0A2342;color:#fff;border:none;
+  padding:14px 28px;font-size:14px;font-weight:700;
+  letter-spacing:0.06em;cursor:pointer;border-radius:6px;
+  box-shadow:0 4px 16px rgba(0,0,0,0.3);z-index:999;
+  text-transform:uppercase;
+}
+.print-btn:hover{background:#0066CC;}
+</style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">⬇ Save as PDF</button>
+
+<div class="page">
+  <div class="accent-bar"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-tag">Investment Opportunity · Box Elder, SD</div>
+    <div class="sb-type">COMMERCIAL<br>LAND FOR<br><span class="red">SALE</span></div>
+    <div class="sb-location">Highway 1416 &nbsp;·&nbsp; Box Elder, SD 57719</div>
+
+    <div class="price-block">
+      <div class="price-label">Asking Price</div>
+      <div class="price-value">$3,750,000</div>
+    </div>
+
+    <div class="specs-grid">
+      <div class="spec-item"><div class="spec-label">Total Acreage</div><div class="spec-value">24.75 AC</div></div>
+      <div class="spec-item"><div class="spec-label">Zoning</div><div class="spec-value">C-2</div></div>
+      <div class="spec-item"><div class="spec-label">Price / Acre</div><div class="spec-value">$151,515</div></div>
+      <div class="spec-item"><div class="spec-label">Frontage</div><div class="spec-value">Hwy 1416</div></div>
+    </div>
+
+    <div class="highlights">
+      <div class="hl-title">Property Highlights</div>
+      <div class="hl-item"><div class="hl-dot"></div>Direct Highway 1416 frontage with high daily traffic count</div>
+      <div class="hl-item"><div class="hl-dot"></div>Minutes from Ellsworth Air Force Base expansion</div>
+      <div class="hl-item"><div class="hl-dot"></div>All utilities to site: gas, electric, water, sewer</div>
+      <div class="hl-item"><div class="hl-dot"></div>Ideal for retail, hospitality, or mixed-use development</div>
+      <div class="hl-item"><div class="hl-dot"></div>One of South Dakota's fastest-growing corridors</div>
+    </div>
+
+    <div class="agent-card">
+      <div class="agent-name">Kevin Andreson</div>
+      <div class="agent-co">ARC Real Estate Company · Keller Williams Black Hills</div>
+      <div class="agent-details">
+        <div class="agent-detail"><span>605-646-5409</span></div>
+        <div class="agent-detail"><span>arecblackhills@gmail.com</span></div>
+      </div>
+      <div style="margin-top:6px;font-size:8px;color:#475569;letter-spacing:0.04em;">ARCREALESTATECOMPANY.COM</div>
+    </div>
+  </div>
+
+  <!-- PHOTO AREA -->
+  <div class="photo-area">
+    <div class="hero-img">
+      <img src="https://images1.loopnet.com/i2/QGILchjqaRVCkLbafYze9QdMfuROFsVnu1AQ616h_KE/116/Highway-1416-Box-Elder-SD-Primary-Photo-1-LargeHighDefinition.png" alt="Aerial"/>
+      <div class="hero-overlay">
+        <div class="hero-address">Highway 1416, Box Elder, South Dakota</div>
+        <div class="hero-coord">Near Ellsworth AFB · Major Commercial Corridor</div>
+      </div>
+    </div>
+    <div class="photo-grid">
+      <img src="https://images1.loopnet.com/i2/28Vs7Jzi7XQFFHQ3sn6WydrFK3Pf0B8NEp338LX3Rsc/116/Highway-1416-Box-Elder-SD-Building-Photo-2-LargeHighDefinition.png" alt=""/>
+      <img src="https://images1.loopnet.com/i2/BkWayRvOg1L2SC1nvGsVXPmHFzbD9_qdHCWfa4fiquM/116/Highway-1416-Box-Elder-SD-Building-Photo-3-LargeHighDefinition.jpg" alt=""/>
+      <img src="https://images1.loopnet.com/i2/WO6DjGRPB0XgVIxIE82FbIVhHY_OnpSc7Q2tg3FpZ0M/116/Highway-1416-Box-Elder-SD-Building-Photo-4-LargeHighDefinition.jpg" alt=""/>
+      <img src="https://images1.loopnet.com/i2/KjFxxHAYpIOiUpkXKKhLNfhzhHw3qIziueht35_Fh2U/116/Highway-1416-Box-Elder-SD-Building-Photo-5-LargeHighDefinition.jpg" alt=""/>
+      <img src="https://images1.loopnet.com/i2/mMaKnCff4F3QSIofyudastA7AdLVFHTIn2ftqOOjYnk/116/Highway-1416-Box-Elder-SD-Building-Photo-6-LargeHighDefinition.png" alt=""/>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
