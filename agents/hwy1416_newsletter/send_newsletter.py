@@ -8,8 +8,12 @@ Usage:
   python3 send_newsletter.py --send-all               # preview to Kevin FIRST, then full 32-person list
 """
 import argparse
+import base64
+import io
 import smtplib
+import ssl
 import time
+import urllib.request
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
@@ -17,11 +21,48 @@ from email import encoders
 from datetime import datetime
 
 try:
-    import io
-    from xhtml2pdf import pisa
+    import requests as _requests
+    from PIL import Image as _PILImage
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib.units import inch
+    from reportlab.lib.colors import HexColor
+    from reportlab.platypus import (
+        SimpleDocTemplate, Paragraph, Spacer, Image as RLImage,
+        Table, TableStyle, HRFlowable,
+    )
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT
     PDF_ENABLED = True
 except ImportError:
     PDF_ENABLED = False
+
+
+IMAGES_DIR = "images"  # local folder: agents/hwy1416_newsletter/images/
+
+# Map LoopNet URLs → local filenames (drop the long hash prefix)
+LOCAL_PHOTOS = [
+    f"{IMAGES_DIR}/photo1.png",
+    f"{IMAGES_DIR}/photo2.png",
+    f"{IMAGES_DIR}/photo3.jpg",
+    f"{IMAGES_DIR}/photo4.jpg",
+    f"{IMAGES_DIR}/photo5.jpg",
+    f"{IMAGES_DIR}/photo6.png",
+]
+
+
+def _fetch_image(url: str, local_path: str | None = None) -> io.BytesIO | None:
+    import os
+    # Try local file first
+    if local_path and os.path.exists(local_path):
+        with open(local_path, "rb") as f:
+            return io.BytesIO(f.read())
+    # Fall back to network (may be blocked by hotlink protection)
+    try:
+        r = _requests.get(url, timeout=12, verify=False, headers={"User-Agent": "Mozilla/5.0"})
+        r.raise_for_status()
+        return io.BytesIO(r.content)
+    except Exception:
+        return None
 
 from config import FROM_EMAIL, REPLY_TO, GMAIL_APP_PASSWORD, RECIPIENTS, SUBJECT_PREFIX
 
@@ -200,15 +241,180 @@ def build_html(message: str) -> str:
 </html>"""
 
 
-def build_pdf(html: str) -> bytes | None:
+def build_pdf(message: str) -> bytes | None:
     if not PDF_ENABLED:
         return None
+    import warnings
+    warnings.filterwarnings("ignore")  # suppress requests SSL warnings
     try:
         buf = io.BytesIO()
-        status = pisa.CreatePDF(html, dest=buf)
-        if status.err:
-            print(f"  [warn] PDF had {status.err} error(s)")
-        return buf.getvalue() if not status.err else None
+        doc = SimpleDocTemplate(
+            buf, pagesize=letter,
+            leftMargin=0.65*inch, rightMargin=0.65*inch,
+            topMargin=0.6*inch, bottomMargin=0.6*inch,
+        )
+        W = letter[0] - 1.3*inch  # usable width
+
+        # ── Colors ───────────────────────────────────────────────────────────
+        DARK   = HexColor("#0f172a")
+        BLUE   = HexColor("#2563eb")
+        MUTED  = HexColor("#64748b")
+        BODY   = HexColor("#334155")
+
+        styles = getSampleStyleSheet()
+        def style(name, **kw):
+            return ParagraphStyle(name, parent=styles["Normal"], **kw)
+
+        tag_style   = style("tag",   fontSize=8,  textColor=HexColor("#60a5fa"), spaceAfter=2)
+        h1_style    = style("h1",    fontSize=22, textColor=HexColor("#ffffff"), leading=26, spaceAfter=4)
+        sub_style   = style("sub",   fontSize=10, textColor=HexColor("#94a3b8"), spaceAfter=0)
+        body_style  = style("body",  fontSize=10, textColor=BODY, leading=16, spaceAfter=10)
+        label_style = style("lbl",   fontSize=7,  textColor=MUTED, alignment=TA_CENTER, spaceAfter=0)
+        val_style   = style("val",   fontSize=16, textColor=HexColor("#ffffff"), alignment=TA_CENTER, spaceAfter=2)
+        hl_style    = style("hl",    fontSize=9,  textColor=BODY, leading=14, spaceAfter=4)
+        foot_style  = style("foot",  fontSize=8,  textColor=MUTED, spaceAfter=0)
+
+        story = []
+        month = datetime.now().strftime("%B %Y")
+
+        # ── Header band (dark bg via table) ──────────────────────────────────
+        header_data = [[
+            Paragraph("ARECBLACKHILLS.COM — KELLER WILLIAMS REALTY BLACK HILLS",
+                      style("hdr", fontSize=7, textColor=HexColor("#94a3b8"), alignment=TA_CENTER))
+        ]]
+        header_tbl = Table(header_data, colWidths=[W])
+        header_tbl.setStyle(TableStyle([
+            ("BACKGROUND", (0,0), (-1,-1), DARK),
+            ("TOPPADDING",    (0,0), (-1,-1), 8),
+            ("BOTTOMPADDING", (0,0), (-1,-1), 8),
+            ("LEFTPADDING",   (0,0), (-1,-1), 10),
+            ("RIGHTPADDING",  (0,0), (-1,-1), 10),
+        ]))
+        story.append(header_tbl)
+        story.append(Spacer(1, 6))
+
+        # ── Hero image ────────────────────────────────────────────────────────
+        print("  Loading photos for PDF...")
+        hero_buf = _fetch_image(PHOTOS[0], LOCAL_PHOTOS[0])
+        if hero_buf:
+            img = RLImage(hero_buf, width=W, height=3.0*inch)
+            img.hAlign = "CENTER"
+            story.append(img)
+            story.append(Spacer(1, 0))
+
+        # ── Title band ────────────────────────────────────────────────────────
+        title_data = [[
+            Paragraph(f"{month} Update", tag_style),
+            ""
+        ], [
+            Paragraph("Highway 1416, Box Elder", h1_style),
+            ""
+        ], [
+            Paragraph("Box Elder, SD 57719 &nbsp;·&nbsp; Commercial Land", sub_style),
+            ""
+        ]]
+        title_tbl = Table(title_data, colWidths=[W, 0])
+        title_tbl.setStyle(TableStyle([
+            ("BACKGROUND",    (0,0), (-1,-1), DARK),
+            ("TOPPADDING",    (0,0), (-1,-1), 3),
+            ("BOTTOMPADDING", (0,0), (-1,-1), 3),
+            ("LEFTPADDING",   (0,0), (-1,-1), 12),
+            ("RIGHTPADDING",  (0,0), (-1,-1), 12),
+        ]))
+        story.append(title_tbl)
+        story.append(Spacer(1, 6))
+
+        # ── Stats bar ─────────────────────────────────────────────────────────
+        stats = [
+            ("24.75", "ACRES"),
+            ("$3.75M", "ASKING PRICE"),
+            ("HWY", "FRONTAGE"),
+            ("C-2", "ZONING"),
+        ]
+        stats_cells = [[Paragraph(v, val_style), Paragraph(l, label_style)] for v, l in stats]
+        stats_row = [[cell for pair in stats_cells for cell in pair]]  # flatten
+        # Build as 4-col table with val+label stacked
+        stat_rows = [
+            [Paragraph(v, val_style) for v, _ in stats],
+            [Paragraph(l, label_style) for _, l in stats],
+        ]
+        stats_tbl = Table(stat_rows, colWidths=[W/4]*4)
+        stats_tbl.setStyle(TableStyle([
+            ("BACKGROUND",    (0,0), (-1,-1), HexColor("#1e293b")),
+            ("TOPPADDING",    (0,0), (-1,-1), 8),
+            ("BOTTOMPADDING", (0,0), (-1,-1), 8),
+            ("LINEBEFORE",    (1,0), (3,-1), 0.5, HexColor("#334155")),
+        ]))
+        story.append(stats_tbl)
+        story.append(Spacer(1, 12))
+
+        # ── Body copy ─────────────────────────────────────────────────────────
+        for para in message.strip().split("\n\n"):
+            if para.strip():
+                story.append(Paragraph(para.strip(), body_style))
+        story.append(Spacer(1, 8))
+
+        # ── Photo grid (2 columns) ────────────────────────────────────────────
+        grid_photos = list(zip(PHOTOS[1:], LOCAL_PHOTOS[1:]))
+        grid_imgs = []
+        for url, local in grid_photos:
+            img_buf = _fetch_image(url, local)
+            if img_buf:
+                grid_imgs.append(RLImage(img_buf, width=(W/2)-4, height=1.6*inch))
+            else:
+                grid_imgs.append(Spacer((W/2)-4, 1.6*inch))
+
+        for i in range(0, len(grid_imgs), 2):
+            row = [grid_imgs[i], grid_imgs[i+1] if i+1 < len(grid_imgs) else ""]
+            tbl = Table([row], colWidths=[W/2, W/2])
+            tbl.setStyle(TableStyle([
+                ("LEFTPADDING",   (0,0), (-1,-1), 0),
+                ("RIGHTPADDING",  (0,0), (-1,-1), 0),
+                ("TOPPADDING",    (0,0), (-1,-1), 4),
+                ("BOTTOMPADDING", (0,0), (-1,-1), 0),
+            ]))
+            story.append(tbl)
+        story.append(Spacer(1, 12))
+
+        # ── Highlights ────────────────────────────────────────────────────────
+        highlights = [
+            "Direct Highway 1416 frontage with high daily traffic count",
+            "Minutes from Ellsworth Air Force Base",
+            "Utilities available at site",
+            "Ideal for retail, hospitality, or mixed-use development",
+            "One of the fastest-growing markets in South Dakota",
+        ]
+        hl_items = [[Paragraph(f"✓  {h}", hl_style)] for h in highlights]
+        hl_tbl = Table(hl_items, colWidths=[W])
+        hl_tbl.setStyle(TableStyle([
+            ("BACKGROUND",    (0,0), (-1,-1), HexColor("#f8fafc")),
+            ("TOPPADDING",    (0,0), (-1,-1), 4),
+            ("BOTTOMPADDING", (0,0), (-1,-1), 4),
+            ("LEFTPADDING",   (0,0), (-1,-1), 12),
+            ("RIGHTPADDING",  (0,0), (-1,-1), 12),
+            ("LINEBELOW",     (0,0), (-1,-2), 0.3, HexColor("#e2e8f0")),
+        ]))
+        story.append(hl_tbl)
+        story.append(Spacer(1, 16))
+        story.append(HRFlowable(width=W, thickness=0.5, color=HexColor("#e2e8f0")))
+        story.append(Spacer(1, 8))
+
+        # ── Footer ────────────────────────────────────────────────────────────
+        story.append(Paragraph(
+            "Kevin Andreson &nbsp;·&nbsp; Keller Williams Realty Black Hills &nbsp;·&nbsp; arecblackhills@gmail.com",
+            foot_style
+        ))
+        story.append(Spacer(1, 4))
+        story.append(Paragraph(
+            "To unsubscribe, reply with \"unsubscribe\" in the subject line.",
+            style("unsub", fontSize=7, textColor=HexColor("#94a3b8"))
+        ))
+
+        doc.build(story)
+        kb = len(buf.getvalue()) // 1024
+        print(f"  PDF ready: {kb}kb")
+        return buf.getvalue()
+
     except Exception as e:
         print(f"  [warn] PDF generation failed: {e}")
         return None
@@ -238,7 +444,7 @@ def _send_one(smtp, subject: str, html: str, to: str, pdf_bytes: bytes | None = 
     smtp.sendmail(FROM_EMAIL, to, outer.as_string())
 
 
-def send(subject: str, html: str, dry_run: bool = False, send_all: bool = False):
+def send(subject: str, html: str, message: str, dry_run: bool = False, send_all: bool = False):
     if dry_run:
         print(f"\nDRY RUN — Subject: {subject}")
         print(f"Would send preview to: {REPLY_TO}")
@@ -248,18 +454,16 @@ def send(subject: str, html: str, dry_run: bool = False, send_all: bool = False)
         with open("preview_newsletter.html", "w") as f:
             f.write(html)
         if not PDF_ENABLED:
-            print("PDF: xhtml2pdf not installed — run: pip3 install xhtml2pdf")
+            print("PDF: reportlab/requests not installed — run: pip3 install reportlab Pillow requests")
         return
 
     # Generate PDF once, reuse for all sends
     pdf_bytes = None
     if PDF_ENABLED:
         print("Generating PDF attachment...")
-        pdf_bytes = build_pdf(html)
-        if pdf_bytes:
-            print(f"  ✓ PDF ready ({len(pdf_bytes)//1024}kb)")
+        pdf_bytes = build_pdf(message)
     else:
-        print("  [info] xhtml2pdf not installed — sending without PDF. Run: pip3 install xhtml2pdf")
+        print("  [info] reportlab not installed — sending without PDF. Run: pip3 install reportlab Pillow requests")
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
         smtp.login(FROM_EMAIL, GMAIL_APP_PASSWORD)
@@ -311,7 +515,7 @@ def main():
     message = args.message.replace("\\n\\n", "\n\n") if args.message else DEFAULT_MESSAGE
 
     html = build_html(message)
-    send(subject, html, dry_run=args.dry_run, send_all=args.send_all)
+    send(subject, html, message, dry_run=args.dry_run, send_all=args.send_all)
 
 
 if __name__ == "__main__":

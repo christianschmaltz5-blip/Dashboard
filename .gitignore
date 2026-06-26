@@ -9,6 +9,7 @@ agents/zoning_monitor/state.json
 agents/zoning_monitor/__pycache__/
 agents/hwy1416_newsletter/config.py
 agents/hwy1416_newsletter/preview_newsletter.html
+agents/hwy1416_newsletter/images/
 agents/hwy1416_newsletter/__pycache__/
 preview_report.html
 .claude-flow/
