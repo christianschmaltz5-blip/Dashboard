@@ -22,16 +22,12 @@ from datetime import datetime
 
 try:
     import requests as _requests
-    from PIL import Image as _PILImage
-    from reportlab.lib.pagesizes import letter
+    from reportlab.pdfgen import canvas as _rl_canvas
+    from reportlab.lib.pagesizes import landscape, letter
     from reportlab.lib.units import inch
-    from reportlab.lib.colors import HexColor
-    from reportlab.platypus import (
-        SimpleDocTemplate, Paragraph, Spacer, Image as RLImage,
-        Table, TableStyle, HRFlowable,
-    )
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.enums import TA_CENTER, TA_LEFT
+    from reportlab.lib.colors import HexColor, white, black, Color
+    from reportlab.lib.utils import ImageReader
+    import qrcode as _qrcode
     PDF_ENABLED = True
 except ImportError:
     PDF_ENABLED = False
@@ -46,7 +42,7 @@ LOCAL_PHOTOS = [
     f"{IMAGES_DIR}/photo3.jpg",
     f"{IMAGES_DIR}/photo4.jpg",
     f"{IMAGES_DIR}/photo5.jpg",
-    f"{IMAGES_DIR}/photo6.png",
+    f"{IMAGES_DIR}/photo6.jpg",
 ]
 
 
@@ -244,179 +240,287 @@ def build_html(message: str) -> str:
 def build_pdf(message: str) -> bytes | None:
     if not PDF_ENABLED:
         return None
-    import warnings
-    warnings.filterwarnings("ignore")  # suppress requests SSL warnings
+    import warnings, os
+    warnings.filterwarnings("ignore")
+
     try:
         buf = io.BytesIO()
-        doc = SimpleDocTemplate(
-            buf, pagesize=letter,
-            leftMargin=0.65*inch, rightMargin=0.65*inch,
-            topMargin=0.6*inch, bottomMargin=0.6*inch,
-        )
-        W = letter[0] - 1.3*inch  # usable width
+        W, H = landscape(letter)   # 792 x 612 pt
+        c = _rl_canvas.Canvas(buf, pagesize=(W, H))
 
-        # ── Colors ───────────────────────────────────────────────────────────
-        DARK   = HexColor("#0f172a")
-        BLUE   = HexColor("#2563eb")
-        MUTED  = HexColor("#64748b")
-        BODY   = HexColor("#334155")
+        # ── Colors ────────────────────────────────────────────────────────────
+        RED    = HexColor("#8B1A1A")
+        BLACK  = HexColor("#1C1C1C")
+        LGRAY  = HexColor("#E4E4E4")
+        WHITE  = white
 
-        styles = getSampleStyleSheet()
-        def style(name, **kw):
-            return ParagraphStyle(name, parent=styles["Normal"], **kw)
+        # ── Section heights (bottom → top) ────────────────────────────────────
+        FT_H   = 72    # footer
+        FE_H   = 62    # features
+        UT_H   = 82    # utilities
+        HR_H   = 196   # hero
+        HD_H   = H - FT_H - FE_H - UT_H - HR_H   # header (~200)
 
-        tag_style   = style("tag",   fontSize=8,  textColor=HexColor("#60a5fa"), spaceAfter=2)
-        h1_style    = style("h1",    fontSize=22, textColor=HexColor("#ffffff"), leading=26, spaceAfter=4)
-        sub_style   = style("sub",   fontSize=10, textColor=HexColor("#94a3b8"), spaceAfter=0)
-        body_style  = style("body",  fontSize=10, textColor=BODY, leading=16, spaceAfter=10)
-        label_style = style("lbl",   fontSize=7,  textColor=MUTED, alignment=TA_CENTER, spaceAfter=0)
-        val_style   = style("val",   fontSize=16, textColor=HexColor("#ffffff"), alignment=TA_CENTER, spaceAfter=2)
-        hl_style    = style("hl",    fontSize=9,  textColor=BODY, leading=14, spaceAfter=4)
-        foot_style  = style("foot",  fontSize=8,  textColor=MUTED, spaceAfter=0)
+        ft_y = 0
+        fe_y = FT_H
+        ut_y = fe_y + FE_H
+        hr_y = ut_y + UT_H
+        hd_y = hr_y + HR_H
 
-        story = []
-        month = datetime.now().strftime("%B %Y")
+        # ── Helpers ───────────────────────────────────────────────────────────
+        def rect(x, y, w, h, fill_color, stroke=False):
+            c.setFillColor(fill_color)
+            c.rect(x, y, w, h, fill=1, stroke=1 if stroke else 0)
 
-        # ── Header band (dark bg via table) ──────────────────────────────────
-        header_data = [[
-            Paragraph("ARECBLACKHILLS.COM — KELLER WILLIAMS REALTY BLACK HILLS",
-                      style("hdr", fontSize=7, textColor=HexColor("#94a3b8"), alignment=TA_CENTER))
-        ]]
-        header_tbl = Table(header_data, colWidths=[W])
-        header_tbl.setStyle(TableStyle([
-            ("BACKGROUND", (0,0), (-1,-1), DARK),
-            ("TOPPADDING",    (0,0), (-1,-1), 8),
-            ("BOTTOMPADDING", (0,0), (-1,-1), 8),
-            ("LEFTPADDING",   (0,0), (-1,-1), 10),
-            ("RIGHTPADDING",  (0,0), (-1,-1), 10),
-        ]))
-        story.append(header_tbl)
-        story.append(Spacer(1, 6))
+        def text(txt, x, y, font, size, color=WHITE, align="left"):
+            c.setFont(font, size)
+            c.setFillColor(color)
+            if align == "center":
+                c.drawCentredString(x, y, txt)
+            elif align == "right":
+                c.drawRightString(x, y, txt)
+            else:
+                c.drawString(x, y, txt)
 
-        # ── Hero image ────────────────────────────────────────────────────────
+        # ══════════════════════════════════════════════════════════════════════
+        # HEADER (white)
+        # ══════════════════════════════════════════════════════════════════════
+        rect(0, hd_y, W, HD_H, WHITE)
+
+        # Left logo area — mountain peaks drawn as filled polygons
+        mx, my = 30, hd_y + 55
+        mscale = 1.15
+        def peak(pts):
+            p = c.beginPath()
+            p.moveTo(pts[0][0]*mscale+mx, pts[0][1]*mscale+my)
+            for px, py in pts[1:]:
+                p.lineTo(px*mscale+mx, py*mscale+my)
+            p.close()
+            c.drawPath(p, fill=1, stroke=0)
+
+        c.setFillColor(HexColor("#2C2C2C"))
+        peak([(0,0),(25,65),(50,0)])        # left peak
+        peak([(35,0),(65,80),(95,0)])       # center peak (tallest)
+        peak([(75,0),(100,55),(125,0)])     # right peak
+
+        # Snow caps (white triangles on top)
+        c.setFillColor(WHITE)
+        peak([(18,42),(25,65),(32,42)])
+        peak([(55,56),(65,80),(75,56)])
+        peak([(93,38),(100,55),(107,38)])
+
+        # Horizontal rule under mountains
+        c.setStrokeColor(HexColor("#1C1C1C"))
+        c.setLineWidth(1.5)
+        logo_text_x = 30
+        logo_text_y = hd_y + 38
+        c.line(logo_text_x, logo_text_y + 11, logo_text_x + 185, logo_text_y + 11)
+
+        text("ARC REAL ESTATE", logo_text_x, logo_text_y, "Helvetica-Bold", 14, BLACK)
+
+        c.setLineWidth(0.8)
+        c.line(logo_text_x, logo_text_y - 3, logo_text_x + 185, logo_text_y - 3)
+
+        # "— COMPANY —" spaced
+        text("C O M P A N Y", logo_text_x + 28, logo_text_y - 14, "Helvetica", 8, BLACK)
+
+        # KW branding
+        text("kw", logo_text_x, logo_text_y - 32, "Helvetica-Bold", 15, HexColor("#CC0000"))
+        text("BLACK HILLS", logo_text_x + 24, logo_text_y - 28, "Helvetica-Bold", 11, BLACK)
+        text("KELLER WILLIAMS. REALTY", logo_text_x + 24, logo_text_y - 39, "Helvetica", 6.5, BLACK)
+
+        # Vertical divider
+        c.setStrokeColor(HexColor("#CCCCCC"))
+        c.setLineWidth(1)
+        divX = W * 0.42
+        c.line(divX, hd_y + 18, divX, hd_y + HD_H - 18)
+
+        # Right: Headline
+        hx = divX + 28
+        text("COMMERCIAL LAND", hx, hd_y + HD_H*0.56, "Helvetica-Bold", 42, BLACK)
+        text("FOR", hx, hd_y + HD_H*0.28, "Helvetica-Bold", 42, BLACK)
+        # "SALE" in red — measure "FOR " width to position
+        c.setFont("Helvetica-Bold", 42)
+        for_w = c.stringWidth("FOR ", "Helvetica-Bold", 42)
+        text("SALE", hx + for_w, hd_y + HD_H*0.28, "Helvetica-Bold", 42, RED)
+
+        # ══════════════════════════════════════════════════════════════════════
+        # HERO — left red band + right aerial photo
+        # ══════════════════════════════════════════════════════════════════════
+        SPLIT  = W * 0.41
+        DIAG   = 28   # diagonal offset
+
+        # Dark red polygon (diagonal right edge)
+        c.setFillColor(RED)
+        p = c.beginPath()
+        p.moveTo(0, hr_y)
+        p.lineTo(SPLIT + DIAG, hr_y)
+        p.lineTo(SPLIT - DIAG, hr_y + HR_H)
+        p.lineTo(0, hr_y + HR_H)
+        p.close()
+        c.drawPath(p, fill=1, stroke=0)
+
+        # Hero photo (right side)
         print("  Loading photos for PDF...")
         hero_buf = _fetch_image(PHOTOS[0], LOCAL_PHOTOS[0])
         if hero_buf:
-            img = RLImage(hero_buf, width=W, height=3.0*inch)
-            img.hAlign = "CENTER"
-            story.append(img)
-            story.append(Spacer(1, 0))
+            img_x = SPLIT - DIAG
+            c.drawImage(ImageReader(hero_buf), img_x, hr_y,
+                        width=W - img_x, height=HR_H,
+                        preserveAspectRatio=False, mask="auto")
 
-        # ── Title band ────────────────────────────────────────────────────────
-        title_data = [[
-            Paragraph(f"{month} Update", tag_style),
-            ""
-        ], [
-            Paragraph("Highway 1416, Box Elder", h1_style),
-            ""
-        ], [
-            Paragraph("Box Elder, SD 57719 &nbsp;·&nbsp; Commercial Land", sub_style),
-            ""
-        ]]
-        title_tbl = Table(title_data, colWidths=[W, 0])
-        title_tbl.setStyle(TableStyle([
-            ("BACKGROUND",    (0,0), (-1,-1), DARK),
-            ("TOPPADDING",    (0,0), (-1,-1), 3),
-            ("BOTTOMPADDING", (0,0), (-1,-1), 3),
-            ("LEFTPADDING",   (0,0), (-1,-1), 12),
-            ("RIGHTPADDING",  (0,0), (-1,-1), 12),
-        ]))
-        story.append(title_tbl)
-        story.append(Spacer(1, 6))
+        # Big acreage number
+        c.setFillColor(WHITE)
+        c.setFont("Helvetica-BoldOblique", 82)
+        c.drawString(14, hr_y + HR_H * 0.44, "24.75")
+        c.setFont("Helvetica-BoldOblique", 62)
+        c.drawString(14, hr_y + HR_H * 0.10, "ACRES")
 
-        # ── Stats bar ─────────────────────────────────────────────────────────
-        stats = [
-            ("24.75", "ACRES"),
-            ("$3.75M", "ASKING PRICE"),
-            ("HWY", "FRONTAGE"),
-            ("C-2", "ZONING"),
+        # Price tag below acreage
+        c.setFont("Helvetica-Bold", 16)
+        c.setFillColor(HexColor("#FFCCCC"))
+        c.drawString(18, hr_y + HR_H * 0.04 - 2, "$3,750,000")
+
+        # ══════════════════════════════════════════════════════════════════════
+        # UTILITIES ROW (light gray)
+        # ══════════════════════════════════════════════════════════════════════
+        rect(0, ut_y, W, UT_H, LGRAY)
+
+        utils = [
+            ("ALL UTILITIES", "TO SITE"),
+            ("NATURAL", "GAS"),
+            ("WEST RIVER", "ELECTRIC"),
+            ("CITY WATER", "& SEWER"),
+            ("ZONED", "COMMERCIAL"),
         ]
-        stats_cells = [[Paragraph(v, val_style), Paragraph(l, label_style)] for v, l in stats]
-        stats_row = [[cell for pair in stats_cells for cell in pair]]  # flatten
-        # Build as 4-col table with val+label stacked
-        stat_rows = [
-            [Paragraph(v, val_style) for v, _ in stats],
-            [Paragraph(l, label_style) for _, l in stats],
+        col_w = W / len(utils)
+        icon_syms = ["*", "*", "~", "o", "#"]   # placeholders for circle content
+
+        for i, (l1, l2) in enumerate(utils):
+            cx = col_w * i + col_w / 2
+            cy_circle = ut_y + UT_H * 0.72
+            # Black filled circle
+            c.setFillColor(BLACK)
+            c.circle(cx, cy_circle, 16, fill=1, stroke=0)
+            # White line icon (simplified)
+            c.setFillColor(WHITE)
+            c.setFont("Helvetica-Bold", 10)
+            c.drawCentredString(cx, cy_circle - 4, str(i + 1))
+            # Label lines
+            c.setFillColor(BLACK)
+            c.setFont("Helvetica-Bold", 8.5)
+            c.drawCentredString(cx, ut_y + UT_H * 0.35, l1)
+            c.setFont("Helvetica", 7.5)
+            c.drawCentredString(cx, ut_y + UT_H * 0.15, l2)
+            # Column dividers
+            if i > 0:
+                c.setStrokeColor(HexColor("#BBBBBB"))
+                c.setLineWidth(0.5)
+                c.line(col_w * i, ut_y + 8, col_w * i, ut_y + UT_H - 8)
+
+        # ══════════════════════════════════════════════════════════════════════
+        # FEATURES ROW (dark)
+        # ══════════════════════════════════════════════════════════════════════
+        rect(0, fe_y, W, FE_H, BLACK)
+
+        features = [
+            ("EXCELLENT VISIBILITY", "HIGH TRAFFIC CORRIDOR EXPOSURE"),
+            ("DIRECT HWY 1416 ACCESS", "PRIME HIGHWAY FRONTAGE FOR BUSINESS GROWTH"),
         ]
-        stats_tbl = Table(stat_rows, colWidths=[W/4]*4)
-        stats_tbl.setStyle(TableStyle([
-            ("BACKGROUND",    (0,0), (-1,-1), HexColor("#1e293b")),
-            ("TOPPADDING",    (0,0), (-1,-1), 8),
-            ("BOTTOMPADDING", (0,0), (-1,-1), 8),
-            ("LINEBEFORE",    (1,0), (3,-1), 0.5, HexColor("#334155")),
-        ]))
-        story.append(stats_tbl)
-        story.append(Spacer(1, 12))
+        col_w2 = W / 2
+        for i, (title, sub) in enumerate(features):
+            cx = col_w2 * i + col_w2 / 2
+            # Icon circle
+            ic_x = col_w2 * i + 36
+            ic_y = fe_y + FE_H / 2
+            c.setFillColor(HexColor("#333333"))
+            c.circle(ic_x, ic_y, 18, fill=1, stroke=0)
+            c.setStrokeColor(WHITE)
+            c.setLineWidth(1.5)
+            if i == 0:  # eye-like shape
+                c.circle(ic_x, ic_y, 7, fill=0, stroke=1)
+                c.setFillColor(WHITE)
+                c.circle(ic_x, ic_y, 3, fill=1, stroke=0)
+            else:  # road lines
+                c.setLineWidth(2)
+                c.line(ic_x - 6, ic_y + 8, ic_x, ic_y - 8)
+                c.line(ic_x + 6, ic_y + 8, ic_x, ic_y - 8)
+            # Text
+            c.setFillColor(WHITE)
+            c.setFont("Helvetica-Bold", 14)
+            c.drawString(ic_x + 28, fe_y + FE_H * 0.6, title)
+            c.setFont("Helvetica", 8)
+            c.setFillColor(HexColor("#AAAAAA"))
+            c.drawString(ic_x + 28, fe_y + FE_H * 0.28, sub)
+            # Center divider
+            if i == 0:
+                c.setStrokeColor(HexColor("#3A3A3A"))
+                c.setLineWidth(1)
+                c.line(W / 2, fe_y + 10, W / 2, fe_y + FE_H - 10)
 
-        # ── Body copy ─────────────────────────────────────────────────────────
-        for para in message.strip().split("\n\n"):
-            if para.strip():
-                story.append(Paragraph(para.strip(), body_style))
-        story.append(Spacer(1, 8))
+        # ══════════════════════════════════════════════════════════════════════
+        # FOOTER (dark red)
+        # ══════════════════════════════════════════════════════════════════════
+        rect(0, ft_y, W, FT_H, RED)
 
-        # ── Photo grid (2 columns) ────────────────────────────────────────────
-        grid_photos = list(zip(PHOTOS[1:], LOCAL_PHOTOS[1:]))
-        grid_imgs = []
-        for url, local in grid_photos:
-            img_buf = _fetch_image(url, local)
-            if img_buf:
-                grid_imgs.append(RLImage(img_buf, width=(W/2)-4, height=1.6*inch))
-            else:
-                grid_imgs.append(Spacer((W/2)-4, 1.6*inch))
+        # Phone icon circle
+        c.setFillColor(HexColor("#6B0000"))
+        c.circle(30, ft_y + FT_H / 2, 20, fill=1, stroke=0)
+        c.setFillColor(WHITE)
+        c.setFont("Helvetica-Bold", 14)
+        c.drawCentredString(30, ft_y + FT_H / 2 - 5, "t")
 
-        for i in range(0, len(grid_imgs), 2):
-            row = [grid_imgs[i], grid_imgs[i+1] if i+1 < len(grid_imgs) else ""]
-            tbl = Table([row], colWidths=[W/2, W/2])
-            tbl.setStyle(TableStyle([
-                ("LEFTPADDING",   (0,0), (-1,-1), 0),
-                ("RIGHTPADDING",  (0,0), (-1,-1), 0),
-                ("TOPPADDING",    (0,0), (-1,-1), 4),
-                ("BOTTOMPADDING", (0,0), (-1,-1), 0),
-            ]))
-            story.append(tbl)
-        story.append(Spacer(1, 12))
+        # Contact info
+        c.setFillColor(WHITE)
+        c.setFont("Helvetica-Bold", 8)
+        c.drawString(58, ft_y + FT_H * 0.78, "CONTACT")
+        c.setFont("Helvetica-Bold", 17)
+        c.drawString(58, ft_y + FT_H * 0.48, "KEVIN ANDRESON")
+        c.setFont("Helvetica-Bold", 13)
+        c.drawString(58, ft_y + FT_H * 0.18, "605-646-5409")
 
-        # ── Highlights ────────────────────────────────────────────────────────
-        highlights = [
-            "Direct Highway 1416 frontage with high daily traffic count",
-            "Minutes from Ellsworth Air Force Base",
-            "Utilities available at site",
-            "Ideal for retail, hospitality, or mixed-use development",
-            "One of the fastest-growing markets in South Dakota",
-        ]
-        hl_items = [[Paragraph(f"✓  {h}", hl_style)] for h in highlights]
-        hl_tbl = Table(hl_items, colWidths=[W])
-        hl_tbl.setStyle(TableStyle([
-            ("BACKGROUND",    (0,0), (-1,-1), HexColor("#f8fafc")),
-            ("TOPPADDING",    (0,0), (-1,-1), 4),
-            ("BOTTOMPADDING", (0,0), (-1,-1), 4),
-            ("LEFTPADDING",   (0,0), (-1,-1), 12),
-            ("RIGHTPADDING",  (0,0), (-1,-1), 12),
-            ("LINEBELOW",     (0,0), (-1,-2), 0.3, HexColor("#e2e8f0")),
-        ]))
-        story.append(hl_tbl)
-        story.append(Spacer(1, 16))
-        story.append(HRFlowable(width=W, thickness=0.5, color=HexColor("#e2e8f0")))
-        story.append(Spacer(1, 8))
+        # Center divider
+        c.setStrokeColor(HexColor("#6B0000"))
+        c.setLineWidth(1)
+        c.line(W * 0.38, ft_y + 8, W * 0.38, ft_y + FT_H - 8)
 
-        # ── Footer ────────────────────────────────────────────────────────────
-        story.append(Paragraph(
-            "Kevin Andreson &nbsp;·&nbsp; Keller Williams Realty Black Hills &nbsp;·&nbsp; arecblackhills@gmail.com",
-            foot_style
-        ))
-        story.append(Spacer(1, 4))
-        story.append(Paragraph(
-            "To unsubscribe, reply with \"unsubscribe\" in the subject line.",
-            style("unsub", fontSize=7, textColor=HexColor("#94a3b8"))
-        ))
+        # Globe icon + website
+        c.setFillColor(HexColor("#6B0000"))
+        c.circle(W * 0.5, ft_y + FT_H / 2, 20, fill=1, stroke=0)
+        c.setFillColor(WHITE)
+        c.setFont("Helvetica-Bold", 14)
+        c.drawCentredString(W * 0.5, ft_y + FT_H / 2 - 5, "w")
+        c.setFont("Helvetica-Bold", 13)
+        c.drawCentredString(W * 0.62, ft_y + FT_H / 2 - 4, "ARCREALESTATECOMPANY.COM")
 
-        doc.build(story)
+        # QR Code
+        try:
+            qr = _qrcode.QRCode(box_size=3, border=1)
+            qr.add_data("https://arcrealestatecompany.com")
+            qr.make(fit=True)
+            qr_img = qr.make_image(fill_color="black", back_color="white")
+            qr_buf = io.BytesIO()
+            qr_img.save(qr_buf, format="PNG")
+            qr_buf.seek(0)
+            qr_size = FT_H - 10
+            c.drawImage(ImageReader(qr_buf), W - qr_size - 60, ft_y + 5,
+                        width=qr_size, height=qr_size)
+            c.setFillColor(WHITE)
+            c.setFont("Helvetica-Bold", 7)
+            c.drawCentredString(W - 30, ft_y + FT_H * 0.65, "SCAN FOR")
+            c.drawCentredString(W - 30, ft_y + FT_H * 0.45, "DETAILS")
+        except Exception:
+            pass
+
+        c.save()
         kb = len(buf.getvalue()) // 1024
         print(f"  PDF ready: {kb}kb")
         return buf.getvalue()
 
     except Exception as e:
+        import traceback
         print(f"  [warn] PDF generation failed: {e}")
+        traceback.print_exc()
         return None
 
 
