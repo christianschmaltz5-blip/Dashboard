@@ -41,6 +41,18 @@
     .stat{text-align:center;}
     .stat-value{font-size:22px;font-weight:700;color:var(--text);}
     .stat-label{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);margin-top:2px;}
+
+    /* Send notice */
+    .send-notice{background:rgba(245,158,11,0.1);border:1.5px solid rgba(245,158,11,0.45);border-radius:12px;padding:1.5rem 1.75rem;margin-bottom:2.5rem;}
+    .send-notice-header{display:flex;align-items:center;gap:10px;margin-bottom:1rem;}
+    .send-notice-icon{width:32px;height:32px;background:rgba(245,158,11,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .send-notice-title{font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#F59E0B;}
+    .send-table{width:100%;border-collapse:collapse;}
+    .send-table th{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(245,158,11,0.6);padding:0 0 8px 0;text-align:left;}
+    .send-table td{font-size:12px;padding:8px 0;border-top:1px solid rgba(245,158,11,0.12);vertical-align:top;}
+    .send-table td:first-child{width:55%;padding-right:16px;}
+    .send-table code{font-family:monospace;font-size:11px;background:rgba(0,0,0,0.3);padding:3px 8px;border-radius:4px;color:#FCD34D;white-space:nowrap;}
+    .send-table .what{color:rgba(255,255,255,0.55);font-size:12px;line-height:1.5;}
   </style>
 </head>
 <body>
@@ -64,6 +76,45 @@
     <div class="stat"><div class="stat-value">Weekly</div><div class="stat-label">Frequency</div></div>
     <div class="stat"><div class="stat-value">Email</div><div class="stat-label">Channel</div></div>
     <div class="stat"><div class="stat-value">Box Elder</div><div class="stat-label">Market</div></div>
+  </div>
+
+  <!-- Send Instructions Notice -->
+  <div class="send-notice">
+    <div class="send-notice-header">
+      <div class="send-notice-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </div>
+      <div>
+        <div class="send-notice-title">How to Send This Newsletter</div>
+        <div style="font-size:11px;color:rgba(245,158,11,0.6);margin-top:2px;">Run from: <code style="font-family:monospace;font-size:10px;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:3px;color:#FCD34D;">~/arc-dashboard/agents/hwy1416_newsletter/</code></div>
+      </div>
+    </div>
+    <table class="send-table">
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>What happens</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>python3 send_newsletter.py --dry-run</code></td>
+          <td class="what">No emails sent — saves a preview HTML file you can open in your browser</td>
+        </tr>
+        <tr>
+          <td><code>python3 send_newsletter.py</code></td>
+          <td class="what">Sends <strong style="color:#FCD34D;">only to arecblackhills@gmail.com</strong> with [PREVIEW] tag — review before sending to anyone else</td>
+        </tr>
+        <tr>
+          <td><code>python3 send_newsletter.py --send-all</code></td>
+          <td class="what">Sends preview to Kevin first, then delivers to <strong style="color:#FCD34D;">all 32 recipients</strong> with PDF attached</td>
+        </tr>
+        <tr>
+          <td><code>python3 send_newsletter.py --message "..." --send-all</code></td>
+          <td class="what">Custom update text this week, then full send — use <code>\n\n</code> between paragraphs</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
   <div class="section">

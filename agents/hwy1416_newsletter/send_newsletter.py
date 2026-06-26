@@ -11,8 +11,17 @@ import argparse
 import smtplib
 import time
 from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
+from email import encoders
 from datetime import datetime
+
+try:
+    import io
+    from xhtml2pdf import pisa
+    PDF_ENABLED = True
+except ImportError:
+    PDF_ENABLED = False
 
 from config import FROM_EMAIL, REPLY_TO, GMAIL_APP_PASSWORD, RECIPIENTS, SUBJECT_PREFIX
 
@@ -191,14 +200,42 @@ def build_html(message: str) -> str:
 </html>"""
 
 
-def _send_one(smtp, subject: str, html: str, to: str):
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"]    = f"Kevin Andreson — AREC Black Hills <{FROM_EMAIL}>"
-    msg["To"]      = to
-    msg["Reply-To"] = REPLY_TO
-    msg.attach(MIMEText(html, "html"))
-    smtp.sendmail(FROM_EMAIL, to, msg.as_string())
+def build_pdf(html: str) -> bytes | None:
+    if not PDF_ENABLED:
+        return None
+    try:
+        buf = io.BytesIO()
+        status = pisa.CreatePDF(html, dest=buf)
+        if status.err:
+            print(f"  [warn] PDF had {status.err} error(s)")
+        return buf.getvalue() if not status.err else None
+    except Exception as e:
+        print(f"  [warn] PDF generation failed: {e}")
+        return None
+
+
+def _send_one(smtp, subject: str, html: str, to: str, pdf_bytes: bytes | None = None):
+    outer = MIMEMultipart("mixed")
+    outer["Subject"] = subject
+    outer["From"]    = f"Kevin Andreson — AREC Black Hills <{FROM_EMAIL}>"
+    outer["To"]      = to
+    outer["Reply-To"] = REPLY_TO
+
+    # HTML body
+    alt = MIMEMultipart("alternative")
+    alt.attach(MIMEText(html, "html"))
+    outer.attach(alt)
+
+    # PDF attachment
+    if pdf_bytes:
+        month = datetime.now().strftime("%B_%Y")
+        part = MIMEBase("application", "pdf")
+        part.set_payload(pdf_bytes)
+        encoders.encode_base64(part)
+        part.add_header("Content-Disposition", f'attachment; filename="Highway_1416_Box_Elder_{month}.pdf"')
+        outer.attach(part)
+
+    smtp.sendmail(FROM_EMAIL, to, outer.as_string())
 
 
 def send(subject: str, html: str, dry_run: bool = False, send_all: bool = False):
@@ -210,7 +247,19 @@ def send(subject: str, html: str, dry_run: bool = False, send_all: bool = False)
         print("HTML preview saved to preview_newsletter.html")
         with open("preview_newsletter.html", "w") as f:
             f.write(html)
+        if not PDF_ENABLED:
+            print("PDF: xhtml2pdf not installed — run: pip3 install xhtml2pdf")
         return
+
+    # Generate PDF once, reuse for all sends
+    pdf_bytes = None
+    if PDF_ENABLED:
+        print("Generating PDF attachment...")
+        pdf_bytes = build_pdf(html)
+        if pdf_bytes:
+            print(f"  ✓ PDF ready ({len(pdf_bytes)//1024}kb)")
+    else:
+        print("  [info] xhtml2pdf not installed — sending without PDF. Run: pip3 install xhtml2pdf")
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
         smtp.login(FROM_EMAIL, GMAIL_APP_PASSWORD)
@@ -218,7 +267,7 @@ def send(subject: str, html: str, dry_run: bool = False, send_all: bool = False)
         # Always send to Kevin first for review
         print(f"\n── Preview send ──────────────────────")
         try:
-            _send_one(smtp, f"[PREVIEW] {subject}", html, REPLY_TO)
+            _send_one(smtp, f"[PREVIEW] {subject}", html, REPLY_TO, pdf_bytes)
             print(f"  ✓ {REPLY_TO}")
         except Exception as e:
             print(f"  ✗ Preview failed: {e}")
@@ -234,7 +283,7 @@ def send(subject: str, html: str, dry_run: bool = False, send_all: bool = False)
         sent, failed = 0, []
         for to in RECIPIENTS:
             try:
-                _send_one(smtp, subject, html, to)
+                _send_one(smtp, subject, html, to, pdf_bytes)
                 sent += 1
                 print(f"  ✓ {to}")
                 time.sleep(0.3)  # stay within Gmail rate limits
