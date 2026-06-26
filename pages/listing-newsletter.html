@@ -1,233 +1,423 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Monthly Listing Newsletter — Kevin Andreson</title>
-  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box;}
-    :root{--bg:#000;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.1);--text:#fff;--muted:rgba(255,255,255,0.5);--dim:rgba(255,255,255,0.25);}
-    body{font-family:'Josefin Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;}
-    nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.8);backdrop-filter:blur(12px);}
-    .nav-back{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;} .nav-back:hover{color:var(--text);}
-    .nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-    .nav-title{font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
-    main{max-width:860px;margin:0 auto;padding:3rem 2rem 5rem;}
-    .breadcrumb{font-size:11px;color:var(--dim);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:16px;}
-    .breadcrumb a{color:var(--dim);text-decoration:none;} .breadcrumb a:hover{color:var(--muted);}
-    .agent-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:14px;background:rgba(16,185,129,0.15);color:#34D399;border:1px solid rgba(52,211,153,0.25);}
-    h1{font-size:32px;font-weight:700;letter-spacing:0.02em;margin-bottom:10px;}
-    .subtitle{font-size:15px;color:var(--muted);max-width:600px;line-height:1.7;}
-    .divider{height:1px;background:var(--border);margin:2.5rem 0;}
-    .section{margin-bottom:2.5rem;}
-    .section-title{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--dim);margin-bottom:1rem;display:flex;align-items:center;gap:10px;}
-    .section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Listing Newsletter — Kevin Andreson</title>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#000;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.1);--text:#fff;--muted:rgba(255,255,255,0.5);--dim:rgba(255,255,255,0.25);}
+body{font-family:'Josefin Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
-    /* How it works */
-    .flow{display:flex;flex-direction:column;gap:0;}
-    .flow-step{display:flex;gap:20px;align-items:flex-start;padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
-    .flow-step:last-child{border-bottom:none;}
-    .flow-num{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;margin-top:1px;}
-    .flow-body{font-size:13px;color:rgba(255,255,255,0.65);line-height:1.7;}
-    .flow-body strong{color:var(--text);}
-    .flow-body code{font-family:monospace;font-size:11px;background:rgba(255,255,255,0.07);padding:2px 6px;border-radius:4px;color:#A78BFA;}
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.9);backdrop-filter:blur(12px);}
+.nav-back{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;} .nav-back:hover{color:var(--text);}
+.nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.nav-title{font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
 
-    /* Send notice */
-    .send-notice{background:rgba(245,158,11,0.1);border:1.5px solid rgba(245,158,11,0.45);border-radius:12px;padding:1.5rem 1.75rem;margin-bottom:2.5rem;}
-    .send-notice-header{display:flex;align-items:center;gap:10px;margin-bottom:1rem;}
-    .send-notice-icon{width:32px;height:32px;background:rgba(245,158,11,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-    .send-notice-title{font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#F59E0B;}
-    .send-table{width:100%;border-collapse:collapse;}
-    .send-table th{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(245,158,11,0.6);padding:0 0 8px 0;text-align:left;}
-    .send-table td{font-size:12px;padding:8px 0;border-top:1px solid rgba(245,158,11,0.12);vertical-align:top;}
-    .send-table td:first-child{width:58%;padding-right:16px;}
-    .send-table code{font-family:monospace;font-size:11px;background:rgba(0,0,0,0.3);padding:3px 8px;border-radius:4px;color:#FCD34D;white-space:nowrap;}
-    .send-table .what{color:rgba(255,255,255,0.55);font-size:12px;line-height:1.5;}
+main{max-width:780px;margin:0 auto;padding:2.5rem 2rem 5rem;}
+h1{font-size:28px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
+.subtitle{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:2rem;}
 
-    /* Example box */
-    .example-box{background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:12px;padding:1.5rem 1.75rem;margin-bottom:2rem;}
-    .example-title{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#60A5FA;margin-bottom:12px;}
-    .example-cmd{font-family:monospace;font-size:12px;color:#A78BFA;background:rgba(0,0,0,0.3);border-radius:8px;padding:14px 16px;line-height:1.7;word-break:break-all;}
-    .example-desc{font-size:12px;color:rgba(255,255,255,0.5);margin-top:10px;line-height:1.6;}
+/* API Key banner */
+.key-banner{display:flex;align-items:center;gap:12px;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.25);border-radius:10px;padding:14px 18px;margin-bottom:2rem;}
+.key-banner.ok{background:rgba(16,185,129,0.08);border-color:rgba(52,211,153,0.25);}
+.key-banner-label{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#A78BFA;white-space:nowrap;}
+.key-banner.ok .key-banner-label{color:#34D399;}
+.key-input{flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:8px 12px;font-size:12px;font-family:monospace;color:#fff;outline:none;} .key-input:focus{border-color:#A78BFA;}
+.key-btn{padding:8px 16px;background:#A78BFA;color:#000;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;border:none;border-radius:6px;cursor:pointer;white-space:nowrap;} .key-btn:hover{background:#c4b5fd;}
+.key-status{font-size:12px;color:#34D399;}
+.key-clear{font-size:11px;color:rgba(255,255,255,0.3);cursor:pointer;text-decoration:underline;margin-left:8px;} .key-clear:hover{color:rgba(255,255,255,0.6);}
 
-    /* AI badge */
-    .ai-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:4px 10px;border-radius:6px;background:rgba(139,92,246,0.15);color:#A78BFA;border:1px solid rgba(139,92,246,0.25);margin-bottom:12px;}
+/* Section */
+.section-label{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--dim);margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
 
-    /* Config grid */
-    .config-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
-    .config-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem;}
-    .config-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;}
-    .config-value{font-size:13px;color:var(--text);font-weight:500;} .config-value code{font-family:monospace;font-size:12px;color:#A78BFA;}
+/* Intro message */
+.intro-area{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:13px;font-family:'Josefin Sans',sans-serif;color:#fff;resize:vertical;min-height:72px;outline:none;line-height:1.6;}
+.intro-area:focus{border-color:rgba(255,255,255,0.25);}
+.intro-area::placeholder{color:rgba(255,255,255,0.2);}
 
-    /* Status bar */
-    .status-bar{display:flex;gap:2rem;margin-bottom:2.5rem;}
-    .stat{text-align:center;}
-    .stat-value{font-size:22px;font-weight:700;color:var(--text);}
-    .stat-label{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);margin-top:2px;}
+/* Property cards */
+#properties{display:flex;flex-direction:column;gap:12px;margin-bottom:14px;}
+.prop-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px 18px;position:relative;}
+.prop-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.prop-card-num{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);}
+.prop-remove{background:none;border:none;color:rgba(255,255,255,0.2);cursor:pointer;font-size:18px;line-height:1;padding:2px;} .prop-remove:hover{color:#F87171;}
+.prop-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.prop-grid-full{grid-column:1/-1;}
+.field-label{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:5px;}
+.field-input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:9px 12px;font-size:12px;font-family:'Josefin Sans',sans-serif;color:#fff;outline:none;}
+.field-input:focus{border-color:rgba(255,255,255,0.3);}
+.field-input::placeholder{color:rgba(255,255,255,0.2);}
 
-    /* AI notice */
-    .ai-notice{background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.25);border-radius:10px;padding:1.25rem 1.5rem;margin-bottom:2rem;}
-    .ai-notice-title{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#A78BFA;margin-bottom:8px;}
-    .ai-notice-body{font-size:12px;color:rgba(255,255,255,0.5);line-height:1.7;}
+/* Buttons */
+.btn-add{display:flex;align-items:center;gap:8px;background:none;border:1px dashed rgba(255,255,255,0.15);border-radius:8px;padding:10px 18px;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:rgba(255,255,255,0.35);cursor:pointer;width:100%;justify-content:center;transition:all .2s;} .btn-add:hover{border-color:rgba(255,255,255,0.3);color:rgba(255,255,255,0.7);}
 
-    .tip{font-size:11px;color:var(--dim);line-height:1.6;margin-top:1rem;}
-  </style>
+.btn-generate{width:100%;padding:16px;background:linear-gradient(135deg,#1B3A6B,#2563EB);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;margin-top:1.5rem;transition:opacity .2s;}
+.btn-generate:hover{opacity:0.9;}
+.btn-generate:disabled{opacity:0.4;cursor:not-allowed;}
+
+/* Status */
+.status{font-size:12px;color:var(--muted);text-align:center;margin-top:12px;min-height:20px;}
+.status.error{color:#F87171;}
+.status.ok{color:#34D399;}
+
+/* Preview */
+#preview-section{display:none;margin-top:2.5rem;}
+.preview-actions{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.btn-pdf{padding:10px 24px;background:#1B3A6B;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:8px;}
+.btn-pdf:hover{background:#2563EB;}
+.btn-pdf svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.btn-copy{padding:10px 20px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.15);border-radius:7px;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;}
+.btn-copy:hover{background:rgba(255,255,255,0.12);}
+
+.preview-frame-wrap{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#F1F5F9;}
+#preview-frame{width:100%;height:700px;border:none;display:block;}
+
+/* Spinner */
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
 </head>
 <body>
+
 <nav>
   <a class="nav-back" href="../index.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back to Dashboard</a>
   <div class="nav-title">FOR KEVIN ANDRESON</div>
 </nav>
+
 <main>
-  <div class="breadcrumb"><a href="../index.html">Dashboard</a> / Monthly Listing Newsletter</div>
-  <div class="agent-badge">
-    <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor"/></svg>
-    Live
-  </div>
   <h1>Monthly Listing Newsletter</h1>
-  <p class="subtitle">You pick the properties — give it the address, price, specs, and a photo URL. The agent writes the copy, builds a photo-card email, and sends it to your investor list. Powered by Claude AI.</p>
+  <p class="subtitle">Add the properties you want to feature, provide a photo URL for each, and click Generate. Claude writes the copy and builds the email. You preview it here, then save as PDF or send.</p>
 
-  <div class="divider"></div>
-
-  <div class="status-bar">
-    <div class="stat"><div class="stat-value">AI</div><div class="stat-label">Copy Writer</div></div>
-    <div class="stat"><div class="stat-value">32</div><div class="stat-label">Recipients</div></div>
-    <div class="stat"><div class="stat-value">Monthly</div><div class="stat-label">Cadence</div></div>
-    <div class="stat"><div class="stat-value">Email</div><div class="stat-label">Channel</div></div>
+  <!-- API Key -->
+  <div class="key-banner" id="key-banner">
+    <div class="key-banner-label">Anthropic API Key</div>
+    <input class="key-input" type="password" id="key-input" placeholder="sk-ant-api03-…" autocomplete="off"/>
+    <button class="key-btn" onclick="saveKey()">Save Key</button>
   </div>
 
-  <!-- How it works -->
-  <div class="section">
-    <div class="section-title">How It Works</div>
-    <div class="flow">
-      <div class="flow-step">
-        <div class="flow-num">1</div>
-        <div class="flow-body"><strong>One <code>--listing</code> flag per property</strong> — pipe-delimited: <code>"Address | Price | Specs | Photo URL"</code>. Price, specs, and photo are optional but the more you give it, the better the copy and email card look.</div>
-      </div>
-      <div class="flow-step">
-        <div class="flow-num">2</div>
-        <div class="flow-body"><strong>Claude writes the copy</strong> — it sees your price and specs and generates an ALL-CAPS headline, 2–3 sentence investment pitch, and a CTA. Commercial tone aimed at developers and investors.</div>
-      </div>
-      <div class="flow-step">
-        <div class="flow-num">3</div>
-        <div class="flow-body"><strong>Each listing becomes a photo card</strong> — full-width hero photo, dark header with headline, price badge, spec chips (size · zoning · highlights), AI copy, and a contact button. Photos load from any URL — LoopNet, your own hosted images, anywhere.</div>
-      </div>
-      <div class="flow-step">
-        <div class="flow-num">4</div>
-        <div class="flow-body"><strong>Always previews to you first</strong> — email goes to <code>arecblackhills@gmail.com</code> with [PREVIEW] tag. Review it in Gmail, then add <code>--send-all</code> to deliver to the full list.</div>
-      </div>
+  <!-- Intro message -->
+  <div class="section-label" style="margin-bottom:10px;">Intro Message <span style="font-weight:400;text-transform:none;letter-spacing:0;color:rgba(255,255,255,0.2);font-size:10px;">(optional — top of email)</span></div>
+  <textarea class="intro-area" id="intro-msg" placeholder="e.g. Strong Q3 demand across the Ellsworth corridor. These are our top picks this month for multifamily and commercial operators."></textarea>
+
+  <!-- Properties -->
+  <div class="section-label" style="margin-top:1.75rem;">Featured Properties</div>
+  <div id="properties"></div>
+  <button class="btn-add" onclick="addProperty()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Add Property
+  </button>
+
+  <button class="btn-generate" id="gen-btn" onclick="generate()">Generate Newsletter</button>
+  <div class="status" id="status"></div>
+
+  <!-- Preview -->
+  <div id="preview-section">
+    <div class="section-label" style="margin-top:0.5rem;">Preview</div>
+    <div class="preview-actions">
+      <button class="btn-pdf" onclick="savePDF()">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Save as PDF
+      </button>
+      <button class="btn-copy" onclick="copyHTML()">Copy HTML</button>
+    </div>
+    <div class="preview-frame-wrap">
+      <iframe id="preview-frame" title="Newsletter Preview"></iframe>
     </div>
   </div>
+</main>
 
-  <!-- AI info -->
-  <div class="ai-notice">
-    <div class="ai-notice-title">Claude AI — Copy Generation</div>
-    <div class="ai-notice-body">
-      The agent calls the Anthropic API (Claude claude-sonnet-4-6) to write marketing copy for each property you list.
-      You need to set the <code>ANTHROPIC_API_KEY</code> environment variable before running:<br/><br/>
-      <code style="font-family:monospace;font-size:11px;color:#A78BFA;">export ANTHROPIC_API_KEY="your-key-here"</code><br/><br/>
-      If the key is not set, the agent falls back to plain property addresses in the email (no AI copy).
-      Get your key at <strong>console.anthropic.com</strong>.
+<script>
+const STORAGE_KEY = 'kw_anthropic_key';
+let propCount = 0;
+let lastHTML = '';
+
+// ── API Key ───────────────────────────────────────────────────────────────────
+function loadKey() {
+  const k = localStorage.getItem(STORAGE_KEY) || '';
+  if (k) showKeySaved(k);
+}
+
+function saveKey() {
+  const val = document.getElementById('key-input').value.trim();
+  if (!val.startsWith('sk-')) { alert('That doesn\'t look like an Anthropic key (should start with sk-).'); return; }
+  localStorage.setItem(STORAGE_KEY, val);
+  showKeySaved(val);
+}
+
+function showKeySaved(k) {
+  const banner = document.getElementById('key-banner');
+  banner.className = 'key-banner ok';
+  banner.innerHTML = `
+    <div class="key-banner-label">API Key</div>
+    <div class="key-status">✓ Saved in browser &nbsp;&mdash;&nbsp; ${k.slice(0,12)}…${k.slice(-4)}</div>
+    <span class="key-clear" onclick="clearKey()">Change</span>`;
+}
+
+function clearKey() {
+  localStorage.removeItem(STORAGE_KEY);
+  const banner = document.getElementById('key-banner');
+  banner.className = 'key-banner';
+  banner.innerHTML = `
+    <div class="key-banner-label">Anthropic API Key</div>
+    <input class="key-input" type="password" id="key-input" placeholder="sk-ant-api03-…" autocomplete="off"/>
+    <button class="key-btn" onclick="saveKey()">Save Key</button>`;
+}
+
+// ── Property form ─────────────────────────────────────────────────────────────
+function addProperty(data = {}) {
+  propCount++;
+  const id = propCount;
+  const div = document.createElement('div');
+  div.className = 'prop-card';
+  div.id = `prop-${id}`;
+  div.innerHTML = `
+    <div class="prop-card-header">
+      <div class="prop-card-num">Property ${id}</div>
+      <button class="prop-remove" onclick="removeProperty(${id})" title="Remove">×</button>
     </div>
-  </div>
-
-  <!-- Send Instructions -->
-  <div class="send-notice">
-    <div class="send-notice-header">
-      <div class="send-notice-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    <div class="prop-grid">
+      <div class="prop-grid-full">
+        <div class="field-label">Property Name / Address <span style="color:#F87171">*</span></div>
+        <input class="field-input" id="p${id}-name" placeholder="Highway 1416, Box Elder SD" value="${data.name||''}"/>
       </div>
       <div>
-        <div class="send-notice-title">How to Send</div>
-        <div style="font-size:11px;color:rgba(245,158,11,0.6);margin-top:2px;">Run from: <code style="font-family:monospace;font-size:10px;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:3px;color:#FCD34D;">~/arc-dashboard/agents/listing_newsletter/</code></div>
+        <div class="field-label">Asking Price</div>
+        <input class="field-input" id="p${id}-price" placeholder="$3,750,000" value="${data.price||''}"/>
       </div>
-    </div>
-    <table class="send-table">
-      <thead>
-        <tr>
-          <th>Command</th>
-          <th>What happens</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>python3 generate_newsletter.py --properties "addr1, addr2" --dry-run</code></td>
-          <td class="what">No emails — saves <strong style="color:#FCD34D;">preview_listing_newsletter.html</strong> you can open in your browser to review the full layout</td>
-        </tr>
-        <tr>
-          <td><code>python3 generate_newsletter.py --properties "addr1, addr2"</code></td>
-          <td class="what">Sends <strong style="color:#FCD34D;">only to arecblackhills@gmail.com</strong> with [PREVIEW] tag — check it in Gmail before sending to the list</td>
-        </tr>
-        <tr>
-          <td><code>python3 generate_newsletter.py --properties "addr1, addr2" --send-all</code></td>
-          <td class="what">Preview to Kevin first, then delivers to <strong style="color:#FCD34D;">all 32 recipients</strong></td>
-        </tr>
-        <tr>
-          <td><code>python3 generate_newsletter.py --properties "..." --message "..." --send-all</code></td>
-          <td class="what">Adds a custom intro paragraph at the top of the email before the property listings</td>
-        </tr>
-      </tbody>
+      <div>
+        <div class="field-label">Key Specs</div>
+        <input class="field-input" id="p${id}-specs" placeholder="24.75 AC · C-2 · All Utilities" value="${data.specs||''}"/>
+      </div>
+      <div class="prop-grid-full">
+        <div class="field-label">Photo URL <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;font-size:9px;">(right-click LoopNet photo → Copy image address)</span></div>
+        <input class="field-input" id="p${id}-photo" placeholder="https://images1.loopnet.com/..." value="${data.photo||''}"/>
+      </div>
+      <div class="prop-grid-full">
+        <div class="field-label">Extra Notes for Claude <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;font-size:9px;">(optional context for better copy)</span></div>
+        <input class="field-input" id="p${id}-notes" placeholder="Near Ellsworth AFB expansion, strong multifamily demand" value="${data.notes||''}"/>
+      </div>
+    </div>`;
+  document.getElementById('properties').appendChild(div);
+}
+
+function removeProperty(id) {
+  const el = document.getElementById(`prop-${id}`);
+  if (el) el.remove();
+}
+
+function getProperties() {
+  const cards = document.querySelectorAll('.prop-card');
+  return Array.from(cards).map(card => {
+    const id = card.id.replace('prop-', '');
+    return {
+      name:  document.getElementById(`p${id}-name`)?.value.trim() || '',
+      price: document.getElementById(`p${id}-price`)?.value.trim() || '',
+      specs: document.getElementById(`p${id}-specs`)?.value.trim() || '',
+      photo: document.getElementById(`p${id}-photo`)?.value.trim() || '',
+      notes: document.getElementById(`p${id}-notes`)?.value.trim() || '',
+    };
+  }).filter(p => p.name);
+}
+
+// ── Claude API call ───────────────────────────────────────────────────────────
+async function claudeCopy(prop, introMsg) {
+  const key = localStorage.getItem(STORAGE_KEY);
+  if (!key) throw new Error('No API key saved. Enter your Anthropic API key above.');
+
+  const detail = [
+    prop.name,
+    prop.price  ? `asking ${prop.price}` : '',
+    prop.specs  ? prop.specs : '',
+    prop.notes  ? prop.notes : '',
+  ].filter(Boolean).join(', ');
+
+  const prompt = `You are a commercial real estate marketing copywriter for Kevin Andreson at Keller Williams Realty Black Hills, Rapid City SD.
+
+Write email newsletter copy for this listing. Recipients are apartment developers, commercial investors, and operators in the Black Hills/Ellsworth AFB corridor.
+
+Property: ${detail}
+Context: ${introMsg || 'No additional context.'}
+
+Return ONLY a JSON object:
+- headline: 6-10 word ALL CAPS headline, investment-focused
+- copy: 2-3 sentences. Lead with the strongest investment angle. Use specific numbers.
+- cta: one punchy call-to-action sentence
+
+Output only valid JSON, no other text.`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 400,
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `API error ${res.status}`);
+  }
+
+  const data = await res.json();
+  const raw  = data.content[0].text.trim();
+  const match = raw.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error('Claude returned unexpected format');
+  return JSON.parse(match[0]);
+}
+
+// ── Email HTML builder ────────────────────────────────────────────────────────
+function specBadges(specs) {
+  if (!specs) return '';
+  return specs.split(/[·|,]/).map(s => s.trim()).filter(Boolean).map(s =>
+    `<span style="display:inline-block;background:#EFF6FF;border:1px solid #BFDBFE;color:#1E40AF;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;margin:0 5px 5px 0;letter-spacing:0.04em;text-transform:uppercase;">${s}</span>`
+  ).join('');
+}
+
+function buildNewsletterHTML(listings, introMsg) {
+  const month = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+  const intro = introMsg ? `
+  <tr><td style="padding:0 28px 20px;">
+    <p style="margin:0;font-size:14px;line-height:1.75;color:#475569;">${introMsg}</p>
+  </td></tr>` : '';
+
+  const cards = listings.map(l => {
+    const photo  = l.photo ? `<tr><td style="padding:0;"><img src="${l.photo}" width="620" style="display:block;width:100%;max-height:300px;object-fit:cover;" alt=""/></td></tr>` : '';
+    const price  = l.price ? `<span style="display:inline-block;background:#1B3A6B;color:#fff;font-size:18px;font-weight:900;padding:6px 16px;border-radius:6px;letter-spacing:0.02em;margin-bottom:10px;">${l.price}</span>` : '';
+    const badges = specBadges(l.specs) ? `<div style="margin:0 0 14px;">${specBadges(l.specs)}</div>` : '';
+    return `
+  <tr><td style="padding:0 0 28px;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #E2E8F0;border-radius:10px;overflow:hidden;background:#fff;">
+      ${photo}
+      <tr><td style="background:#0F172A;padding:16px 22px;">
+        <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#60A5FA;">${l.name}</p>
+        <p style="margin:6px 0 0;font-size:15px;font-weight:900;color:#fff;letter-spacing:0.04em;text-transform:uppercase;line-height:1.2;">${l.headline}</p>
+      </td></tr>
+      <tr><td style="padding:18px 22px 20px;">
+        ${price}
+        ${badges}
+        <p style="margin:0 0 16px;font-size:13px;line-height:1.75;color:#334155;">${l.copy}</p>
+        <a href="mailto:arecblackhills@gmail.com?subject=Inquiry — ${encodeURIComponent(l.name)}" style="display:inline-block;background:#1B3A6B;color:#fff;font-size:12px;font-weight:700;letter-spacing:0.06em;text-decoration:none;padding:10px 22px;border-radius:5px;">${l.cta}</a>
+      </td></tr>
     </table>
-  </div>
+  </td></tr>`;
+  }).join('');
 
-  <!-- Real example -->
-  <div class="section">
-    <div class="section-title">Example — This Month</div>
-    <div class="example-box">
-      <div class="example-title">Sample Command</div>
-      <div class="example-cmd">python3 generate_newsletter.py \<br/>
-  --listing "Highway 1416 Box Elder SD | $3,750,000 | 24.75 AC · C-2 · Hwy Frontage | https://images1.loopnet.com/i2/QGILchjq.../photo.png" \<br/>
-  --listing "456 Tower Rd Rapid City SD | $1,200,000 | 8 AC · Multifamily Ready" \<br/>
-  --message "Strong demand heading into Q3. Ellsworth corridor continues to attract institutional capital." \<br/>
-  --subject "Black Hills Commercial — July 2026 Featured Listings"</div>
-      <div class="example-desc">One <code>--listing</code> per property. Each field separated by <code>|</code>: Name, Price, Specs, Photo URL. Photo URL is optional — paste the LoopNet image URL directly. Claude generates the headline and copy from your specs. Add <code>--dry-run</code> first, <code>--send-all</code> when ready.</div>
-    </div>
+  return `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>@media print{body{margin:0;padding:0;}}</style>
+</head>
+<body style="margin:0;padding:0;background:#F1F5F9;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F1F5F9;">
+<tr><td align="center" style="padding:24px 12px;">
+<table width="620" cellpadding="0" cellspacing="0" border="0" style="max-width:620px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+  <tr><td style="background:#0F172A;padding:18px 28px;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+      <td style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#94A3B8;">KELLER WILLIAMS REALTY BLACK HILLS</td>
+      <td align="right" style="font-size:11px;color:#475569;letter-spacing:0.04em;">Kevin Andreson</td>
+    </tr></table>
+  </td></tr>
+  <tr><td style="background:#1B3A6B;padding:22px 28px 18px;">
+    <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#93C5FD;">${month} Featured Listings</p>
+    <p style="margin:0;font-size:22px;font-weight:900;color:#fff;line-height:1.2;">Black Hills Commercial Properties</p>
+    <p style="margin:6px 0 0;font-size:12px;color:rgba(255,255,255,0.55);">Rapid City · Box Elder · Black Hills Region, South Dakota</p>
+  </td></tr>
+  ${intro}
+  <tr><td style="padding:24px 24px 8px;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">${cards}</table>
+  </td></tr>
+  <tr><td style="background:#0F172A;padding:18px 28px;border-top:1px solid #1E293B;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+      <td>
+        <p style="margin:0;font-size:13px;font-weight:700;color:#fff;">Kevin Andreson</p>
+        <p style="margin:3px 0 0;font-size:11px;color:#64748B;">Keller Williams Realty Black Hills &nbsp;·&nbsp;
+        <a href="mailto:arecblackhills@gmail.com" style="color:#60A5FA;text-decoration:none;">arecblackhills@gmail.com</a> &nbsp;·&nbsp; 605-646-5409</p>
+      </td>
+      <td align="right"><p style="margin:0;font-size:10px;color:#475569;">KWBLACKHILLS.COM</p></td>
+    </tr></table>
+    <p style="margin:14px 0 0;font-size:9px;color:#475569;line-height:1.6;">You are receiving this as part of our commercial real estate investor network. Reply "unsubscribe" to be removed.</p>
+  </td></tr>
+</table>
+</td></tr>
+</table>
+</body></html>`;
+}
 
-    <div class="example-box" style="border-color:rgba(52,211,153,0.2);background:rgba(16,185,129,0.06);">
-      <div class="example-title" style="color:#34D399;">Dry Run — See It Before Sending</div>
-      <div class="example-cmd" style="color:#34D399;">python3 generate_newsletter.py \<br/>
-  --listing "Highway 1416 Box Elder SD | $3,750,000 | 24.75 AC · C-2 | https://your-photo-url.jpg" \<br/>
-  --dry-run</div>
-      <div class="example-desc">Saves <code>preview_listing_newsletter.html</code> in the same folder. Open it in any browser — shows the exact email with photo card, price badge, spec chips, and AI-generated copy. No emails sent.</div>
-    </div>
-  </div>
+// ── Generate ──────────────────────────────────────────────────────────────────
+async function generate() {
+  const props = getProperties();
+  if (!props.length) { setStatus('Add at least one property first.', 'error'); return; }
+  if (!localStorage.getItem(STORAGE_KEY)) { setStatus('Save your Anthropic API key above first.', 'error'); return; }
 
-  <!-- Config -->
-  <div class="section">
-    <div class="section-title">Configuration</div>
-    <div class="config-grid">
-      <div class="config-item"><div class="config-label">Send From</div><div class="config-value"><code>arecblackhills@gmail.com</code></div></div>
-      <div class="config-item"><div class="config-label">Preview To</div><div class="config-value"><code>arecblackhills@gmail.com</code></div></div>
-      <div class="config-item"><div class="config-label">AI Model</div><div class="config-value">Claude claude-sonnet-4-6</div></div>
-      <div class="config-item"><div class="config-label">Recipients</div><div class="config-value">Shared with Hwy 1416 list — 32 contacts</div></div>
-    </div>
-    <p class="tip">Recipients, email credentials, and the Anthropic API key are all stored in <code style="font-family:monospace;font-size:11px;background:rgba(255,255,255,0.07);padding:2px 6px;border-radius:4px;color:#A78BFA;">agents/hwy1416_newsletter/config.py</code> (gitignored — never committed).</p>
-  </div>
+  const btn = document.getElementById('gen-btn');
+  const introMsg = document.getElementById('intro-msg').value.trim();
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Generating…';
+  document.getElementById('preview-section').style.display = 'none';
 
-  <!-- Setup steps -->
-  <div class="section">
-    <div class="section-title">One-Time Setup</div>
-    <div class="flow">
-      <div class="flow-step">
-        <div class="flow-num">1</div>
-        <div class="flow-body"><strong>Get an Anthropic API key</strong> — go to <code>console.anthropic.com</code>, create an account, and copy your API key. Add it to your shell: <code>export ANTHROPIC_API_KEY="sk-ant-..."</code></div>
-      </div>
-      <div class="flow-step">
-        <div class="flow-num">2</div>
-        <div class="flow-body"><strong>Install dependencies (one time)</strong> — <code>pip3 install anthropic</code></div>
-      </div>
-      <div class="flow-step">
-        <div class="flow-num">3</div>
-        <div class="flow-body"><strong>Test with dry run</strong> — run the sample command above with <code>--dry-run</code>, open the preview HTML, confirm it looks right.</div>
-      </div>
-      <div class="flow-step">
-        <div class="flow-num">4</div>
-        <div class="flow-body"><strong>Send to yourself first</strong> — run without <code>--send-all</code> to get the preview email at <code>arecblackhills@gmail.com</code>, review in Gmail, then add <code>--send-all</code> to go live.</div>
-      </div>
-    </div>
-  </div>
+  const enriched = [];
+  for (let i = 0; i < props.length; i++) {
+    setStatus(`Writing copy for property ${i+1} of ${props.length}…`);
+    try {
+      const copy = await claudeCopy(props[i], introMsg);
+      enriched.push({ ...props[i], ...copy });
+    } catch (e) {
+      enriched.push({ ...props[i], headline: props[i].name.toUpperCase(), copy: props[i].name, cta: 'Contact Kevin Andreson for more information.' });
+      console.warn('Claude error:', e);
+    }
+  }
 
-</main>
-<script src="../js/search.js"></script>
+  setStatus('Building email…');
+  lastHTML = buildNewsletterHTML(enriched, introMsg);
+
+  const frame = document.getElementById('preview-frame');
+  frame.srcdoc = lastHTML;
+  document.getElementById('preview-section').style.display = 'block';
+
+  btn.disabled = false;
+  btn.innerHTML = 'Regenerate';
+  setStatus(`Done — ${props.length} propert${props.length===1?'y':'ies'} featured.`, 'ok');
+  document.getElementById('preview-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Save PDF ──────────────────────────────────────────────────────────────────
+function savePDF() {
+  if (!lastHTML) return;
+  const win = window.open('', '_blank');
+  win.document.write(lastHTML);
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 600);
+}
+
+// ── Copy HTML ─────────────────────────────────────────────────────────────────
+function copyHTML() {
+  if (!lastHTML) return;
+  navigator.clipboard.writeText(lastHTML).then(() => {
+    const btn = document.querySelector('.btn-copy');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy HTML', 2000);
+  });
+}
+
+function setStatus(msg, type = '') {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status' + (type ? ' ' + type : '');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadKey();
+addProperty({ name: 'Highway 1416, Box Elder SD', price: '$3,750,000', specs: '24.75 AC · C-2 · All Utilities · Hwy Frontage' });
+</script>
 </body>
 </html>
