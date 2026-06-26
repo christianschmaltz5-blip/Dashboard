@@ -2,9 +2,10 @@
 """
 Highway 1416, Box Elder — Newsletter Send Script
 Usage:
-  python3 send_newsletter.py                          # sends with default content
+  python3 send_newsletter.py                          # preview send to arecblackhills@gmail.com ONLY
   python3 send_newsletter.py --subject "Custom Title" --message "Update text here"
-  python3 send_newsletter.py --dry-run                # prints email without sending
+  python3 send_newsletter.py --dry-run                # build HTML + print stats, no emails sent
+  python3 send_newsletter.py --send-all               # preview to Kevin FIRST, then full 32-person list
 """
 import argparse
 import smtplib
@@ -190,28 +191,50 @@ def build_html(message: str) -> str:
 </html>"""
 
 
-def send(subject: str, html: str, dry_run: bool = False):
+def _send_one(smtp, subject: str, html: str, to: str):
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"]    = f"Kevin Andreson — AREC Black Hills <{FROM_EMAIL}>"
+    msg["To"]      = to
+    msg["Reply-To"] = REPLY_TO
+    msg.attach(MIMEText(html, "html"))
+    smtp.sendmail(FROM_EMAIL, to, msg.as_string())
+
+
+def send(subject: str, html: str, dry_run: bool = False, send_all: bool = False):
     if dry_run:
         print(f"\nDRY RUN — Subject: {subject}")
-        print(f"Recipients ({len(RECIPIENTS)}): {', '.join(RECIPIENTS[:3])}...")
+        print(f"Would send preview to: {REPLY_TO}")
+        if send_all:
+            print(f"Would then send to full list ({len(RECIPIENTS)} recipients)")
         print("HTML preview saved to preview_newsletter.html")
         with open("preview_newsletter.html", "w") as f:
             f.write(html)
         return
 
-    sent = 0
-    failed = []
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
         smtp.login(FROM_EMAIL, GMAIL_APP_PASSWORD)
+
+        # Always send to Kevin first for review
+        print(f"\n── Preview send ──────────────────────")
+        try:
+            _send_one(smtp, f"[PREVIEW] {subject}", html, REPLY_TO)
+            print(f"  ✓ {REPLY_TO}")
+        except Exception as e:
+            print(f"  ✗ Preview failed: {e}")
+            return
+
+        if not send_all:
+            print(f"\nPreview sent to {REPLY_TO}.")
+            print("Review it, then run with --send-all to deliver to all 32 recipients.")
+            return
+
+        # Full list send
+        print(f"\n── Full send ({len(RECIPIENTS)} recipients) ──────────")
+        sent, failed = 0, []
         for to in RECIPIENTS:
-            msg = MIMEMultipart("alternative")
-            msg["Subject"] = subject
-            msg["From"]    = f"Kevin Andreson — AREC Black Hills <{FROM_EMAIL}>"
-            msg["To"]      = to
-            msg["Reply-To"] = REPLY_TO
-            msg.attach(MIMEText(html, "html"))
             try:
-                smtp.sendmail(FROM_EMAIL, to, msg.as_string())
+                _send_one(smtp, subject, html, to)
                 sent += 1
                 print(f"  ✓ {to}")
                 time.sleep(0.3)  # stay within Gmail rate limits
@@ -219,18 +242,19 @@ def send(subject: str, html: str, dry_run: bool = False):
                 failed.append((to, str(e)))
                 print(f"  ✗ {to}: {e}")
 
-    print(f"\nSent: {sent}/{len(RECIPIENTS)}")
-    if failed:
-        print("Failed:")
-        for addr, err in failed:
-            print(f"  {addr}: {err}")
+        print(f"\nSent: {sent}/{len(RECIPIENTS)}")
+        if failed:
+            print("Failed:")
+            for addr, err in failed:
+                print(f"  {addr}: {err}")
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--subject", default=None, help="Override email subject line")
-    parser.add_argument("--message", default=None, help="Override body copy (use \\n\\n for paragraphs)")
-    parser.add_argument("--dry-run", action="store_true", help="Build HTML and print stats without sending")
+    parser.add_argument("--subject",  default=None, help="Override email subject line")
+    parser.add_argument("--message",  default=None, help="Override body copy (use \\n\\n for paragraphs)")
+    parser.add_argument("--dry-run",  action="store_true", help="Build HTML and save preview, no emails sent")
+    parser.add_argument("--send-all", action="store_true", help="After preview send to Kevin, deliver to all 32 recipients")
     args = parser.parse_args()
 
     month = datetime.now().strftime("%B %Y")
@@ -238,7 +262,7 @@ def main():
     message = args.message.replace("\\n\\n", "\n\n") if args.message else DEFAULT_MESSAGE
 
     html = build_html(message)
-    send(subject, html, dry_run=args.dry_run)
+    send(subject, html, dry_run=args.dry_run, send_all=args.send_all)
 
 
 if __name__ == "__main__":
