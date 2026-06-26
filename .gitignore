@@ -7,6 +7,8 @@ agents/box_elder_prospects/__pycache__/
 agents/zoning_monitor/config.py
 agents/zoning_monitor/state.json
 agents/zoning_monitor/__pycache__/
+agents/hwy1416_newsletter/config.py
+agents/hwy1416_newsletter/__pycache__/
 preview_report.html
 .claude-flow/
 **/.claude-flow/
