@@ -85,7 +85,7 @@
     Live
   </div>
   <h1>Monthly Listing Newsletter</h1>
-  <p class="subtitle">You name the properties — the agent writes the copy, builds the email with photos, and sends it to your investor and developer list. Powered by Claude AI.</p>
+  <p class="subtitle">You pick the properties — give it the address, price, specs, and a photo URL. The agent writes the copy, builds a photo-card email, and sends it to your investor list. Powered by Claude AI.</p>
 
   <div class="divider"></div>
 
@@ -102,19 +102,19 @@
     <div class="flow">
       <div class="flow-step">
         <div class="flow-num">1</div>
-        <div class="flow-body"><strong>You provide the property addresses</strong> — just paste them comma-separated on the command line. Add an optional intro message for context this month.</div>
+        <div class="flow-body"><strong>One <code>--listing</code> flag per property</strong> — pipe-delimited: <code>"Address | Price | Specs | Photo URL"</code>. Price, specs, and photo are optional but the more you give it, the better the copy and email card look.</div>
       </div>
       <div class="flow-step">
         <div class="flow-num">2</div>
-        <div class="flow-body"><strong>Claude writes the copy</strong> — for each property it generates a punchy headline, 2–3 sentence investment description, and a call-to-action. Professional commercial real estate tone, focused on what developers and investors care about.</div>
+        <div class="flow-body"><strong>Claude writes the copy</strong> — it sees your price and specs and generates an ALL-CAPS headline, 2–3 sentence investment pitch, and a CTA. Commercial tone aimed at developers and investors.</div>
       </div>
       <div class="flow-step">
         <div class="flow-num">3</div>
-        <div class="flow-body"><strong>Preview sent to you first</strong> — the email always goes to <code>arecblackhills@gmail.com</code> with a [PREVIEW] tag. Review it in Gmail before it goes to anyone else.</div>
+        <div class="flow-body"><strong>Each listing becomes a photo card</strong> — full-width hero photo, dark header with headline, price badge, spec chips (size · zoning · highlights), AI copy, and a contact button. Photos load from any URL — LoopNet, your own hosted images, anywhere.</div>
       </div>
       <div class="flow-step">
         <div class="flow-num">4</div>
-        <div class="flow-body"><strong>Add <code>--send-all</code> when ready</strong> — delivers to all 32 investors and developers on the list.</div>
+        <div class="flow-body"><strong>Always previews to you first</strong> — email goes to <code>arecblackhills@gmail.com</code> with [PREVIEW] tag. Review it in Gmail, then add <code>--send-all</code> to deliver to the full list.</div>
       </div>
     </div>
   </div>
@@ -176,18 +176,19 @@
     <div class="example-box">
       <div class="example-title">Sample Command</div>
       <div class="example-cmd">python3 generate_newsletter.py \<br/>
-  --properties "Highway 1416 Box Elder SD 24.75 acres commercial, 123 Tower Rd Rapid City SD multifamily site" \<br/>
-  --message "Strong buyer demand heading into Q3. Ellsworth corridor continues to attract institutional capital." \<br/>
+  --listing "Highway 1416 Box Elder SD | $3,750,000 | 24.75 AC · C-2 · Hwy Frontage | https://images1.loopnet.com/i2/QGILchjq.../photo.png" \<br/>
+  --listing "456 Tower Rd Rapid City SD | $1,200,000 | 8 AC · Multifamily Ready" \<br/>
+  --message "Strong demand heading into Q3. Ellsworth corridor continues to attract institutional capital." \<br/>
   --subject "Black Hills Commercial — July 2026 Featured Listings"</div>
-      <div class="example-desc">This runs Claude on each property address, generates a headline + 2–3 sentence pitch + CTA for each, and assembles a single branded email. Add <code>--dry-run</code> to preview first, <code>--send-all</code> when ready to send.</div>
+      <div class="example-desc">One <code>--listing</code> per property. Each field separated by <code>|</code>: Name, Price, Specs, Photo URL. Photo URL is optional — paste the LoopNet image URL directly. Claude generates the headline and copy from your specs. Add <code>--dry-run</code> first, <code>--send-all</code> when ready.</div>
     </div>
 
     <div class="example-box" style="border-color:rgba(52,211,153,0.2);background:rgba(16,185,129,0.06);">
       <div class="example-title" style="color:#34D399;">Dry Run — See It Before Sending</div>
       <div class="example-cmd" style="color:#34D399;">python3 generate_newsletter.py \<br/>
-  --properties "Highway 1416 Box Elder SD" \<br/>
+  --listing "Highway 1416 Box Elder SD | $3,750,000 | 24.75 AC · C-2 | https://your-photo-url.jpg" \<br/>
   --dry-run</div>
-      <div class="example-desc">Saves <code>preview_listing_newsletter.html</code> in the same folder. Open it in any browser — shows the exact email layout with AI-generated copy. No emails sent.</div>
+      <div class="example-desc">Saves <code>preview_listing_newsletter.html</code> in the same folder. Open it in any browser — shows the exact email with photo card, price badge, spec chips, and AI-generated copy. No emails sent.</div>
     </div>
   </div>
 
