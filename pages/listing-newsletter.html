@@ -135,6 +135,227 @@ h1{font-size:28px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
   </div>
 </main>
 
+<style>
+/* ── Site Plan Section ── */
+.sp-section{max-width:780px;margin:0 auto;padding:0 2rem 5rem;}
+.sp-header{margin-bottom:20px;}
+.sp-label{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.25);display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.sp-label::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.08);}
+.sp-title{font-size:18px;font-weight:700;color:#fff;margin-bottom:5px;}
+.sp-meta{font-size:12px;color:rgba(255,255,255,0.4);font-family:'Josefin Sans',sans-serif;letter-spacing:0.05em;}
+.sp-canvas{border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;background:#F5EFE4;margin:18px 0;}
+.sp-legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:14px;}
+.sp-li{display:flex;align-items:center;gap:7px;font-size:10px;color:rgba(255,255,255,0.4);font-family:'Josefin Sans',sans-serif;letter-spacing:0.05em;}
+.sp-li-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+.sp-note{font-size:10px;color:rgba(255,255,255,0.2);line-height:1.7;font-style:italic;}
+</style>
+
+<div class="sp-section">
+  <div class="sp-header">
+    <div class="sp-label">Development Layout</div>
+    <div class="sp-title">MDR Development — Conceptual Site Plan</div>
+    <div class="sp-meta">Highway 1416 · Box Elder, SD 57719 · 24.75 Acres · C-2 Zoning</div>
+  </div>
+
+  <div class="sp-canvas">
+    <svg viewBox="0 0 680 448" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">
+      <!-- Background paper -->
+      <rect width="680" height="448" fill="#F5EFE4"/>
+
+      <!-- Site boundary -->
+      <polygon points="62,52 622,46 640,248 556,422 118,420 44,275" fill="#EDE6D5" stroke="#C0B89A" stroke-width="1.5"/>
+
+      <!-- ── Green spaces ── -->
+      <!-- Central landscaped corridor -->
+      <path d="M 198,148 Q 295,138 340,146 Q 390,154 482,148 L 482,168 Q 388,178 340,170 Q 290,163 198,172 Z" fill="#8FBC70" opacity="0.55"/>
+      <!-- West cluster courtyard -->
+      <ellipse cx="172" cy="288" rx="68" ry="52" fill="#8FBC70" opacity="0.45"/>
+      <!-- East cluster courtyard -->
+      <ellipse cx="490" cy="288" rx="64" ry="50" fill="#8FBC70" opacity="0.45"/>
+      <!-- South open space / trail corridor -->
+      <path d="M 108,344 Q 220,328 340,334 Q 462,338 556,344 Q 558,398 540,412 Q 420,428 340,429 Q 222,430 138,420 Q 100,414 108,344 Z" fill="#8FBC70" opacity="0.48"/>
+
+      <!-- ── Water features ── -->
+      <!-- West pool -->
+      <ellipse cx="172" cy="275" rx="22" ry="15" fill="#5BC4C0" opacity="0.72"/>
+      <ellipse cx="172" cy="275" rx="16" ry="10" fill="#3AB8B4" opacity="0.55"/>
+      <!-- East pool -->
+      <ellipse cx="492" cy="275" rx="21" ry="15" fill="#5BC4C0" opacity="0.72"/>
+      <ellipse cx="492" cy="275" rx="15" ry="10" fill="#3AB8B4" opacity="0.55"/>
+      <!-- Central amenity pool -->
+      <ellipse cx="340" cy="252" rx="38" ry="24" fill="#5BC4C0" opacity="0.68"/>
+      <ellipse cx="340" cy="252" rx="30" ry="18" fill="#3AB8B4" opacity="0.5"/>
+      <!-- Stormwater retention (south) -->
+      <path d="M 225,388 Q 285,374 340,378 Q 395,374 450,388 Q 458,408 430,416 Q 380,424 340,426 Q 300,424 252,416 Q 222,410 225,388 Z" fill="#5BC4C0" opacity="0.38"/>
+
+      <!-- ── Roads ── -->
+      <!-- Highway 1416 -->
+      <rect x="0" y="18" width="680" height="26" fill="#C2BAA8"/>
+      <line x1="0" y1="31" x2="680" y2="31" stroke="#A89E8C" stroke-width="1" stroke-dasharray="18,10"/>
+      <!-- Highway shoulder line -->
+      <rect x="0" y="42" width="680" height="10" fill="#C2BAA8" opacity="0.5"/>
+
+      <!-- Main entry drive (center) -->
+      <rect x="220" y="46" width="20" height="128" fill="#D0C8B5" rx="1"/>
+
+      <!-- West loop road -->
+      <path d="M 116,180 Q 88,205 84,252 Q 82,298 108,330 Q 138,358 178,362 Q 220,364 244,344 Q 266,326 268,298 Q 270,268 250,246 Q 230,224 210,218 Q 186,210 164,214 Q 138,220 120,238 Q 105,256 106,278" stroke="#D0C8B5" stroke-width="14" fill="none" stroke-linecap="round"/>
+
+      <!-- East loop road -->
+      <path d="M 464,180 Q 494,184 522,204 Q 554,228 556,272 Q 558,314 534,342 Q 508,366 474,368 Q 440,370 416,352 Q 394,336 392,308 Q 390,278 406,256 Q 424,234 448,224 Q 468,216 486,218" stroke="#D0C8B5" stroke-width="14" fill="none" stroke-linecap="round"/>
+
+      <!-- East-west connector road -->
+      <rect x="264" y="272" width="130" height="16" fill="#D0C8B5" rx="1"/>
+
+      <!-- ── Commercial strip buildings (N edge) ── -->
+      <!-- Bldg 1 -->
+      <rect x="72" y="57" width="74" height="44" fill="#FAFAF2" stroke="#C8C0AE" stroke-width="1" rx="2"/>
+      <rect x="72" y="57" width="74" height="3" fill="#C0B89A"/>
+      <!-- Bldg 2 -->
+      <rect x="158" y="56" width="52" height="44" fill="#FAFAF2" stroke="#C8C0AE" stroke-width="1" rx="2"/>
+      <rect x="158" y="56" width="52" height="3" fill="#C0B89A"/>
+      <!-- Bldg 3 — entry road gap at ~220-240 -->
+      <rect x="253" y="55" width="74" height="45" fill="#FAFAF2" stroke="#C8C0AE" stroke-width="1" rx="2"/>
+      <rect x="253" y="55" width="74" height="3" fill="#C0B89A"/>
+      <!-- Bldg 4 -->
+      <rect x="340" y="54" width="56" height="45" fill="#FAFAF2" stroke="#C8C0AE" stroke-width="1" rx="2"/>
+      <rect x="340" y="54" width="56" height="3" fill="#C0B89A"/>
+      <!-- Bldg 5 -->
+      <rect x="408" y="53" width="72" height="45" fill="#FAFAF2" stroke="#C8C0AE" stroke-width="1" rx="2"/>
+      <rect x="408" y="53" width="72" height="3" fill="#C0B89A"/>
+      <!-- Bldg 6 -->
+      <rect x="492" y="52" width="70" height="45" fill="#FAFAF2" stroke="#C8C0AE" stroke-width="1" rx="2"/>
+      <rect x="492" y="52" width="70" height="3" fill="#C0B89A"/>
+      <!-- Bldg 7 -->
+      <rect x="574" y="52" width="54" height="45" fill="#FAFAF2" stroke="#C8C0AE" stroke-width="1" rx="2"/>
+      <rect x="574" y="52" width="54" height="3" fill="#C0B89A"/>
+
+      <!-- ── West multifamily cluster ── -->
+      <rect x="100" y="198" width="50" height="34" fill="#FAFAF2" stroke="#C8C0AE" stroke-width="1" rx="2"/>
+      <rect x="100" y="198" width="50" height="2" fill="#C0B89A"/>
+      <rect x="160" y="192" width="50" height="34" fill="#FAFAF2" stroke="#C8C0AE" stroke-width="1" rx="2"/>
+      <rect x="160" y="192" width="50" height="2" fill="#C0B89A"/>
+      <rect x="93" y="244" width="48" height="32" fill="#FAFAF2" stroke="#C8C0AE" stroke-width="1" rx="2"/>
+      <rect x="93" y="244" width="48" height="2" fill="#C0B89A"/>
+      <rect x="150" y="250" width="48" height="32" fill="#FAFAF2" stroke="#C8C0AE" stroke-width="1" rx="2"/>
+      <rect x="150" y="250" width="48" height="2" fill="#C0B89A"/>
+      <rect x="95" y="296" width="48" height="32" fill="#FAFAF2" stroke="#C8C0AE" stroke-width="1" rx="2"/>
+      <rect x="95" y="296" width="48" height="2" fill="#C0B89A"/>
+      <rect x="152" y="302" width="48" height="32" fill="#FAFAF2" stroke="#C8C0AE" stroke-width="1" rx="2"/>
+      <rect x="152" y="302" width="48" height="2" fill="#C0B89A"/>
+
+      <!-- ── East multifamily cluster ── -->
+      <rect x="462" y="192" width="50" height="34" fill="#FAFAF2" stroke="#C8C0AE" stroke-width="1" rx="2"/>
+      <rect x="462" y="192" width="50" height="2" fill="#C0B89A"/>
+      <rect x="522" y="198" width="48" height="34" fill="#FAFAF2" stroke="#C8C0AE" stroke-width="1" rx="2"/>
+      <rect x="522" y="198" width="48" height="2" fill="#C0B89A"/>
+      <rect x="460" y="240" width="52" height="32" fill="#FAFAF2" stroke="#C8C0AE" stroke-width="1" rx="2"/>
+      <rect x="460" y="240" width="52" height="2" fill="#C0B89A"/>
+      <rect x="520" y="246" width="50" height="32" fill="#FAFAF2" stroke="#C8C0AE" stroke-width="1" rx="2"/>
+      <rect x="520" y="246" width="50" height="2" fill="#C0B89A"/>
+      <rect x="462" y="292" width="50" height="32" fill="#FAFAF2" stroke="#C8C0AE" stroke-width="1" rx="2"/>
+      <rect x="462" y="292" width="50" height="2" fill="#C0B89A"/>
+      <rect x="520" y="292" width="50" height="32" fill="#FAFAF2" stroke="#C8C0AE" stroke-width="1" rx="2"/>
+      <rect x="520" y="292" width="50" height="2" fill="#C0B89A"/>
+
+      <!-- ── Central amenity pavilion ── -->
+      <rect x="298" y="196" width="84" height="48" fill="#F5EDE0" stroke="#C8C0AE" stroke-width="1" rx="3"/>
+      <rect x="298" y="196" width="84" height="3" fill="#BEB498"/>
+
+      <!-- ── Trees ── -->
+      <!-- Highway edge trees -->
+      <circle cx="68" cy="48" r="5" fill="#5A8040" opacity="0.7"/>
+      <circle cx="156" cy="47" r="4" fill="#6A9048" opacity="0.65"/>
+      <circle cx="246" cy="47" r="5" fill="#5A8040" opacity="0.7"/>
+      <circle cx="330" cy="47" r="4" fill="#6A9048" opacity="0.65"/>
+      <circle cx="400" cy="47" r="5" fill="#5A8040" opacity="0.7"/>
+      <circle cx="488" cy="47" r="4" fill="#6A9048" opacity="0.65"/>
+      <circle cx="570" cy="47" r="5" fill="#5A8040" opacity="0.7"/>
+      <circle cx="630" cy="47" r="4" fill="#6A9048" opacity="0.65"/>
+      <!-- Site perimeter trees -->
+      <circle cx="52" cy="120" r="6" fill="#5A8040" opacity="0.6"/>
+      <circle cx="50" cy="185" r="5" fill="#6A9048" opacity="0.55"/>
+      <circle cx="48" cy="245" r="6" fill="#5A8040" opacity="0.6"/>
+      <circle cx="52" cy="308" r="5" fill="#6A9048" opacity="0.55"/>
+      <circle cx="68" cy="360" r="6" fill="#5A8040" opacity="0.6"/>
+      <circle cx="112" cy="396" r="5" fill="#6A9048" opacity="0.55"/>
+      <circle cx="200" cy="416" r="6" fill="#5A8040" opacity="0.6"/>
+      <circle cx="290" cy="418" r="5" fill="#6A9048" opacity="0.55"/>
+      <circle cx="390" cy="418" r="6" fill="#5A8040" opacity="0.6"/>
+      <circle cx="480" cy="414" r="5" fill="#6A9048" opacity="0.55"/>
+      <circle cx="558" cy="405" r="6" fill="#5A8040" opacity="0.6"/>
+      <circle cx="604" cy="378" r="5" fill="#6A9048" opacity="0.55"/>
+      <circle cx="630" cy="318" r="6" fill="#5A8040" opacity="0.6"/>
+      <circle cx="640" cy="250" r="5" fill="#6A9048" opacity="0.55"/>
+      <circle cx="634" cy="180" r="6" fill="#5A8040" opacity="0.6"/>
+      <!-- Cluster courtyard trees -->
+      <circle cx="132" cy="342" r="5" fill="#5A8040" opacity="0.6"/>
+      <circle cx="215" cy="360" r="4" fill="#6A9048" opacity="0.55"/>
+      <circle cx="452" cy="345" r="5" fill="#5A8040" opacity="0.6"/>
+      <circle cx="540" cy="355" r="4" fill="#6A9048" opacity="0.55"/>
+      <circle cx="230" cy="200" r="5" fill="#5A8040" opacity="0.6"/>
+      <circle cx="235" cy="240" r="4" fill="#6A9048" opacity="0.55"/>
+      <circle cx="435" cy="205" r="5" fill="#5A8040" opacity="0.6"/>
+      <circle cx="440" cy="250" r="4" fill="#6A9048" opacity="0.55"/>
+
+      <!-- ── Labels ── -->
+      <!-- Highway label -->
+      <text x="340" y="33" text-anchor="middle" font-family="Arial,sans-serif" font-size="7.5" font-weight="700" letter-spacing="2.5" fill="#5C5040">HIGHWAY 1416</text>
+
+      <!-- Frontage annotation -->
+      <line x1="68" y1="49" x2="628" y2="49" stroke="#8C7860" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.6"/>
+      <line x1="68" y1="45" x2="68" y2="53" stroke="#8C7860" stroke-width="1" opacity="0.6"/>
+      <line x1="628" y1="45" x2="628" y2="53" stroke="#8C7860" stroke-width="1" opacity="0.6"/>
+      <text x="340" y="46" text-anchor="middle" font-family="Arial,sans-serif" font-size="6.5" fill="#8C7860" letter-spacing="1">~1,200 FT FRONTAGE</text>
+
+      <!-- Zone labels -->
+      <text x="340" y="72" text-anchor="middle" font-family="Arial,sans-serif" font-size="6.5" font-weight="700" letter-spacing="1.5" fill="#7A7060">COMMERCIAL FRONTAGE — C-2</text>
+
+      <text x="150" y="178" text-anchor="middle" font-family="Arial,sans-serif" font-size="6.5" font-weight="700" letter-spacing="1" fill="#7A7060">PHASE 1</text>
+      <text x="150" y="188" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#9A9080">MULTIFAMILY</text>
+
+      <text x="490" y="178" text-anchor="middle" font-family="Arial,sans-serif" font-size="6.5" font-weight="700" letter-spacing="1" fill="#7A7060">PHASE 2</text>
+      <text x="490" y="188" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#9A9080">MULTIFAMILY</text>
+
+      <text x="340" y="210" text-anchor="middle" font-family="Arial,sans-serif" font-size="6.5" font-weight="700" letter-spacing="1" fill="#7A7060">AMENITY</text>
+      <text x="340" y="219" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#9A9080">COURT</text>
+
+      <text x="340" y="370" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#9A9080" letter-spacing="1">OPEN SPACE / STORMWATER</text>
+
+      <!-- Entry label -->
+      <text x="230" y="166" text-anchor="middle" font-family="Arial,sans-serif" font-size="5.5" fill="#9A9080" letter-spacing="0.5">ENTRY</text>
+
+      <!-- Scale bar -->
+      <rect x="510" y="430" width="100" height="3" fill="#9A9080"/>
+      <rect x="510" y="428" width="1" height="7" fill="#9A9080"/>
+      <rect x="560" y="428" width="1" height="7" fill="#9A9080"/>
+      <rect x="610" y="428" width="1" height="7" fill="#9A9080"/>
+      <text x="510" y="443" font-family="Arial,sans-serif" font-size="6" fill="#9A9080">0</text>
+      <text x="553" y="443" font-family="Arial,sans-serif" font-size="6" fill="#9A9080">250 FT</text>
+      <text x="601" y="443" font-family="Arial,sans-serif" font-size="6" fill="#9A9080">500 FT</text>
+
+      <!-- North arrow -->
+      <g transform="translate(48, 428)">
+        <polygon points="0,-14 5,0 0,-4 -5,0" fill="#8C7860"/>
+        <polygon points="0,-4 5,0 0,8 -5,0" fill="#C0B89A"/>
+        <text x="0" y="18" text-anchor="middle" font-family="Arial,sans-serif" font-size="7.5" font-weight="700" fill="#7A7060">N</text>
+      </g>
+
+      <!-- Site area label -->
+      <text x="340" y="430" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" font-weight="700" fill="#8C7860" letter-spacing="1.5">24.75 AC · BOX ELDER, SD · ALL UTILITIES</text>
+    </svg>
+  </div>
+
+  <div class="sp-legend">
+    <div class="sp-li"><span class="sp-li-dot" style="background:#FAFAF2;border:1px solid #C8C0AE;"></span>Building Footprints</div>
+    <div class="sp-li"><span class="sp-li-dot" style="background:#8FBC70;opacity:0.6;"></span>Landscaped Open Space</div>
+    <div class="sp-li"><span class="sp-li-dot" style="background:#5BC4C0;"></span>Pools / Water Features</div>
+    <div class="sp-li"><span class="sp-li-dot" style="background:#D0C8B5;"></span>Internal Circulation</div>
+    <div class="sp-li"><span class="sp-li-dot" style="background:#5A8040;border-radius:50%;"></span>Landscaping / Trees</div>
+  </div>
+  <p class="sp-note">Conceptual site plan — not to scale. Actual development subject to final design, engineering, and regulatory approval. For illustration purposes only.</p>
+</div>
+
 <script src="../js/dev-news.js"></script>
 <script>
 const STORAGE_KEY = 'kw_anthropic_key';
