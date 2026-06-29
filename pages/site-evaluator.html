@@ -1,212 +1,583 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Site Evaluator — Kevin Andreson</title>
-  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box;}
-    :root{--bg:#000;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.1);--text:#fff;--muted:rgba(255,255,255,0.5);--dim:rgba(255,255,255,0.25);}
-    body{font-family:'Josefin Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;}
-    nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.8);backdrop-filter:blur(12px);}
-    .nav-back{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;} .nav-back:hover{color:var(--text);}
-    .nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-    .nav-title{font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
-    main{max-width:860px;margin:0 auto;padding:3rem 2rem 4rem;}
-    .breadcrumb{font-size:11px;color:var(--dim);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:16px;}
-    .breadcrumb a{color:var(--dim);text-decoration:none;} .breadcrumb a:hover{color:var(--muted);}
-    .agent-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:14px;background:rgba(16,185,129,0.15);color:#34D399;border:1px solid rgba(52,211,153,0.3);}
-    h1{font-size:32px;font-weight:700;letter-spacing:0.02em;margin-bottom:10px;}
-    .subtitle{font-size:15px;color:var(--muted);max-width:600px;line-height:1.7;}
-    .divider{height:1px;background:var(--border);margin:2.5rem 0;}
-    .section{margin-bottom:2.5rem;}
-    .section-title{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--dim);margin-bottom:1rem;display:flex;align-items:center;gap:10px;}
-    .section-title::after{content:'';flex:1;height:1px;background:var(--border);}
-    .what-it-does{font-size:14px;color:rgba(255,255,255,0.7);line-height:1.8;}
-    .config-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
-    .config-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem;}
-    .config-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;}
-    .config-value{font-size:13px;color:var(--text);font-weight:500;} .config-value code{font-family:monospace;font-size:12px;color:#A78BFA;}
-    .config-value a{color:#60A5FA;text-decoration:none;} .config-value a:hover{text-decoration:underline;}
-    .prompt-block{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:1.5rem;}
-    .prompt-block pre{font-family:monospace;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.8;white-space:pre-wrap;word-break:break-word;}
-    .steps{display:flex;flex-direction:column;gap:1rem;}
-    .step{display:flex;gap:16px;align-items:flex-start;}
-    .step-num{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;margin-top:1px;}
-    .step-body{font-size:13px;color:rgba(255,255,255,0.65);line-height:1.7;} .step-body strong{color:var(--text);}
-    .step-body code{font-family:monospace;font-size:11px;background:rgba(255,255,255,0.07);padding:2px 6px;border-radius:4px;color:#A78BFA;}
-    .output-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem;margin-top:.75rem;}
-    .output-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px;}
-    .output-desc{font-size:12px;color:var(--muted);line-height:1.6;}
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Site Evaluator — Kevin Andreson</title>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#000;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.1);--text:#fff;--muted:rgba(255,255,255,0.5);--dim:rgba(255,255,255,0.25);}
+body{font-family:'Josefin Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
-    /* Schedule table */
-    .schedule-table{width:100%;border-collapse:collapse;margin-top:4px;}
-    .schedule-table th{text-align:left;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--dim);padding:0 16px 10px 0;border-bottom:1px solid var(--border);}
-    .schedule-table td{padding:11px 16px 11px 0;font-size:12px;color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:top;}
-    .schedule-table td:first-child{color:var(--text);font-weight:600;white-space:nowrap;}
-    .schedule-table td:nth-child(2){color:rgba(255,255,255,0.8);font-weight:500;}
-    .sched-link{color:#60A5FA;text-decoration:none;} .sched-link:hover{text-decoration:underline;}
-    .day-pill{display:inline-block;font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:2px 8px;border-radius:4px;background:rgba(59,130,246,0.12);color:#60A5FA;border:1px solid rgba(96,165,250,0.2);}
-    .day-pill.anytime{background:rgba(139,92,246,0.12);color:#A78BFA;border-color:rgba(167,139,250,0.2);}
-  </style>
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.9);backdrop-filter:blur(12px);}
+.nav-back{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;} .nav-back:hover{color:var(--text);}
+.nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.nav-title{font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+
+main{max-width:860px;margin:0 auto;padding:2.5rem 2rem 5rem;}
+h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
+.subtitle{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:2rem;}
+
+/* API Key */
+.key-banner{display:flex;align-items:center;gap:12px;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.25);border-radius:10px;padding:14px 18px;margin-bottom:2rem;}
+.key-banner.ok{background:rgba(16,185,129,0.08);border-color:rgba(52,211,153,0.25);}
+.key-banner-label{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#A78BFA;white-space:nowrap;}
+.key-banner.ok .key-banner-label{color:#34D399;}
+.key-input{flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:8px 12px;font-size:12px;font-family:monospace;color:#fff;outline:none;} .key-input:focus{border-color:#A78BFA;}
+.key-btn{padding:8px 16px;background:#A78BFA;color:#000;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;border:none;border-radius:6px;cursor:pointer;white-space:nowrap;} .key-btn:hover{background:#c4b5fd;}
+.key-status{font-size:12px;color:#34D399;} .key-clear{font-size:11px;color:rgba(255,255,255,0.3);cursor:pointer;text-decoration:underline;margin-left:8px;} .key-clear:hover{color:rgba(255,255,255,0.6);}
+
+/* Section */
+.section-label{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--dim);margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* Fields */
+.form-section{margin-bottom:1.75rem;}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.field-full{grid-column:1/-1;}
+.field-label{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:5px;}
+.field-input,.field-select,.field-textarea{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:9px 12px;font-size:12px;font-family:'Josefin Sans',sans-serif;color:#fff;outline:none;}
+.field-input:focus,.field-select:focus,.field-textarea:focus{border-color:rgba(255,255,255,0.3);}
+.field-input::placeholder,.field-textarea::placeholder{color:rgba(255,255,255,0.2);}
+.field-select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.4)' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
+.field-select option{background:#111;color:#fff;}
+.field-hint{font-size:10px;color:rgba(255,255,255,0.2);margin-top:4px;font-family:'DM Sans',sans-serif;}
+
+/* Dev Type Selector */
+.dev-type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.dev-type-tile{padding:14px 8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;text-align:center;cursor:pointer;transition:all .2s;user-select:none;}
+.dev-type-tile:hover{background:rgba(255,255,255,0.06);}
+.dev-type-tile.selected{background:rgba(37,99,235,0.12);border-color:rgba(96,165,250,0.35);}
+.dev-type-icon{font-size:20px;display:block;margin-bottom:6px;}
+.dev-type-name{font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(255,255,255,0.5);}
+.dev-type-tile.selected .dev-type-name{color:#60A5FA;}
+
+/* Buttons */
+.btn-row{display:flex;gap:10px;margin-top:1.5rem;flex-wrap:wrap;}
+.btn-primary{flex:1;min-width:200px;padding:14px;background:linear-gradient(135deg,#1B3A6B,#2563EB);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:opacity .2s;}
+.btn-primary:hover{opacity:0.9;} .btn-primary:disabled{opacity:0.4;cursor:not-allowed;}
+.btn-secondary{padding:14px 22px;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.12);border-radius:10px;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;}
+.btn-secondary:hover{background:rgba(255,255,255,0.09);}
+
+/* Status */
+.status{font-size:12px;color:var(--muted);text-align:center;margin-top:12px;min-height:18px;}
+.status.error{color:#F87171;} .status.ok{color:#34D399;}
+
+/* Output */
+#output-section{display:none;margin-top:2.5rem;}
+
+/* Feasibility Report */
+.report-block{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.report-header{background:rgba(37,99,235,0.1);border-bottom:1px solid rgba(96,165,250,0.15);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;}
+.report-title{font-size:13px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#60A5FA;}
+.report-badge{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:3px 10px;border-radius:10px;}
+.badge-green{background:rgba(16,185,129,0.15);color:#34D399;border:1px solid rgba(52,211,153,0.25);}
+.badge-yellow{background:rgba(245,158,11,0.15);color:#FBBF24;border:1px solid rgba(251,191,36,0.25);}
+.badge-red{background:rgba(239,68,68,0.15);color:#F87171;border:1px solid rgba(248,113,113,0.25);}
+.badge-gray{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.4);border:1px solid rgba(255,255,255,0.1);}
+.report-body{padding:20px;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.9;font-family:'DM Sans',sans-serif;white-space:pre-wrap;}
+
+/* Proforma Grid */
+.proforma-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.proforma-section-head{background:rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.07);padding:12px 20px;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.4);}
+.proforma-rows{padding:6px 0;}
+.proforma-row{display:flex;align-items:center;justify-content:space-between;padding:9px 20px;border-bottom:1px solid rgba(255,255,255,0.04);}
+.proforma-row:last-child{border-bottom:none;}
+.proforma-row.total{background:rgba(37,99,235,0.07);border-top:1px solid rgba(96,165,250,0.15);border-bottom:none;margin-top:2px;}
+.proforma-row.total .pf-label{color:rgba(255,255,255,0.8);font-weight:700;}
+.proforma-row.total .pf-value{color:#60A5FA;font-weight:700;}
+.pf-label{font-size:11px;color:rgba(255,255,255,0.5);font-family:'DM Sans',sans-serif;}
+.pf-value{font-size:12px;font-weight:700;color:rgba(255,255,255,0.8);font-variant-numeric:tabular-nums;}
+.pf-value.positive{color:#34D399;} .pf-value.negative{color:#F87171;}
+
+/* Returns grid */
+.returns-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+.return-tile{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px;text-align:center;}
+.return-val{font-size:22px;font-weight:700;color:#fff;margin-bottom:4px;}
+.return-val.green{color:#34D399;} .return-val.yellow{color:#FBBF24;}
+.return-label{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);}
+
+/* Action row */
+.action-row{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.btn-print{padding:10px 22px;background:#1B3A6B;color:#fff;border:none;border-radius:7px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;}
+.btn-print:hover{background:#2563EB;}
+.btn-cp{padding:10px 18px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.12);border-radius:7px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;}
+.btn-cp:hover{background:rgba(255,255,255,0.12);}
+.btn-reset{padding:10px 18px;background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.07);border-radius:7px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;}
+
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:7px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.disclaimer{margin-top:16px;padding:14px 18px;background:rgba(245,158,11,0.06);border:1px solid rgba(251,191,36,0.15);border-radius:8px;font-size:10px;color:rgba(255,255,255,0.35);line-height:1.8;font-family:'DM Sans',sans-serif;}
+
+@media print{
+  nav,.btn-row,.action-row,.key-banner,.disclaimer,.form-section,.section-label{display:none!important;}
+  body{background:#fff;color:#000;}
+  .report-body,.pf-label,.pf-value,.return-label{color:#333!important;}
+  .return-val{color:#000!important;}
+  #output-section{display:block!important;}
+}
+</style>
 </head>
 <body>
+
 <nav>
   <a class="nav-back" href="../index.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back to Dashboard</a>
   <div class="nav-title">FOR KEVIN ANDRESON</div>
 </nav>
+
 <main>
-  <div class="breadcrumb"><a href="../index.html">Dashboard</a> / Site Evaluator</div>
-  <div class="agent-badge">
-    <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor"/></svg>
-    Running
-  </div>
-  <h1>Development Site Evaluator</h1>
-  <p class="subtitle">Monitors Rapid City and Pennington County planning channels for new development activity — and evaluates specific parcels on demand with a full feasibility report.</p>
+  <h1>Site Evaluator + Proforma</h1>
+  <p class="subtitle">Enter a parcel's address, size, zoning, and price. Claude evaluates development feasibility and generates a proforma with estimated costs, returns, and investment metrics.</p>
 
-  <div class="divider"></div>
-
-  <div class="section">
-    <div class="section-title">What This Agent Does</div>
-    <p class="what-it-does">
-      Two functions in one agent:<br><br>
-      <strong>1. Weekly monitoring</strong> — Checks Pennington County and Rapid City planning sources on a set schedule (see below). When something new appears — a rezoning, a plat, a conditional use permit, a major permit — it sends an alert so Kevin can act before it hits the open market.<br><br>
-      <strong>2. On-demand site analysis</strong> — Input any parcel address or APN in Rapid City, SD, and the agent returns a complete development feasibility report: zoning classification, comparable land sales, proforma model with estimated costs and returns, and a plain-English go/no-go recommendation.
-    </p>
+  <div class="key-banner" id="key-banner">
+    <div class="key-banner-label">Anthropic API Key</div>
+    <input class="key-input" type="password" id="key-input" placeholder="sk-ant-api03-…" autocomplete="off"/>
+    <button class="key-btn" onclick="saveKey()">Save Key</button>
   </div>
 
-  <div class="section">
-    <div class="section-title">Monitoring Schedule</div>
-    <table class="schedule-table">
-      <thead>
-        <tr>
-          <th>Day</th>
-          <th>What to Check</th>
-          <th>What You're Looking For</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><span class="day-pill">Monday</span></td>
-          <td><a class="sched-link" href="https://www.boxeldersd.gov/departments/planningandzoning" target="_blank">Box Elder Planning Commission Agendas</a></td>
-          <td>Rezoning requests, plats, subdivisions, apartment proposals, industrial projects</td>
-        </tr>
-        <tr>
-          <td><span class="day-pill">Monday</span></td>
-          <td><a class="sched-link" href="https://www.boxeldersd.gov/departments/planningandzoning" target="_blank">Box Elder Planning &amp; Zoning Department</a></td>
-          <td>Maps, planning documents, zoning changes, permit info</td>
-        </tr>
-        <tr>
-          <td><span class="day-pill">Monday</span></td>
-          <td><a class="sched-link" href="https://pennco.org/planning" target="_blank">Pennington County Planning Commission</a></td>
-          <td>County rezoning, conditional use permits, subdivisions outside city limits</td>
-        </tr>
-        <tr>
-          <td><span class="day-pill">Tuesday</span></td>
-          <td><a class="sched-link" href="https://www.boxeldersd.gov/departments/planningandzoning" target="_blank">Box Elder Building Permits</a></td>
-          <td>New commercial and residential construction permits</td>
-        </tr>
-        <tr>
-          <td><span class="day-pill">Wednesday</span></td>
-          <td><a class="sched-link" href="https://pennco.org/planning" target="_blank">Pennington County Planning Department</a></td>
-          <td>New plats, subdivision applications, zoning cases</td>
-        </tr>
-        <tr>
-          <td><span class="day-pill">Thursday</span></td>
-          <td><a class="sched-link" href="https://www.boxeldersd.gov/departments/planningandzoning" target="_blank">Box Elder City Council Meetings</a></td>
-          <td>Final approvals of developments, infrastructure projects</td>
-        </tr>
-        <tr>
-          <td><span class="day-pill">Thursday</span></td>
-          <td><a class="sched-link" href="https://pennco.org/planning" target="_blank">Pennington County Commissioners</a></td>
-          <td>Road projects, utility expansions, major development approvals</td>
-        </tr>
-        <tr>
-          <td><span class="day-pill anytime">Anytime</span></td>
-          <td><a class="sched-link" href="https://pennco.org/planning" target="_blank">Pennington County Zoning Ordinances</a></td>
-          <td>Understand what can be built where — reference for every site evaluation</td>
-        </tr>
-        <tr>
-          <td><span class="day-pill anytime">Anytime</span></td>
-          <td><a class="sched-link" href="https://pennco.org/planning" target="_blank">Transportation &amp; Infrastructure Projects</a></td>
-          <td>New roads and utilities that may create development opportunities</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="section">
-    <div class="section-title">On-Demand Report Sections</div>
-    <div class="output-card"><div class="output-title">Site Overview</div><div class="output-desc">Address, APN, acreage, current zoning, allowable uses, utility access — pulled from Pennington County GIS.</div></div>
-    <div class="output-card"><div class="output-title">Comparable Sales</div><div class="output-desc">3–5 recent land sales within 5 miles, adjusted for size and zoning. Establishes land value range.</div></div>
-    <div class="output-card"><div class="output-title">Proforma Model</div><div class="output-desc">Estimated development cost, projected NOI, cap rate, and IRR for the most likely use case.</div></div>
-    <div class="output-card"><div class="output-title">Go / No-Go</div><div class="output-desc">Plain-English recommendation with key risk factors and the single biggest reason to proceed or pass.</div></div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Configuration</div>
-    <div class="config-grid">
-      <div class="config-item"><div class="config-label">Name</div><div class="config-value">Development Site Evaluator</div></div>
-      <div class="config-item"><div class="config-label">Model</div><div class="config-value"><code>claude-sonnet-4-6</code></div></div>
-      <div class="config-item"><div class="config-label">Focus Market</div><div class="config-value">Rapid City, South Dakota (Pennington County)</div></div>
-      <div class="config-item"><div class="config-label">Primary Sources</div><div class="config-value"><a href="https://pennco.org/planning" target="_blank">pennco.org/planning</a> · <a href="https://www.boxeldersd.gov/departments/planningandzoning" target="_blank">boxeldersd.gov</a></div></div>
-      <div class="config-item"><div class="config-label">Data Sources</div><div class="config-value">Pennington County GIS · Zillow · FRED rates</div></div>
-      <div class="config-item"><div class="config-label">Alert Email</div><div class="config-value"><code>arecblackhills@gmail.com</code></div></div>
+  <div class="form-section">
+    <div class="section-label">Property Details</div>
+    <div class="field-grid">
+      <div class="field-full"><div class="field-label">Street Address or Parcel Description</div><input class="field-input" id="f-address" placeholder="Hwy 1416 &amp; Jensen Road, Box Elder, SD 57719"/></div>
+      <div><div class="field-label">APN / Parcel ID <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:9px;color:rgba(255,255,255,0.2)">(optional)</span></div><input class="field-input" id="f-apn" placeholder="15-000-001-10-001-000"/></div>
+      <div><div class="field-label">County / Municipality</div><input class="field-input" id="f-county" placeholder="Pennington County, SD"/></div>
+      <div><div class="field-label">Acreage</div><input class="field-input" id="f-acres" type="number" step="0.1" placeholder="45.6"/></div>
+      <div><div class="field-label">Current Zoning</div><input class="field-input" id="f-zoning" placeholder="A-1 Agricultural / MDR Overlay"/></div>
     </div>
   </div>
 
-  <div class="section">
-    <div class="section-title">System Prompt</div>
-    <div class="prompt-block">
-      <pre>You are a real estate development analyst for Kevin Andreson, focused on Rapid City and Pennington County, South Dakota.
-
-MONITORING MODE — run on the schedule above:
-Check the assigned planning sources for new activity since the last check. For each new item:
-1. Address or parcel identifier
-2. Type of activity (rezoning, permit, plat, conditional use, etc.)
-3. Current status
-4. Why it matters (development opportunity, infrastructure signal, competitor activity)
-5. Recommended action
-
-SITE ANALYSIS MODE — triggered by a parcel address or APN:
-Produce a development feasibility report:
-1. Site Overview — zoning, acreage, current use, utility access (Pennington County GIS)
-2. Comparable Sales — 3-5 recent sales of similar parcels, adjusted for size and location
-3. Proforma Model — for the highest-and-best use:
-   - Estimated land cost (from comps)
-   - Estimated hard construction cost ($/sqft × buildable area)
-   - Soft costs (15% of hard)
-   - Total project cost
-   - Projected rental income or sale price at completion
-   - NOI, cap rate, projected IRR
-4. Go / No-Go — one paragraph, plain English
-
-Be conservative in estimates. Flag assumptions clearly. If data is unavailable, say so rather than guessing.</pre>
+  <div class="form-section">
+    <div class="section-label">Financial Inputs</div>
+    <div class="field-grid">
+      <div><div class="field-label">Asking Price</div><input class="field-input" id="f-price" placeholder="$3,750,000"/><div class="field-hint">Enter exact value or range</div></div>
+      <div><div class="field-label">Price Per Acre <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:9px;color:rgba(255,255,255,0.2)">(auto-calc or override)</span></div><input class="field-input" id="f-ppa" placeholder="$82,000" oninput="ppaManual=true"/></div>
+      <div>
+        <div class="field-label">Construction Cost Assumption</div>
+        <select class="field-select" id="f-construct">
+          <option value="low">Low ($90–115 / SF)</option>
+          <option value="mid" selected>Mid-Market ($115–145 / SF)</option>
+          <option value="high">Premium ($145–185 / SF)</option>
+          <option value="custom">Custom — I'll enter below</option>
+        </select>
+      </div>
+      <div><div class="field-label">Custom Cost / SF <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:9px;color:rgba(255,255,255,0.2)">(if custom selected)</span></div><input class="field-input" id="f-custom-sf" placeholder="130"/></div>
+      <div>
+        <div class="field-label">Exit / Disposition Strategy</div>
+        <select class="field-select" id="f-exit">
+          <option>Build &amp; Hold for Cash Flow</option>
+          <option>Build &amp; Sell Units / Condo</option>
+          <option>Entitle &amp; Sell Land</option>
+          <option>Develop &amp; Refinance (BRRRR)</option>
+          <option>Phased Development</option>
+          <option>Sale-Leaseback</option>
+        </select>
+      </div>
+      <div>
+        <div class="field-label">Financing Assumption</div>
+        <select class="field-select" id="f-finance">
+          <option>70% LTC Construction Loan</option>
+          <option>65% LTC Construction Loan</option>
+          <option>75% LTC Construction Loan</option>
+          <option>All Cash</option>
+          <option>SBA 504</option>
+          <option>USDA Business &amp; Industry Loan</option>
+        </select>
+      </div>
     </div>
   </div>
 
-  <div class="section">
-    <div class="section-title">Active Components</div>
-    <div class="steps">
-      <div class="step">
-        <div class="step-num" style="background:rgba(16,185,129,0.12);border-color:rgba(52,211,153,0.3);color:#34D399;">✓</div>
-        <div class="step-body"><strong>Web scrapers</strong> — Content-hashing scrapers monitor <code>pennco.org/services/planning/hearing_schedules.php</code> and <code>boxeldersd.gov/departments/planningandzoning</code>. New agenda items, linked PDFs, and page changes are detected on every run.</div>
+  <div class="form-section">
+    <div class="section-label">Intended Development Type</div>
+    <div class="dev-type-grid">
+      <div class="dev-type-tile selected" onclick="selectDevType(this,'Multifamily Residential')">
+        <span class="dev-type-icon">🏢</span>
+        <div class="dev-type-name">Multifamily</div>
       </div>
-      <div class="step">
-        <div class="step-num" style="background:rgba(16,185,129,0.12);border-color:rgba(52,211,153,0.3);color:#34D399;">✓</div>
-        <div class="step-body"><strong>Scheduler</strong> — Both planning monitors run <strong>Monday through Friday at 7:00 AM</strong> via macOS launchd (<code>com.arc.box-elder-prospects</code> + <code>com.arc.zoning-monitor</code>).</div>
+      <div class="dev-type-tile" onclick="selectDevType(this,'Mixed-Use (Residential + Retail)')">
+        <span class="dev-type-icon">🏗</span>
+        <div class="dev-type-name">Mixed-Use</div>
       </div>
-      <div class="step">
-        <div class="step-num" style="background:rgba(16,185,129,0.12);border-color:rgba(52,211,153,0.3);color:#34D399;">✓</div>
-        <div class="step-body"><strong>GIS parcel lookup</strong> — On-demand parcel lookup via Pennington County ArcGIS REST API. Run <code>python3 agents/gis_lookup/gis_lookup.py "&lt;address or APN&gt;"</code> for zoning, ownership, acreage, and utility access.</div>
+      <div class="dev-type-tile" onclick="selectDevType(this,'Commercial / Retail')">
+        <span class="dev-type-icon">🏪</span>
+        <div class="dev-type-name">Commercial</div>
       </div>
-      <div class="step">
-        <div class="step-num" style="background:rgba(16,185,129,0.12);border-color:rgba(52,211,153,0.3);color:#34D399;">✓</div>
-        <div class="step-body"><strong>Alert email</strong> — Formatted HTML digest sent to <code>arecblackhills@gmail.com</code> via Gmail. Fires only when Claude finds development-significant activity — no noise on quiet days.</div>
+      <div class="dev-type-tile" onclick="selectDevType(this,'Industrial / Flex')">
+        <span class="dev-type-icon">🏭</span>
+        <div class="dev-type-name">Industrial</div>
       </div>
+      <div class="dev-type-tile" onclick="selectDevType(this,'Senior Housing / Memory Care')">
+        <span class="dev-type-icon">🏡</span>
+        <div class="dev-type-name">Senior Living</div>
+      </div>
+      <div class="dev-type-tile" onclick="selectDevType(this,'Hospitality / Extended Stay')">
+        <span class="dev-type-icon">🏨</span>
+        <div class="dev-type-name">Hospitality</div>
+      </div>
+      <div class="dev-type-tile" onclick="selectDevType(this,'Self-Storage')">
+        <span class="dev-type-icon">📦</span>
+        <div class="dev-type-name">Self-Storage</div>
+      </div>
+      <div class="dev-type-tile" onclick="selectDevType(this,'Build-to-Suit / NNN')">
+        <span class="dev-type-icon">🏬</span>
+        <div class="dev-type-name">Build-to-Suit</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="section-label">Additional Context</div>
+    <textarea class="field-textarea" id="f-notes" style="min-height:80px;" placeholder="Proximity to Ellsworth AFB, highway frontage, utilities status, entitlement history, competition, any environmental concerns…"></textarea>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-primary" id="submit-btn" onclick="runEval()">Run Site Evaluation + Proforma</button>
+    <button class="btn-secondary" onclick="clearAll()">Clear</button>
+  </div>
+  <div class="status" id="status"></div>
+
+  <div id="output-section">
+    <div class="returns-grid" id="returns-grid"></div>
+
+    <div class="report-block">
+      <div class="report-header">
+        <div class="report-title">Development Feasibility Analysis</div>
+        <div class="report-badge" id="feas-badge">—</div>
+      </div>
+      <div class="report-body" id="feas-body"></div>
+    </div>
+
+    <div class="report-block">
+      <div class="report-header">
+        <div class="report-title">Market Context &amp; Comparable Activity</div>
+      </div>
+      <div class="report-body" id="market-body"></div>
+    </div>
+
+    <div class="report-block">
+      <div class="report-header">
+        <div class="report-title">Recommended Development Program</div>
+      </div>
+      <div class="report-body" id="program-body"></div>
+    </div>
+
+    <div class="section-label" style="margin-top:2rem;">Development Proforma</div>
+
+    <div class="proforma-card">
+      <div class="proforma-section-head">Project Costs</div>
+      <div class="proforma-rows" id="pf-costs"></div>
+    </div>
+
+    <div class="proforma-card">
+      <div class="proforma-section-head">Revenue &amp; Income</div>
+      <div class="proforma-rows" id="pf-revenue"></div>
+    </div>
+
+    <div class="proforma-card">
+      <div class="proforma-section-head">Returns &amp; Metrics</div>
+      <div class="proforma-rows" id="pf-returns"></div>
+    </div>
+
+    <div class="report-block">
+      <div class="report-header">
+        <div class="report-title">Risk Factors &amp; Mitigation</div>
+        <div class="report-badge" id="risk-badge">—</div>
+      </div>
+      <div class="report-body" id="risk-body"></div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-print" onclick="window.print()">Print / Save as PDF</button>
+      <button class="btn-cp" onclick="copyReport()">Copy Report Text</button>
+      <button class="btn-reset" onclick="resetOutput()">New Evaluation</button>
+    </div>
+
+    <div class="disclaimer">
+      DISCLAIMER: This proforma is an AI-generated estimate for preliminary planning purposes only. All figures are approximations based on provided inputs and general South Dakota market data. Do not make investment decisions based solely on this output. Engage a licensed appraiser, contractor, and CPA before committing capital. Kevin Andreson | Keller Williams Realty Black Hills does not warrant the accuracy of any figures herein.
     </div>
   </div>
 </main>
-<script src="../js/search.js"></script>
+
+<script>
+const STORAGE_KEY = 'kw_anthropic_key';
+let selectedDevType = 'Multifamily Residential';
+let ppaManual = false;
+let lastReportText = '';
+
+function loadKey() {
+  const k = localStorage.getItem(STORAGE_KEY) || '';
+  if (k) showKeySaved(k);
+}
+function saveKey() {
+  const val = document.getElementById('key-input').value.trim();
+  if (!val.startsWith('sk-')) { alert('Doesn\'t look like an Anthropic key.'); return; }
+  localStorage.setItem(STORAGE_KEY, val);
+  showKeySaved(val);
+}
+function showKeySaved(k) {
+  const b = document.getElementById('key-banner');
+  b.className = 'key-banner ok';
+  b.innerHTML = `<div class="key-banner-label">API Key</div>
+    <div class="key-status">&#10003; Saved &mdash; ${k.slice(0,12)}&hellip;${k.slice(-4)}</div>
+    <span class="key-clear" onclick="clearKey()">Change</span>`;
+}
+function clearKey() {
+  localStorage.removeItem(STORAGE_KEY);
+  const b = document.getElementById('key-banner');
+  b.className = 'key-banner';
+  b.innerHTML = `<div class="key-banner-label">Anthropic API Key</div>
+    <input class="key-input" type="password" id="key-input" placeholder="sk-ant-api03-&hellip;" autocomplete="off"/>
+    <button class="key-btn" onclick="saveKey()">Save Key</button>`;
+}
+
+function selectDevType(el, type) {
+  document.querySelectorAll('.dev-type-tile').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedDevType = type;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  ['f-price','f-acres'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', autoPPA);
+  });
+  loadKey();
+});
+
+function autoPPA() {
+  if (ppaManual) return;
+  const price = parseFloat(v('f-price').replace(/[$,]/g,''));
+  const acres = parseFloat(v('f-acres'));
+  if (price > 0 && acres > 0) {
+    document.getElementById('f-ppa').value = '$' + Math.round(price / acres).toLocaleString();
+  }
+}
+
+function v(id) { const e = document.getElementById(id); return e ? e.value.trim() : ''; }
+function setStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status' + (type ? ' '+type : '');
+}
+function fmt(n) { return '$' + Number(n).toLocaleString(undefined,{maximumFractionDigits:0}); }
+
+function clearAll() {
+  ['f-address','f-apn','f-county','f-acres','f-zoning','f-price','f-ppa','f-custom-sf','f-notes'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  ppaManual = false;
+  resetOutput();
+  setStatus('');
+}
+function resetOutput() { document.getElementById('output-section').style.display = 'none'; }
+
+function buildPrompt() {
+  const construct = v('f-construct');
+  const customSF  = v('f-custom-sf');
+  let costNote = '';
+  if (construct === 'custom' && customSF) costNote = 'Custom cost: $' + customSF + '/SF';
+  else if (construct === 'low')  costNote = 'Construction cost: low market ($90-115/SF)';
+  else if (construct === 'mid')  costNote = 'Construction cost: mid-market ($115-145/SF)';
+  else if (construct === 'high') costNote = 'Construction cost: premium ($145-185/SF)';
+
+  return `You are a senior commercial real estate analyst evaluating a development opportunity on behalf of Kevin Andreson, a commercial real estate broker at Keller Williams Realty Black Hills in Rapid City, SD.
+
+PARCEL DETAILS:
+- Address: ${v('f-address') || 'Not provided'}
+- APN: ${v('f-apn') || 'N/A'}
+- County/Municipality: ${v('f-county') || 'South Dakota'}
+- Acreage: ${v('f-acres') || 'Not specified'}
+- Current Zoning: ${v('f-zoning') || 'Unknown'}
+- Intended Development: ${selectedDevType}
+- Asking Price: ${v('f-price') || 'Not provided'}
+- Price per Acre: ${v('f-ppa') || 'Not calculated'}
+- Exit Strategy: ${v('f-exit')}
+- Financing: ${v('f-finance')}
+- ${costNote}
+- Additional Context: ${v('f-notes') || 'None'}
+
+Provide a comprehensive site evaluation in JSON format. Use this EXACT structure:
+
+{
+  "feasibility_verdict": "Feasible" or "Conditionally Feasible" or "High Risk" or "Not Recommended",
+  "feasibility_analysis": "3-4 paragraph analysis of whether this site is developable for the intended use. Cover zoning compatibility, access, utilities, market demand, and entitlement risk. Be specific to SD and this corridor.",
+  "market_context": "2-3 paragraphs on comparable development activity in the Rapid City/Box Elder/Ellsworth corridor, current absorption rates, vacancy, and why this submarket is or isn't ready for this product type.",
+  "development_program": "Specific recommended program: unit count or SF, building height/footprint, phasing recommendation, any specific design considerations for this site and zoning.",
+  "risk_verdict": "Low" or "Moderate" or "High",
+  "risk_factors": "2-3 paragraph discussion of the top 3-4 risks specific to this site, development type, and market. Include mitigation strategies Kevin should discuss with clients.",
+  "proforma": {
+    "land_cost": number,
+    "due_diligence_legal": number,
+    "site_work": number,
+    "hard_costs": number,
+    "soft_costs": number,
+    "financing_costs": number,
+    "contingency": number,
+    "total_development_cost": number,
+    "gross_potential_revenue": number,
+    "vacancy_credit_loss": number,
+    "effective_gross_income": number,
+    "operating_expenses": number,
+    "noi": number,
+    "cap_rate_pct": number,
+    "cash_on_cash_pct": number,
+    "equity_multiple": number,
+    "irr_estimate_pct": number,
+    "break_even_occupancy_pct": number,
+    "total_sf_or_units": "string describing units or SF",
+    "cost_per_sf_or_unit": number
+  }
+}
+
+All proforma numbers must be whole integers in US dollars. Output ONLY valid JSON, no other text.`;
+}
+
+async function runEval() {
+  const key = localStorage.getItem(STORAGE_KEY);
+  if (!key) { setStatus('Add your Anthropic API key above to run the evaluation.', 'error'); return; }
+  if (!v('f-address') && !v('f-acres')) { setStatus('Enter at least an address or acreage.', 'error'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Analyzing site&hellip;';
+  setStatus('Running feasibility analysis — this takes 10-20 seconds…');
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 3000,
+        messages: [{ role: 'user', content: buildPrompt() }],
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || 'API error ' + res.status);
+    }
+
+    const data = await res.json();
+    const raw  = data.content[0].text.trim();
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('Claude returned unexpected format.');
+    renderOutput(JSON.parse(match[0]));
+    setStatus('Evaluation complete.', 'ok');
+  } catch(e) {
+    setStatus('Error: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Run Site Evaluation + Proforma';
+  }
+}
+
+function renderOutput(d) {
+  const pf = d.proforma || {};
+
+  const fMap = { 'Feasible':'badge-green','Conditionally Feasible':'badge-yellow','High Risk':'badge-red','Not Recommended':'badge-red' };
+  const fb = document.getElementById('feas-badge');
+  fb.textContent = d.feasibility_verdict || '—';
+  fb.className   = 'report-badge ' + (fMap[d.feasibility_verdict] || 'badge-gray');
+  document.getElementById('feas-body').textContent    = d.feasibility_analysis || '';
+  document.getElementById('market-body').textContent  = d.market_context || '';
+  document.getElementById('program-body').textContent = d.development_program || '';
+
+  const rMap = { 'Low':'badge-green','Moderate':'badge-yellow','High':'badge-red' };
+  const rb = document.getElementById('risk-badge');
+  rb.textContent = d.risk_verdict || '—';
+  rb.className   = 'report-badge ' + (rMap[d.risk_verdict] || 'badge-gray');
+  document.getElementById('risk-body').textContent = d.risk_factors || '';
+
+  const tiles = [
+    { label:'Cap Rate',       val: pf.cap_rate_pct       ? pf.cap_rate_pct.toFixed(1)+'%'       : '—', color: pf.cap_rate_pct >= 6 ? 'green' : pf.cap_rate_pct >= 4 ? 'yellow' : '' },
+    { label:'Cash-on-Cash',   val: pf.cash_on_cash_pct   ? pf.cash_on_cash_pct.toFixed(1)+'%'   : '—', color: pf.cash_on_cash_pct >= 8 ? 'green' : pf.cash_on_cash_pct >= 5 ? 'yellow' : '' },
+    { label:'Equity Multiple',val: pf.equity_multiple    ? pf.equity_multiple.toFixed(2)+'x'    : '—', color: pf.equity_multiple >= 2 ? 'green' : pf.equity_multiple >= 1.5 ? 'yellow' : '' },
+    { label:'Est. IRR',       val: pf.irr_estimate_pct   ? pf.irr_estimate_pct.toFixed(1)+'%'   : '—', color: pf.irr_estimate_pct >= 15 ? 'green' : pf.irr_estimate_pct >= 10 ? 'yellow' : '' },
+  ];
+  document.getElementById('returns-grid').innerHTML = tiles.map(t =>
+    `<div class="return-tile"><div class="return-val ${t.color}">${t.val}</div><div class="return-label">${t.label}</div></div>`
+  ).join('');
+
+  const costsRows = [
+    { label:'Land / Acquisition',           val: pf.land_cost },
+    { label:'Due Diligence / Legal / Title', val: pf.due_diligence_legal },
+    { label:'Site Work / Infrastructure',   val: pf.site_work },
+    { label:'Hard Costs (Construction)',    val: pf.hard_costs },
+    { label:'Soft Costs (A&E, Fees, PM)',   val: pf.soft_costs },
+    { label:'Financing / Interest Reserve', val: pf.financing_costs },
+    { label:'Contingency (10%)',            val: pf.contingency },
+    { label:'Total Development Cost',       val: pf.total_development_cost, total: true },
+  ];
+  document.getElementById('pf-costs').innerHTML = costsRows.map(r => pfRow(r)).join('');
+
+  const revRows = [
+    { label:'Gross Potential Revenue / EGI',     val: pf.gross_potential_revenue },
+    { label:'Less: Vacancy & Credit Loss (5%)',  val: pf.vacancy_credit_loss, neg: true },
+    { label:'Less: Operating Expenses',           val: pf.operating_expenses,  neg: true },
+    { label:'Net Operating Income (NOI)',          val: pf.noi, total: true, green: true },
+  ];
+  document.getElementById('pf-revenue').innerHTML = revRows.map(r => pfRow(r)).join('');
+
+  const retRows = [
+    { label:'Total Dev Cost',          val: fmt(pf.total_development_cost||0) },
+    { label:'Units / SF',              val: pf.total_sf_or_units || '—' },
+    { label:'Cost per Unit / SF',      val: pf.cost_per_sf_or_unit ? fmt(pf.cost_per_sf_or_unit) : '—' },
+    { label:'Break-Even Occupancy',    val: pf.break_even_occupancy_pct ? pf.break_even_occupancy_pct.toFixed(1)+'%' : '—' },
+    { label:'Cap Rate',                val: pf.cap_rate_pct        ? pf.cap_rate_pct.toFixed(2)+'%'       : '—' },
+    { label:'Cash-on-Cash Return',     val: pf.cash_on_cash_pct   ? pf.cash_on_cash_pct.toFixed(2)+'%'   : '—' },
+    { label:'Equity Multiple',         val: pf.equity_multiple    ? pf.equity_multiple.toFixed(2)+'x'    : '—' },
+    { label:'Estimated IRR',           val: pf.irr_estimate_pct   ? pf.irr_estimate_pct.toFixed(1)+'%'   : '—' },
+  ];
+  document.getElementById('pf-returns').innerHTML = retRows.map(r =>
+    `<div class="proforma-row"><div class="pf-label">${r.label}</div><div class="pf-value">${r.val}</div></div>`
+  ).join('');
+
+  lastReportText = [
+    'SITE EVALUATION REPORT — Kevin Andreson | Keller Williams Realty Black Hills',
+    'Property: ' + (v('f-address') || 'N/A') + ' | ' + v('f-acres') + ' acres | ' + v('f-zoning') + ' | ' + selectedDevType,
+    'Asking Price: ' + v('f-price'),
+    '',
+    'FEASIBILITY: ' + d.feasibility_verdict,
+    d.feasibility_analysis,
+    '',
+    'MARKET CONTEXT',
+    d.market_context,
+    '',
+    'DEVELOPMENT PROGRAM',
+    d.development_program,
+    '',
+    'PROFORMA SUMMARY',
+    'Land Cost: ' + fmt(pf.land_cost||0),
+    'Total Development Cost: ' + fmt(pf.total_development_cost||0),
+    'NOI: ' + fmt(pf.noi||0),
+    'Cap Rate: ' + (pf.cap_rate_pct||0).toFixed(2) + '%  |  CoC: ' + (pf.cash_on_cash_pct||0).toFixed(2) + '%  |  IRR Est: ' + (pf.irr_estimate_pct||0).toFixed(1) + '%',
+    '',
+    'RISKS: ' + d.risk_verdict,
+    d.risk_factors,
+    '',
+    'DISCLAIMER: Preliminary AI estimate only. Not investment advice.',
+  ].join('\n');
+
+  document.getElementById('output-section').style.display = 'block';
+  document.getElementById('output-section').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function pfRow(r) {
+  const cls    = r.total ? ' total' : '';
+  const valCls = r.green ? ' positive' : r.neg ? ' negative' : '';
+  const shown  = typeof r.val === 'number' ? fmt(r.val) : (r.val || '—');
+  return `<div class="proforma-row${cls}"><div class="pf-label">${r.label}</div><div class="pf-value${valCls}">${shown}</div></div>`;
+}
+
+function copyReport() {
+  navigator.clipboard.writeText(lastReportText).then(() => setStatus('Report copied to clipboard.', 'ok'));
+}
+</script>
 </body>
 </html>

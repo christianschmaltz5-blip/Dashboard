@@ -1,132 +1,575 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CRM Intake — Kevin Andreson</title>
-  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box;}
-    :root{--bg:#000;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.1);--text:#fff;--muted:rgba(255,255,255,0.5);--dim:rgba(255,255,255,0.25);}
-    body{font-family:'Josefin Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;}
-    nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.8);backdrop-filter:blur(12px);}
-    .nav-back{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;} .nav-back:hover{color:var(--text);}
-    .nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-    .nav-title{font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
-    main{max-width:860px;margin:0 auto;padding:3rem 2rem 4rem;}
-    .breadcrumb{font-size:11px;color:var(--dim);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:16px;}
-    .breadcrumb a{color:var(--dim);text-decoration:none;} .breadcrumb a:hover{color:var(--muted);}
-    .agent-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:14px;background:rgba(255,255,255,0.06);color:var(--muted);border:1px solid var(--border);}
-    h1{font-size:32px;font-weight:700;letter-spacing:0.02em;margin-bottom:10px;}
-    .subtitle{font-size:15px;color:var(--muted);max-width:600px;line-height:1.7;}
-    .divider{height:1px;background:var(--border);margin:2.5rem 0;}
-    .section{margin-bottom:2.5rem;}
-    .section-title{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--dim);margin-bottom:1rem;display:flex;align-items:center;gap:10px;}
-    .section-title::after{content:'';flex:1;height:1px;background:var(--border);}
-    .what-it-does{font-size:14px;color:rgba(255,255,255,0.7);line-height:1.8;}
-    .config-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
-    .config-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem;}
-    .config-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;}
-    .config-value{font-size:13px;color:var(--text);font-weight:500;} .config-value code{font-family:monospace;font-size:12px;color:#A78BFA;}
-    .prompt-block{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:1.5rem;}
-    .prompt-block pre{font-family:monospace;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.8;white-space:pre-wrap;word-break:break-word;}
-    .steps{display:flex;flex-direction:column;gap:1rem;}
-    .step{display:flex;gap:16px;align-items:flex-start;}
-    .step-num{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;margin-top:1px;}
-    .step-body{font-size:13px;color:rgba(255,255,255,0.65);line-height:1.7;} .step-body strong{color:var(--text);}
-    .step-body code{font-family:monospace;font-size:11px;background:rgba(255,255,255,0.07);padding:2px 6px;border-radius:4px;color:#A78BFA;}
-    .progress-row{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-bottom:6px;}
-    .progress-bar{height:4px;background:rgba(255,255,255,0.08);border-radius:99px;overflow:hidden;}
-    .progress-fill{height:100%;background:linear-gradient(90deg,#3B82F6,#8B5CF6);border-radius:99px;}
-    .status-bar{display:flex;gap:2rem;margin-bottom:2.5rem;}
-    .stat{text-align:center;} .stat-value{font-size:22px;font-weight:700;} .stat-label{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);margin-top:2px;}
-    .flow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:1rem;}
-    .flow-step{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-size:12px;color:rgba(255,255,255,0.7);}
-    .flow-arrow{color:var(--dim);font-size:18px;}
-  </style>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CRM Intake — Kevin Andreson</title>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#000;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.1);--text:#fff;--muted:rgba(255,255,255,0.5);--dim:rgba(255,255,255,0.25);}
+body{font-family:'Josefin Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.9);backdrop-filter:blur(12px);}
+.nav-back{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;} .nav-back:hover{color:var(--text);}
+.nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.nav-title{font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+
+main{max-width:820px;margin:0 auto;padding:2.5rem 2rem 5rem;}
+h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
+.subtitle{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:2rem;}
+
+/* API Key */
+.key-banner{display:flex;align-items:center;gap:12px;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.25);border-radius:10px;padding:14px 18px;margin-bottom:2rem;}
+.key-banner.ok{background:rgba(16,185,129,0.08);border-color:rgba(52,211,153,0.25);}
+.key-banner-label{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#A78BFA;white-space:nowrap;}
+.key-banner.ok .key-banner-label{color:#34D399;}
+.key-input{flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:8px 12px;font-size:12px;font-family:monospace;color:#fff;outline:none;} .key-input:focus{border-color:#A78BFA;}
+.key-btn{padding:8px 16px;background:#A78BFA;color:#000;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;border:none;border-radius:6px;cursor:pointer;white-space:nowrap;} .key-btn:hover{background:#c4b5fd;}
+.key-status{font-size:12px;color:#34D399;}
+.key-clear{font-size:11px;color:rgba(255,255,255,0.3);cursor:pointer;text-decoration:underline;margin-left:8px;} .key-clear:hover{color:rgba(255,255,255,0.6);}
+
+/* Section */
+.section-label{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--dim);margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* Fields */
+.form-section{margin-bottom:1.75rem;}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.field-full{grid-column:1/-1;}
+.field-label{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:5px;}
+.field-input,.field-select,.field-textarea{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:9px 12px;font-size:12px;font-family:'Josefin Sans',sans-serif;color:#fff;outline:none;}
+.field-input:focus,.field-select:focus,.field-textarea:focus{border-color:rgba(255,255,255,0.3);}
+.field-input::placeholder,.field-textarea::placeholder{color:rgba(255,255,255,0.2);}
+.field-select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.4)' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
+.field-select option{background:#111;color:#fff;}
+.field-textarea{resize:vertical;min-height:72px;line-height:1.6;}
+
+/* Tag chips */
+.tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;}
+.tag-chip{padding:6px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.09);border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:rgba(255,255,255,0.35);cursor:pointer;transition:all .2s;user-select:none;}
+.tag-chip.selected{background:rgba(59,130,246,0.14);border-color:rgba(96,165,250,0.4);color:#60A5FA;}
+
+/* Buttons */
+.btn-row{display:flex;gap:10px;margin-top:1.5rem;flex-wrap:wrap;}
+.btn-primary{flex:1;min-width:200px;padding:14px;background:linear-gradient(135deg,#1B3A6B,#2563EB);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:opacity .2s;}
+.btn-primary:hover{opacity:0.9;} .btn-primary:disabled{opacity:0.4;cursor:not-allowed;}
+.btn-secondary{padding:14px 22px;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.12);border-radius:10px;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;}
+.btn-secondary:hover{background:rgba(255,255,255,0.09);}
+
+/* Status */
+.status{font-size:12px;color:var(--muted);text-align:center;margin-top:12px;min-height:18px;}
+.status.error{color:#F87171;} .status.ok{color:#34D399;}
+
+/* Output section */
+#output-section{display:none;margin-top:2.5rem;}
+.output-tabs{display:flex;gap:6px;margin-bottom:16px;}
+.out-tab{padding:8px 18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.09);border-radius:8px;font-size:11px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:rgba(255,255,255,0.4);cursor:pointer;transition:all .2s;}
+.out-tab.active{background:rgba(59,130,246,0.12);border-color:rgba(96,165,250,0.3);color:#60A5FA;}
+
+/* KW Command CSV preview */
+.csv-box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:20px;overflow-x:auto;}
+.csv-box pre{font-family:'DM Mono',monospace,monospace;font-size:11px;color:rgba(255,255,255,0.65);line-height:1.9;white-space:pre-wrap;word-break:break-all;}
+.csv-instructions{margin-top:14px;padding:14px 18px;background:rgba(59,130,246,0.06);border:1px solid rgba(96,165,250,0.15);border-radius:8px;font-size:11px;color:rgba(255,255,255,0.5);line-height:1.8;font-family:'DM Sans',sans-serif;}
+.csv-instructions ol{padding-left:18px;margin-top:6px;} .csv-instructions li{margin-bottom:3px;}
+
+/* Follow-up email preview */
+.email-preview{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;overflow:hidden;}
+.email-meta{background:rgba(255,255,255,0.04);padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.07);}
+.email-meta-row{display:flex;gap:8px;font-size:11px;margin-bottom:4px;}
+.email-meta-row:last-child{margin-bottom:0;}
+.email-meta-key{font-weight:700;letter-spacing:0.06em;color:rgba(255,255,255,0.35);text-transform:uppercase;width:60px;flex-shrink:0;}
+.email-meta-val{color:rgba(255,255,255,0.65);}
+.email-body{padding:20px;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.9;white-space:pre-wrap;font-family:'DM Sans',sans-serif;}
+
+.action-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+.btn-dl{padding:9px 20px;background:#1B3A6B;color:#fff;border:none;border-radius:7px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;}
+.btn-dl:hover{background:#2563EB;}
+.btn-cp{padding:9px 16px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.12);border-radius:7px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;}
+.btn-cp:hover{background:rgba(255,255,255,0.12);}
+
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:7px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* Saved contacts list */
+.contacts-list{display:flex;flex-direction:column;gap:8px;}
+.contact-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.contact-info{flex:1;}
+.contact-name{font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;}
+.contact-meta{font-size:11px;color:rgba(255,255,255,0.4);font-family:'DM Sans',sans-serif;}
+.contact-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px;}
+.contact-tag{font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:2px 8px;border-radius:10px;background:rgba(59,130,246,0.1);color:#60A5FA;border:1px solid rgba(96,165,250,0.2);}
+.contact-actions{display:flex;gap:6px;}
+.contact-btn{padding:5px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.4);cursor:pointer;}
+.contact-btn:hover{background:rgba(255,255,255,0.1);color:#fff;}
+.empty-state{text-align:center;padding:3rem 2rem;color:rgba(255,255,255,0.2);font-size:12px;line-height:2;font-family:'DM Sans',sans-serif;}
+</style>
 </head>
 <body>
+
 <nav>
   <a class="nav-back" href="../index.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back to Dashboard</a>
   <div class="nav-title">FOR KEVIN ANDRESON</div>
 </nav>
+
 <main>
-  <div class="breadcrumb"><a href="../index.html">Dashboard</a> / CRM Intake</div>
-  <div class="agent-badge" style="background:rgba(59,130,246,0.15);color:#60A5FA;border:1px solid rgba(96,165,250,0.25);">
-    <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor"/></svg>
-    Setting Up
+  <h1>CRM Intake</h1>
+  <p class="subtitle">Capture new leads and clients from any source. Generates a KW Command–ready CSV and a Claude-drafted follow-up email, ready to review and send.</p>
+
+  <!-- API Key -->
+  <div class="key-banner" id="key-banner">
+    <div class="key-banner-label">Anthropic API Key</div>
+    <input class="key-input" type="password" id="key-input" placeholder="sk-ant-api03-…" autocomplete="off"/>
+    <button class="key-btn" onclick="saveKey()">Save Key</button>
   </div>
-  <h1>Customer Intake → CRM</h1>
-  <p class="subtitle">Eliminates manual data entry — new client info submitted via a web form routes automatically into KW Command, with an optional push to Brivity and Constant Contact.</p>
 
-  <div class="divider"></div>
-
-  <div class="status-bar">
-    <div class="stat"><div class="stat-value">20%</div><div class="stat-label">Complete</div></div>
-    <div class="stat"><div class="stat-value">On Demand</div><div class="stat-label">Trigger</div></div>
-    <div class="stat"><div class="stat-value">KW Command</div><div class="stat-label">Target CRM</div></div>
-    <div class="stat"><div class="stat-value">Black Hills</div><div class="stat-label">Market</div></div>
-  </div>
-  <div class="progress-row"><span>Build Progress</span><span>20%</span></div>
-  <div class="progress-bar"><div class="progress-fill" style="width:20%"></div></div>
-
-  <div class="divider"></div>
-
-  <div class="section">
-    <div class="section-title">What This Agent Does</div>
-    <p class="what-it-does">
-      A client fills out a simple intake form (name, contact, property interest, timeline, budget). The agent reads the submission, normalizes the data, creates a record in <strong>KW Command</strong>, and optionally adds the contact to <strong>Brivity</strong> for website drip campaigns and <strong>Constant Contact</strong> for the monthly newsletter list.<br><br>
-      This solves the double/triple entry problem — one form submission, three systems updated automatically, zero manual work.
-    </p>
-    <div class="flow">
-      <div class="flow-step">Client fills form</div>
-      <div class="flow-arrow">→</div>
-      <div class="flow-step">Agent normalizes data</div>
-      <div class="flow-arrow">→</div>
-      <div class="flow-step">KW Command record created</div>
-      <div class="flow-arrow">→</div>
-      <div class="flow-step">Brivity + Constant Contact synced</div>
+  <!-- Contact Info -->
+  <div class="form-section">
+    <div class="section-label">Contact Information</div>
+    <div class="field-grid">
+      <div><div class="field-label">First Name <span style="color:#F87171">*</span></div><input class="field-input" id="f-first" placeholder="John"/></div>
+      <div><div class="field-label">Last Name <span style="color:#F87171">*</span></div><input class="field-input" id="f-last" placeholder="Smith"/></div>
+      <div><div class="field-label">Email</div><input class="field-input" id="f-email" type="email" placeholder="john@email.com"/></div>
+      <div><div class="field-label">Phone</div><input class="field-input" id="f-phone" placeholder="605-555-0100"/></div>
+      <div><div class="field-label">City</div><input class="field-input" id="f-city" placeholder="Rapid City"/></div>
+      <div><div class="field-label">State</div><input class="field-input" id="f-state" placeholder="SD" value="SD"/></div>
     </div>
   </div>
 
-  <div class="section">
-    <div class="section-title">Configuration</div>
-    <div class="config-grid">
-      <div class="config-item"><div class="config-label">Name</div><div class="config-value">Customer Intake Agent</div></div>
-      <div class="config-item"><div class="config-label">Model</div><div class="config-value"><code>claude-sonnet-4-6</code></div></div>
-      <div class="config-item"><div class="config-label">Primary CRM</div><div class="config-value">KW Command (required for compliance)</div></div>
-      <div class="config-item"><div class="config-label">Secondary Systems</div><div class="config-value">Brivity · Constant Contact (newsletter)</div></div>
-      <div class="config-item"><div class="config-label">Trigger</div><div class="config-value">Web form submission</div></div>
-      <div class="config-item"><div class="config-label">Note</div><div class="config-value">KW Command API access needed — confirm with KW support</div></div>
+  <!-- Lead Details -->
+  <div class="form-section">
+    <div class="section-label">Lead Details</div>
+    <div class="field-grid">
+      <div>
+        <div class="field-label">Lead Type</div>
+        <select class="field-select" id="f-type">
+          <option>Buyer</option>
+          <option>Seller</option>
+          <option>Investor</option>
+          <option>Land Buyer</option>
+          <option>Commercial Tenant</option>
+          <option>Referral</option>
+          <option>Past Client</option>
+        </select>
+      </div>
+      <div>
+        <div class="field-label">Lead Source</div>
+        <select class="field-select" id="f-source">
+          <option>Referral</option>
+          <option>Website / Online</option>
+          <option>Email Campaign</option>
+          <option>Cold Call</option>
+          <option>Open House</option>
+          <option>Social Media</option>
+          <option>LoopNet</option>
+          <option>CoStar</option>
+          <option>Networking Event</option>
+          <option>KW Command</option>
+          <option>Walk-In</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div>
+        <div class="field-label">CRM Stage</div>
+        <select class="field-select" id="f-stage">
+          <option>Lead</option>
+          <option>Prospect</option>
+          <option>Active Client</option>
+          <option>Under Contract</option>
+          <option>Past Client</option>
+          <option>Nurture</option>
+        </select>
+      </div>
+      <div>
+        <div class="field-label">Timeline</div>
+        <select class="field-select" id="f-timeline">
+          <option>ASAP</option>
+          <option>1–3 months</option>
+          <option>3–6 months</option>
+          <option>6–12 months</option>
+          <option>12+ months</option>
+          <option>Just looking</option>
+        </select>
+      </div>
+      <div><div class="field-label">Budget / Price Range</div><input class="field-input" id="f-budget" placeholder="$500K–$1M or $3,750,000"/></div>
+      <div><div class="field-label">Property Interest</div><input class="field-input" id="f-interest" placeholder="Commercial land near Ellsworth, C-2 zoning"/></div>
     </div>
   </div>
 
-  <div class="section">
-    <div class="section-title">System Prompt</div>
-    <div class="prompt-block">
-      <pre>You process new client intake forms for Kevin Andreson, a Keller Williams real estate agent.
-
-Given a form submission:
-1. Extract and normalize all contact fields (name, phone, email, address)
-2. Classify the lead type: buyer, seller, investor, or renter
-3. Summarize their stated need in 1-2 sentences
-4. Flag any urgency signals (closing timeline under 60 days, cash buyer, motivated seller)
-5. Format the output as structured JSON ready for CRM API insertion
-
-Do not invent or assume information not provided. If a required field is missing, flag it for follow-up.
-Output both the structured JSON and a brief plain-English summary for Kevin's review.</pre>
+  <!-- Tags -->
+  <div class="form-section">
+    <div class="section-label">Tags <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:rgba(255,255,255,0.2);">(click to toggle)</span></div>
+    <div class="tag-row" id="tag-row">
+      <div class="tag-chip" onclick="toggleTag(this)">Multifamily</div>
+      <div class="tag-chip" onclick="toggleTag(this)">Commercial Land</div>
+      <div class="tag-chip" onclick="toggleTag(this)">Industrial</div>
+      <div class="tag-chip" onclick="toggleTag(this)">Box Elder</div>
+      <div class="tag-chip" onclick="toggleTag(this)">Ellsworth Corridor</div>
+      <div class="tag-chip" onclick="toggleTag(this)">Rapid City</div>
+      <div class="tag-chip" onclick="toggleTag(this)">Black Hills</div>
+      <div class="tag-chip" onclick="toggleTag(this)">Developer</div>
+      <div class="tag-chip" onclick="toggleTag(this)">Cash Buyer</div>
+      <div class="tag-chip" onclick="toggleTag(this)">1031 Exchange</div>
+      <div class="tag-chip" onclick="toggleTag(this)">Investor</div>
+      <div class="tag-chip" onclick="toggleTag(this)">Repeat Client</div>
     </div>
   </div>
 
-  <div class="section">
-    <div class="section-title">Setup Steps</div>
-    <div class="steps">
-      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>KW Command API</strong> — Contact KW support to confirm API access and get credentials for programmatic record creation.</div></div>
-      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Build intake form</strong> — Simple hosted HTML form with fields: name, phone, email, property interest, timeline, budget, buyer/seller type.</div></div>
-      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Connect Claude</strong> — Form submission → Python script → Claude normalizes data → KW Command API creates record.</div></div>
-      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Constant Contact sync</strong> — Add new contacts to the newsletter list automatically. Requires Constant Contact API key.</div></div>
+  <!-- Notes -->
+  <div class="form-section">
+    <div class="section-label">Notes</div>
+    <textarea class="field-textarea" id="f-notes" style="min-height:90px;" placeholder="Meeting context, property discussed, key preferences, anything Claude should know to write a good follow-up email…"></textarea>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-primary" id="submit-btn" onclick="processContact()">Save Contact + Draft Follow-Up</button>
+    <button class="btn-secondary" onclick="clearForm()">Clear</button>
+  </div>
+  <div class="status" id="status"></div>
+
+  <!-- Output -->
+  <div id="output-section">
+    <div class="output-tabs">
+      <div class="out-tab active" onclick="showTab('kw')">KW Command CSV</div>
+      <div class="out-tab" onclick="showTab('email')">Follow-Up Email</div>
+      <div class="out-tab" onclick="showTab('saved')">Saved Contacts (<span id="saved-count">0</span>)</div>
+    </div>
+
+    <!-- KW Command tab -->
+    <div id="tab-kw">
+      <div class="csv-box">
+        <pre id="csv-content"></pre>
+      </div>
+      <div class="action-row">
+        <button class="btn-dl" onclick="downloadCSV()">Download CSV</button>
+        <button class="btn-cp" onclick="copyCSV()">Copy CSV</button>
+      </div>
+      <div class="csv-instructions">
+        <strong style="color:rgba(255,255,255,0.6);">Import into KW Command:</strong>
+        <ol>
+          <li>Open KW Command → Contacts → Import Contacts</li>
+          <li>Upload the downloaded CSV file</li>
+          <li>Map columns if prompted (First Name, Last Name, Email, Phone, Tags, Notes)</li>
+          <li>Confirm import — contact appears in your database instantly</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- Email tab -->
+    <div id="tab-email" style="display:none;">
+      <div class="email-preview">
+        <div class="email-meta">
+          <div class="email-meta-row"><span class="email-meta-key">To</span><span class="email-meta-val" id="email-to"></span></div>
+          <div class="email-meta-row"><span class="email-meta-key">Subject</span><span class="email-meta-val" id="email-subject"></span></div>
+          <div class="email-meta-row"><span class="email-meta-key">From</span><span class="email-meta-val">Kevin Andreson — arecblackhills@gmail.com</span></div>
+        </div>
+        <div class="email-body" id="email-body"></div>
+      </div>
+      <div class="action-row">
+        <button class="btn-dl" onclick="openMailto()">Open in Gmail</button>
+        <button class="btn-cp" onclick="copyEmail()">Copy Email</button>
+      </div>
+    </div>
+
+    <!-- Saved contacts tab -->
+    <div id="tab-saved" style="display:none;">
+      <div class="contacts-list" id="contacts-list">
+        <div class="empty-state">No contacts saved this session.<br/>Submit the form above to add one.</div>
+      </div>
+      <div class="action-row" id="bulk-actions" style="display:none;">
+        <button class="btn-dl" onclick="downloadAllCSV()">Download All as CSV</button>
+        <button class="btn-cp" onclick="clearSaved()">Clear Session</button>
+      </div>
     </div>
   </div>
 </main>
-<script src="../js/search.js"></script>
+
+<script>
+const STORAGE_KEY = 'kw_anthropic_key';
+let savedContacts = [];
+let currentCSV = '';
+let currentEmail = { to: '', subject: '', body: '' };
+
+// ── API Key ───────────────────────────────────────────────────────────────────
+function loadKey() {
+  const k = localStorage.getItem(STORAGE_KEY) || '';
+  if (k) showKeySaved(k);
+}
+function saveKey() {
+  const val = document.getElementById('key-input').value.trim();
+  if (!val.startsWith('sk-')) { alert('Doesn\'t look like an Anthropic key.'); return; }
+  localStorage.setItem(STORAGE_KEY, val);
+  showKeySaved(val);
+}
+function showKeySaved(k) {
+  const b = document.getElementById('key-banner');
+  b.className = 'key-banner ok';
+  b.innerHTML = `<div class="key-banner-label">API Key</div>
+    <div class="key-status">✓ Saved — ${k.slice(0,12)}…${k.slice(-4)}</div>
+    <span class="key-clear" onclick="clearKey()">Change</span>`;
+}
+function clearKey() {
+  localStorage.removeItem(STORAGE_KEY);
+  const b = document.getElementById('key-banner');
+  b.className = 'key-banner';
+  b.innerHTML = `<div class="key-banner-label">Anthropic API Key</div>
+    <input class="key-input" type="password" id="key-input" placeholder="sk-ant-api03-…" autocomplete="off"/>
+    <button class="key-btn" onclick="saveKey()">Save Key</button>`;
+}
+
+// ── Tags ──────────────────────────────────────────────────────────────────────
+function toggleTag(el) { el.classList.toggle('selected'); }
+function getSelectedTags() {
+  return Array.from(document.querySelectorAll('.tag-chip.selected')).map(c => c.textContent);
+}
+
+// ── Form helpers ──────────────────────────────────────────────────────────────
+function v(id) { const e = document.getElementById(id); return e ? e.value.trim() : ''; }
+
+function collectContact() {
+  return {
+    firstName:  v('f-first'),
+    lastName:   v('f-last'),
+    email:      v('f-email'),
+    phone:      v('f-phone'),
+    city:       v('f-city'),
+    state:      v('f-state'),
+    type:       v('f-type'),
+    source:     v('f-source'),
+    stage:      v('f-stage'),
+    timeline:   v('f-timeline'),
+    budget:     v('f-budget'),
+    interest:   v('f-interest'),
+    tags:       getSelectedTags(),
+    notes:      v('f-notes'),
+    addedDate:  new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+  };
+}
+
+function clearForm() {
+  ['f-first','f-last','f-email','f-phone','f-city','f-budget','f-interest','f-notes'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('selected'));
+  document.getElementById('output-section').style.display = 'none';
+  setStatus('');
+}
+
+// ── Build KW Command CSV ──────────────────────────────────────────────────────
+function buildCSV(c) {
+  const headers = ['First Name','Last Name','Email','Phone','City','State','Lead Type','Lead Source','Stage','Timeline','Budget','Property Interest','Tags','Notes','Date Added'];
+  const row = [
+    c.firstName, c.lastName, c.email, c.phone, c.city, c.state,
+    c.type, c.source, c.stage, c.timeline, c.budget, c.interest,
+    c.tags.join('; '), c.notes.replace(/\n/g,' '), c.addedDate
+  ].map(val => `"${(val||'').replace(/"/g,'""')}"`);
+  return headers.join(',') + '\n' + row.join(',');
+}
+
+// ── Claude follow-up draft ────────────────────────────────────────────────────
+async function draftFollowUp(c) {
+  const key = localStorage.getItem(STORAGE_KEY);
+  if (!key) return null;
+
+  const context = [
+    c.type !== 'Buyer' ? '' : `They are looking to buy`,
+    c.interest ? `interested in: ${c.interest}` : '',
+    c.budget   ? `budget: ${c.budget}` : '',
+    c.timeline ? `timeline: ${c.timeline}` : '',
+    c.notes    ? `context: ${c.notes}` : '',
+  ].filter(Boolean).join('. ');
+
+  const prompt = `You are writing a first follow-up email for Kevin Andreson, a commercial real estate agent at Keller Williams Realty Black Hills in Rapid City, SD.
+
+New contact: ${c.firstName} ${c.lastName}
+Type: ${c.type} | Source: ${c.source}
+${context}
+
+Write a brief, warm, professional first-touch follow-up email. 2–3 short paragraphs. Tone: knowledgeable and helpful, not salesy. Reference what they're looking for specifically. End with a clear next-step ask (call, meeting, or sending info).
+
+Return JSON: { "subject": "...", "body": "..." }
+Output only valid JSON.`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 600,
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  const raw = data.content[0].text.trim();
+  const match = raw.match(/\{[\s\S]*\}/);
+  return match ? JSON.parse(match[0]) : null;
+}
+
+// ── Process ───────────────────────────────────────────────────────────────────
+async function processContact() {
+  const c = collectContact();
+  if (!c.firstName || !c.lastName) { setStatus('First and last name are required.', 'error'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Processing…';
+  setStatus('Generating KW Command CSV…');
+
+  currentCSV = buildCSV(c);
+  document.getElementById('csv-content').textContent = currentCSV;
+
+  setStatus('Drafting follow-up email with Claude…');
+  const emailDraft = await draftFollowUp(c);
+
+  if (emailDraft) {
+    currentEmail = {
+      to:      `${c.firstName} ${c.lastName} <${c.email || 'no email provided'}>`,
+      subject: emailDraft.subject,
+      body:    emailDraft.body + '\n\nKevin Andreson\nKeller Williams Realty Black Hills\n605-646-5409\narecblackhills@gmail.com',
+    };
+  } else {
+    currentEmail = {
+      to:      `${c.firstName} ${c.lastName} <${c.email || ''}>`,
+      subject: `Following up — ${c.interest || 'Commercial Real Estate'}`,
+      body:    `Hi ${c.firstName},\n\nThank you for connecting. I'd love to learn more about what you're looking for.\n\nWould you have time for a quick call this week?\n\nKevin Andreson\nKeller Williams Realty Black Hills\n605-646-5409\narecblackhills@gmail.com`,
+    };
+  }
+
+  document.getElementById('email-to').textContent      = currentEmail.to;
+  document.getElementById('email-subject').textContent = currentEmail.subject;
+  document.getElementById('email-body').textContent    = currentEmail.body;
+
+  // Save contact
+  savedContacts.push({ ...c, emailDraft: currentEmail });
+  renderSavedContacts();
+
+  document.getElementById('output-section').style.display = 'block';
+  document.getElementById('output-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  setStatus(`Contact saved. ${emailDraft ? 'Follow-up drafted by Claude.' : 'Add API key for AI follow-up.'}`, 'ok');
+
+  btn.disabled = false;
+  btn.innerHTML = 'Save Contact + Draft Follow-Up';
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function showTab(tab) {
+  ['kw','email','saved'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.out-tab').forEach((el, i) => {
+    el.classList.toggle('active', ['kw','email','saved'][i] === tab);
+  });
+}
+
+// ── Downloads & copies ────────────────────────────────────────────────────────
+function downloadCSV() {
+  const blob = new Blob([currentCSV], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `kw-contact-${v('f-last') || 'export'}-${Date.now()}.csv`;
+  a.click();
+}
+
+function copyCSV() {
+  navigator.clipboard.writeText(currentCSV).then(() => flash('csv-content', 'Copied!'));
+}
+
+function copyEmail() {
+  const text = `Subject: ${currentEmail.subject}\n\n${currentEmail.body}`;
+  navigator.clipboard.writeText(text).then(() => setStatus('Email copied to clipboard.', 'ok'));
+}
+
+function openMailto() {
+  const email = v('f-email');
+  if (!email) { setStatus('No email address entered for this contact.', 'error'); return; }
+  const url = `mailto:${email}?subject=${encodeURIComponent(currentEmail.subject)}&body=${encodeURIComponent(currentEmail.body)}`;
+  window.open(url, '_blank');
+}
+
+function downloadAllCSV() {
+  if (!savedContacts.length) return;
+  const headers = ['First Name','Last Name','Email','Phone','City','State','Lead Type','Lead Source','Stage','Timeline','Budget','Property Interest','Tags','Notes','Date Added'];
+  const rows = savedContacts.map(c => [
+    c.firstName, c.lastName, c.email, c.phone, c.city, c.state,
+    c.type, c.source, c.stage, c.timeline, c.budget, c.interest,
+    c.tags.join('; '), c.notes.replace(/\n/g,' '), c.addedDate
+  ].map(val => `"${(val||'').replace(/"/g,'""')}"`).join(','));
+  const csv = headers.join(',') + '\n' + rows.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `kw-contacts-${Date.now()}.csv`;
+  a.click();
+}
+
+function clearSaved() {
+  if (!confirm('Clear all saved contacts this session?')) return;
+  savedContacts = [];
+  renderSavedContacts();
+}
+
+function flash(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const orig = el.textContent;
+  el.textContent = msg;
+  setTimeout(() => el.textContent = orig, 1800);
+}
+
+function renderSavedContacts() {
+  const list = document.getElementById('contacts-list');
+  const count = document.getElementById('saved-count');
+  const bulk = document.getElementById('bulk-actions');
+  count.textContent = savedContacts.length;
+
+  if (!savedContacts.length) {
+    list.innerHTML = '<div class="empty-state">No contacts saved this session.</div>';
+    bulk.style.display = 'none';
+    return;
+  }
+
+  bulk.style.display = 'flex';
+  list.innerHTML = savedContacts.map((c, i) => `
+    <div class="contact-card">
+      <div class="contact-info">
+        <div class="contact-name">${c.firstName} ${c.lastName}</div>
+        <div class="contact-meta">${c.type} · ${c.source} · ${c.stage} · Added ${c.addedDate}</div>
+        <div class="contact-meta">${[c.email,c.phone].filter(Boolean).join(' · ') || 'No contact info'}</div>
+        ${c.tags.length ? `<div class="contact-tags">${c.tags.map(t=>`<span class="contact-tag">${t}</span>`).join('')}</div>` : ''}
+      </div>
+      <div class="contact-actions">
+        <button class="contact-btn" onclick="reloadContact(${i})">View</button>
+      </div>
+    </div>`).join('');
+}
+
+function reloadContact(i) {
+  const c = savedContacts[i];
+  currentCSV = buildCSV(c);
+  document.getElementById('csv-content').textContent = currentCSV;
+  if (c.emailDraft) {
+    currentEmail = c.emailDraft;
+    document.getElementById('email-to').textContent      = currentEmail.to;
+    document.getElementById('email-subject').textContent = currentEmail.subject;
+    document.getElementById('email-body').textContent    = currentEmail.body;
+  }
+  document.getElementById('output-section').style.display = 'block';
+  showTab('kw');
+  document.getElementById('output-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+function setStatus(msg, type = '') {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status' + (type ? ' ' + type : '');
+}
+
+loadKey();
+</script>
 </body>
 </html>
