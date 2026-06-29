@@ -158,8 +158,11 @@ def fetch_paragon_emails(mail, days=14):
 
 def _is_paragon(sender, subject):
     sl = sender.lower();  su = subject.lower()
+    # Exclude emails from Kevin's own KW address — those are not Paragon system emails
+    if "kandreson@kw.com" in sl:
+        return False
     return (
-        any(k in sl for k in ("paragon", "kw.com", "kwls", "bhrealtors", "mtrushmoremls", "corelogic"))
+        any(k in sl for k in ("paragon", "noreply@kw.com", "kwls", "bhrealtors", "mtrushmoremls", "corelogic", "blackhillsrealtors"))
         or any(k in su for k in ("collaboration center", "saved search", "new listing", "mls alert", "search update"))
     )
 
