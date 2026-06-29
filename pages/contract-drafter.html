@@ -1,124 +1,651 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Contract Drafter — Kevin Andreson</title>
-  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box;}
-    :root{--bg:#000;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.1);--text:#fff;--muted:rgba(255,255,255,0.5);--dim:rgba(255,255,255,0.25);}
-    body{font-family:'Josefin Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;}
-    nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.8);backdrop-filter:blur(12px);}
-    .nav-back{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;}
-    .nav-back:hover{color:var(--text);}
-    .nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-    .nav-title{font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
-    main{max-width:860px;margin:0 auto;padding:3rem 2rem 4rem;}
-    .breadcrumb{font-size:11px;color:var(--dim);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:16px;}
-    .breadcrumb a{color:var(--dim);text-decoration:none;} .breadcrumb a:hover{color:var(--muted);}
-    .agent-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:14px;background:rgba(255,255,255,0.06);color:var(--muted);border:1px solid var(--border);}
-    h1{font-size:32px;font-weight:700;letter-spacing:0.02em;margin-bottom:10px;}
-    .subtitle{font-size:15px;color:var(--muted);max-width:600px;line-height:1.7;}
-    .divider{height:1px;background:var(--border);margin:2.5rem 0;}
-    .section{margin-bottom:2.5rem;}
-    .section-title{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--dim);margin-bottom:1rem;display:flex;align-items:center;gap:10px;}
-    .section-title::after{content:'';flex:1;height:1px;background:var(--border);}
-    .what-it-does{font-size:14px;color:rgba(255,255,255,0.7);line-height:1.8;}
-    .config-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
-    .config-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem;}
-    .config-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;}
-    .config-value{font-size:13px;color:var(--text);font-weight:500;}
-    .config-value code{font-family:monospace;font-size:12px;color:#A78BFA;}
-    .prompt-block{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:1.5rem;}
-    .prompt-block pre{font-family:monospace;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.8;white-space:pre-wrap;word-break:break-word;}
-    .steps{display:flex;flex-direction:column;gap:1rem;}
-    .step{display:flex;gap:16px;align-items:flex-start;}
-    .step-num{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;margin-top:1px;}
-    .step-body{font-size:13px;color:rgba(255,255,255,0.65);line-height:1.7;} .step-body strong{color:var(--text);}
-    .step-body code{font-family:monospace;font-size:11px;background:rgba(255,255,255,0.07);padding:2px 6px;border-radius:4px;color:#A78BFA;}
-    .progress-row{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-bottom:6px;}
-    .progress-bar{height:4px;background:rgba(255,255,255,0.08);border-radius:99px;overflow:hidden;}
-    .progress-fill{height:100%;background:linear-gradient(90deg,#3B82F6,#8B5CF6);border-radius:99px;}
-    .status-bar{display:flex;gap:2rem;margin-bottom:2.5rem;}
-    .stat{text-align:center;} .stat-value{font-size:22px;font-weight:700;} .stat-label{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);margin-top:2px;}
-  </style>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Contract Drafter — Kevin Andreson</title>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#000;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.1);--text:#fff;--muted:rgba(255,255,255,0.5);--dim:rgba(255,255,255,0.25);}
+body{font-family:'Josefin Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.9);backdrop-filter:blur(12px);}
+.nav-back{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;} .nav-back:hover{color:var(--text);}
+.nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.nav-title{font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+
+main{max-width:820px;margin:0 auto;padding:2.5rem 2rem 5rem;}
+h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
+.subtitle{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:2rem;}
+
+/* API Key */
+.key-banner{display:flex;align-items:center;gap:12px;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.25);border-radius:10px;padding:14px 18px;margin-bottom:2rem;}
+.key-banner.ok{background:rgba(16,185,129,0.08);border-color:rgba(52,211,153,0.25);}
+.key-banner-label{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#A78BFA;white-space:nowrap;}
+.key-banner.ok .key-banner-label{color:#34D399;}
+.key-input{flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:8px 12px;font-size:12px;font-family:monospace;color:#fff;outline:none;} .key-input:focus{border-color:#A78BFA;}
+.key-btn{padding:8px 16px;background:#A78BFA;color:#000;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;border:none;border-radius:6px;cursor:pointer;white-space:nowrap;} .key-btn:hover{background:#c4b5fd;}
+.key-status{font-size:12px;color:#34D399;}
+.key-clear{font-size:11px;color:rgba(255,255,255,0.3);cursor:pointer;text-decoration:underline;margin-left:8px;} .key-clear:hover{color:rgba(255,255,255,0.6);}
+
+/* Contract type tabs */
+.type-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:2rem;}
+.type-tab{padding:9px 18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.09);border-radius:8px;font-size:11px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:rgba(255,255,255,0.4);cursor:pointer;transition:all .2s;}
+.type-tab:hover{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);}
+.type-tab.active{background:rgba(59,130,246,0.12);border-color:rgba(96,165,250,0.35);color:#60A5FA;}
+
+/* Section */
+.section-label{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--dim);margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* Form grid */
+.form-section{margin-bottom:1.75rem;}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.field-full{grid-column:1/-1;}
+.field-label{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:5px;}
+.field-input,.field-select,.field-textarea{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:9px 12px;font-size:12px;font-family:'Josefin Sans',sans-serif;color:#fff;outline:none;}
+.field-input:focus,.field-select:focus,.field-textarea:focus{border-color:rgba(255,255,255,0.3);}
+.field-input::placeholder,.field-textarea::placeholder{color:rgba(255,255,255,0.2);}
+.field-select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.4)' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
+.field-select option{background:#111;color:#fff;}
+.field-textarea{resize:vertical;min-height:72px;line-height:1.6;}
+
+/* Toggle group */
+.toggle-group{display:flex;gap:6px;}
+.toggle-opt{padding:7px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.09);border-radius:6px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(255,255,255,0.35);cursor:pointer;transition:all .2s;}
+.toggle-opt.on{background:rgba(52,211,153,0.1);border-color:rgba(52,211,153,0.3);color:#34D399;}
+.toggle-opt.off-selected{background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.25);color:#F87171;}
+
+/* Draft button */
+.btn-draft{width:100%;padding:16px;background:linear-gradient(135deg,#1B3A6B,#2563EB);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;margin-top:1.5rem;transition:opacity .2s;}
+.btn-draft:hover{opacity:0.9;}
+.btn-draft:disabled{opacity:0.4;cursor:not-allowed;}
+
+/* Status */
+.status{font-size:12px;color:var(--muted);text-align:center;margin-top:12px;min-height:20px;}
+.status.error{color:#F87171;} .status.ok{color:#34D399;}
+
+/* Preview */
+#preview-section{display:none;margin-top:2.5rem;}
+.preview-actions{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.btn-pdf{padding:10px 24px;background:#1B3A6B;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:8px;}
+.btn-pdf:hover{background:#2563EB;}
+.btn-pdf svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.btn-copy{padding:10px 20px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.15);border-radius:7px;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;}
+.btn-copy:hover{background:rgba(255,255,255,0.12);}
+.preview-frame-wrap{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#F8F9FA;}
+#preview-frame{width:100%;height:800px;border:none;display:block;}
+
+/* Disclaimer */
+.disclaimer{background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.18);border-radius:8px;padding:12px 16px;margin-top:1.5rem;font-size:11px;color:rgba(251,191,36,0.7);line-height:1.7;}
+.disclaimer strong{color:rgba(251,191,36,0.9);}
+
+/* Spinner */
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
 </head>
 <body>
+
 <nav>
   <a class="nav-back" href="../index.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back to Dashboard</a>
   <div class="nav-title">FOR KEVIN ANDRESON</div>
 </nav>
+
 <main>
-  <div class="breadcrumb"><a href="../index.html">Dashboard</a> / Contract Drafter</div>
-  <div class="agent-badge" style="background:rgba(59,130,246,0.15);color:#60A5FA;border:1px solid rgba(96,165,250,0.25);">
-    <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor"/></svg>
-    Setting Up
-  </div>
   <h1>Contract & Lease Drafter</h1>
-  <p class="subtitle">On-demand agent that generates draft contracts and lease agreements from a simple intake form — ready to review in minutes, not hours.</p>
+  <p class="subtitle">Select a document type, fill in the deal terms, and Claude drafts the full contract. Preview it here, then save as PDF or copy to finalize in KW Command.</p>
 
-  <div class="divider"></div>
-
-  <div class="status-bar">
-    <div class="stat"><div class="stat-value">25%</div><div class="stat-label">Complete</div></div>
-    <div class="stat"><div class="stat-value">On Demand</div><div class="stat-label">Trigger</div></div>
-    <div class="stat"><div class="stat-value">Word / PDF</div><div class="stat-label">Output</div></div>
-    <div class="stat"><div class="stat-value">Black Hills</div><div class="stat-label">Market</div></div>
-  </div>
-  <div class="progress-row"><span>Build Progress</span><span>25%</span></div>
-  <div class="progress-bar"><div class="progress-fill" style="width:25%"></div></div>
-
-  <div class="divider"></div>
-
-  <div class="section">
-    <div class="section-title">What This Agent Does</div>
-    <p class="what-it-does">
-      Fill out a short web form with the deal details — property address, parties, terms, dates — and the agent generates a complete draft contract or lease agreement in seconds.<br><br>
-      The output is a formatted Word document (.docx) pre-filled with Kevin's standard terms, ready to review and send for signatures. Handles purchase agreements, lease agreements, and commercial contracts.<br><br>
-      Note: KW Command handles final compliance and signatures — this agent handles the drafting step only, saving hours of manual template work per deal.
-    </p>
+  <!-- API Key -->
+  <div class="key-banner" id="key-banner">
+    <div class="key-banner-label">Anthropic API Key</div>
+    <input class="key-input" type="password" id="key-input" placeholder="sk-ant-api03-…" autocomplete="off"/>
+    <button class="key-btn" onclick="saveKey()">Save Key</button>
   </div>
 
-  <div class="section">
-    <div class="section-title">Configuration</div>
-    <div class="config-grid">
-      <div class="config-item"><div class="config-label">Name</div><div class="config-value">Contract & Lease Drafter</div></div>
-      <div class="config-item"><div class="config-label">Model</div><div class="config-value"><code>claude-sonnet-4-6</code></div></div>
-      <div class="config-item"><div class="config-label">Trigger</div><div class="config-value">Web form submission (on demand)</div></div>
-      <div class="config-item"><div class="config-label">Output</div><div class="config-value">Word document (.docx) emailed to Kevin</div></div>
-      <div class="config-item"><div class="config-label">Document Types</div><div class="config-value">Purchase Agreement · Lease Agreement · Commercial Contract</div></div>
-      <div class="config-item"><div class="config-label">Compliance</div><div class="config-value">Drafts only — final execution via KW Command</div></div>
+  <!-- Contract Type -->
+  <div class="section-label">Document Type</div>
+  <div class="type-tabs" id="type-tabs">
+    <div class="type-tab active" data-type="purchase" onclick="setType('purchase')">Purchase Agreement</div>
+    <div class="type-tab" data-type="lease" onclick="setType('lease')">Commercial Lease</div>
+    <div class="type-tab" data-type="loi" onclick="setType('loi')">Letter of Intent</div>
+    <div class="type-tab" data-type="option" onclick="setType('option')">Option to Purchase</div>
+  </div>
+
+  <!-- ── PURCHASE AGREEMENT ── -->
+  <div id="form-purchase">
+    <div class="form-section">
+      <div class="section-label">Property</div>
+      <div class="field-grid">
+        <div class="field-full"><div class="field-label">Property Address</div><input class="field-input" id="pu-addr" placeholder="Highway 1416, Box Elder, SD 57719"/></div>
+        <div><div class="field-label">Legal Description / APN</div><input class="field-input" id="pu-legal" placeholder="Lot 1, Block 2, Section 14…"/></div>
+        <div><div class="field-label">County</div><input class="field-input" id="pu-county" placeholder="Pennington" value="Pennington"/></div>
+        <div><div class="field-label">Property Type</div>
+          <select class="field-select" id="pu-proptype">
+            <option>Commercial Land</option>
+            <option>Commercial Building</option>
+            <option>Industrial</option>
+            <option>Multi-Family</option>
+            <option>Mixed-Use</option>
+            <option>Residential</option>
+          </select>
+        </div>
+        <div><div class="field-label">Acreage / SF</div><input class="field-input" id="pu-size" placeholder="24.75 AC"/></div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="section-label">Parties</div>
+      <div class="field-grid">
+        <div><div class="field-label">Buyer — Full Legal Name</div><input class="field-input" id="pu-buyer" placeholder="John D. Smith"/></div>
+        <div><div class="field-label">Buyer — Address</div><input class="field-input" id="pu-buyer-addr" placeholder="123 Main St, Rapid City, SD 57701"/></div>
+        <div><div class="field-label">Seller — Full Legal Name</div><input class="field-input" id="pu-seller" placeholder="MDR Land Holdings, LLC"/></div>
+        <div><div class="field-label">Seller — Address</div><input class="field-input" id="pu-seller-addr" placeholder="456 Commerce Dr, Box Elder, SD 57719"/></div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="section-label">Price & Terms</div>
+      <div class="field-grid">
+        <div><div class="field-label">Purchase Price</div><input class="field-input" id="pu-price" placeholder="$3,750,000"/></div>
+        <div><div class="field-label">Earnest Money Deposit</div><input class="field-input" id="pu-earnest" placeholder="$37,500 (1%)"/></div>
+        <div><div class="field-label">Earnest Money Deadline</div><input class="field-input" id="pu-earnest-days" placeholder="3 business days after acceptance"/></div>
+        <div><div class="field-label">Closing Date</div><input class="field-input" id="pu-close" placeholder="September 15, 2026"/></div>
+        <div><div class="field-label">Due Diligence Period</div><input class="field-input" id="pu-dd" placeholder="30 days from acceptance"/></div>
+        <div><div class="field-label">Closing Costs</div>
+          <select class="field-select" id="pu-closingcosts">
+            <option>Split 50/50</option>
+            <option>Buyer pays all</option>
+            <option>Seller pays all</option>
+            <option>Each party pays own</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="section-label">Contingencies</div>
+      <div class="field-grid">
+        <div>
+          <div class="field-label">Financing Contingency</div>
+          <div class="toggle-group">
+            <div class="toggle-opt on" id="pu-fin-yes" onclick="toggleOpt('pu-fin','yes')">Yes</div>
+            <div class="toggle-opt" id="pu-fin-no" onclick="toggleOpt('pu-fin','no')">No (Cash / Waived)</div>
+          </div>
+        </div>
+        <div>
+          <div class="field-label">Inspection Contingency</div>
+          <div class="toggle-group">
+            <div class="toggle-opt on" id="pu-insp-yes" onclick="toggleOpt('pu-insp','yes')">Yes</div>
+            <div class="toggle-opt" id="pu-insp-no" onclick="toggleOpt('pu-insp','no')">No (Waived)</div>
+          </div>
+        </div>
+        <div id="pu-fin-block">
+          <div class="field-label">Loan Amount / Lender Days</div>
+          <input class="field-input" id="pu-loan" placeholder="$2,500,000 · 30 days for commitment"/>
+        </div>
+        <div>
+          <div class="field-label">AS-IS Sale</div>
+          <div class="toggle-group">
+            <div class="toggle-opt" id="pu-asis-yes" onclick="toggleOpt('pu-asis','yes')">Yes — AS-IS</div>
+            <div class="toggle-opt on" id="pu-asis-no" onclick="toggleOpt('pu-asis','no')">No</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="section-label">Additional Terms</div>
+      <div class="field-grid">
+        <div class="field-full">
+          <div class="field-label">Personal Property Included</div>
+          <input class="field-input" id="pu-personal" placeholder="All existing fencing, irrigation equipment (or leave blank)"/>
+        </div>
+        <div class="field-full">
+          <div class="field-label">Special Conditions / Notes for Claude</div>
+          <textarea class="field-textarea" id="pu-notes" placeholder="e.g. Subject to 1031 exchange; Seller to provide phase 1 environmental; utilities to be verified prior to close…"></textarea>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="section">
-    <div class="section-title">System Prompt</div>
-    <div class="prompt-block">
-      <pre>You are a real estate contract drafting assistant for Kevin Andreson, a Keller Williams agent in South Dakota.
+  <!-- ── COMMERCIAL LEASE ── -->
+  <div id="form-lease" style="display:none;">
+    <div class="form-section">
+      <div class="section-label">Property</div>
+      <div class="field-grid">
+        <div class="field-full"><div class="field-label">Property Address</div><input class="field-input" id="le-addr" placeholder="1234 Commerce Blvd, Rapid City, SD 57701"/></div>
+        <div><div class="field-label">Suite / Unit</div><input class="field-input" id="le-suite" placeholder="Suite 200 (or leave blank)"/></div>
+        <div><div class="field-label">Rentable SF</div><input class="field-input" id="le-sf" placeholder="3,500 SF"/></div>
+        <div><div class="field-label">Lease Type</div>
+          <select class="field-select" id="le-leasetype">
+            <option>NNN (Triple Net)</option>
+            <option>Gross / Full Service</option>
+            <option>Modified Gross</option>
+            <option>Double Net (NN)</option>
+          </select>
+        </div>
+      </div>
+    </div>
 
-Given deal information from an intake form, draft a complete, professional real estate contract. Use standard South Dakota real estate contract language. Fill in all provided fields exactly as given.
+    <div class="form-section">
+      <div class="section-label">Parties</div>
+      <div class="field-grid">
+        <div><div class="field-label">Landlord — Full Legal Name</div><input class="field-input" id="le-ll" placeholder="Box Elder Holdings, LLC"/></div>
+        <div><div class="field-label">Landlord — Address</div><input class="field-input" id="le-ll-addr" placeholder="PO Box 123, Box Elder, SD 57719"/></div>
+        <div><div class="field-label">Tenant — Full Legal Name</div><input class="field-input" id="le-ten" placeholder="Apex Logistics, Inc."/></div>
+        <div><div class="field-label">Tenant — Address</div><input class="field-input" id="le-ten-addr" placeholder="789 Industrial Way, Rapid City, SD 57702"/></div>
+      </div>
+    </div>
 
-Rules:
-- Use precise legal language for all property descriptions and terms
-- Include all standard contingencies unless explicitly waived in the intake
-- Flag any missing information that would be required for a complete contract
-- Note that this is a DRAFT for attorney/broker review — include a header stating this
-- Do not invent deal terms — only use what was provided in the intake form
-
-Output a clean, formatted document ready for review.</pre>
+    <div class="form-section">
+      <div class="section-label">Lease Terms</div>
+      <div class="field-grid">
+        <div><div class="field-label">Lease Commencement Date</div><input class="field-input" id="le-start" placeholder="October 1, 2026"/></div>
+        <div><div class="field-label">Lease Term</div><input class="field-input" id="le-term" placeholder="5 years (60 months)"/></div>
+        <div><div class="field-label">Base Rent</div><input class="field-input" id="le-rent" placeholder="$4,200/mo or $14.40/SF/yr"/></div>
+        <div><div class="field-label">Annual Rent Escalation</div><input class="field-input" id="le-esc" placeholder="3% annually or fixed steps"/></div>
+        <div><div class="field-label">Security Deposit</div><input class="field-input" id="le-dep" placeholder="$8,400 (2 months)"/></div>
+        <div><div class="field-label">Estimated NNN / CAM Charges</div><input class="field-input" id="le-cam" placeholder="$1.80/SF/yr est."/></div>
+        <div class="field-full"><div class="field-label">Permitted Use Clause</div><input class="field-input" id="le-use" placeholder="General office and light warehouse; no retail sales without prior written consent"/></div>
+        <div>
+          <div class="field-label">Option to Renew</div>
+          <div class="toggle-group">
+            <div class="toggle-opt on" id="le-opt-yes" onclick="toggleOpt('le-opt','yes')">Yes</div>
+            <div class="toggle-opt" id="le-opt-no" onclick="toggleOpt('le-opt','no')">No</div>
+          </div>
+        </div>
+        <div id="le-opt-block">
+          <div class="field-label">Renewal Option Terms</div>
+          <input class="field-input" id="le-optterms" placeholder="One 3-year option at 5% over expiring rent"/>
+        </div>
+        <div>
+          <div class="field-label">Personal Guarantee</div>
+          <div class="toggle-group">
+            <div class="toggle-opt on" id="le-pg-yes" onclick="toggleOpt('le-pg','yes')">Yes</div>
+            <div class="toggle-opt" id="le-pg-no" onclick="toggleOpt('le-pg','no')">No</div>
+          </div>
+        </div>
+        <div><div class="field-label">Tenant Improvement Allowance</div><input class="field-input" id="le-ti" placeholder="$10,000 (or None)"/></div>
+        <div class="field-full">
+          <div class="field-label">Special Conditions / Notes for Claude</div>
+          <textarea class="field-textarea" id="le-notes" placeholder="e.g. Landlord to deliver space broom-clean; tenant responsible for HVAC maintenance; no subletting without consent…"></textarea>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="section">
-    <div class="section-title">Setup Steps</div>
-    <div class="steps">
-      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Build intake form</strong> — Simple HTML form collecting property address, buyer/seller names, purchase price, closing date, contingencies, and special terms.</div></div>
-      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Connect to Claude API</strong> — Form submission triggers a Python script that sends the data to Claude with the system prompt and returns a formatted draft.</div></div>
-      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Document generation</strong> — Output is formatted as a .docx using the <code>python-docx</code> library and emailed to Kevin for review.</div></div>
-      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Standard templates</strong> — Load Kevin's standard term clauses as reference documents so Claude can match existing language and style.</div></div>
+  <!-- ── LETTER OF INTENT ── -->
+  <div id="form-loi" style="display:none;">
+    <div class="form-section">
+      <div class="section-label">Transaction</div>
+      <div class="field-grid">
+        <div class="field-full"><div class="field-label">Property Address</div><input class="field-input" id="lo-addr" placeholder="Highway 1416, Box Elder, SD 57719"/></div>
+        <div><div class="field-label">Transaction Type</div>
+          <select class="field-select" id="lo-type">
+            <option>Purchase</option>
+            <option>Lease</option>
+          </select>
+        </div>
+        <div><div class="field-label">LOI Date</div><input class="field-input" id="lo-date" placeholder="June 29, 2026"/></div>
+        <div><div class="field-label">From (Buyer / Tenant)</div><input class="field-input" id="lo-from" placeholder="Full legal name or company"/></div>
+        <div><div class="field-label">To (Seller / Landlord)</div><input class="field-input" id="lo-to" placeholder="Full legal name or company"/></div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="section-label">Proposed Terms</div>
+      <div class="field-grid">
+        <div><div class="field-label">Proposed Price / Rent</div><input class="field-input" id="lo-price" placeholder="$3,500,000 or $4,000/mo NNN"/></div>
+        <div><div class="field-label">Due Diligence / Feasibility Period</div><input class="field-input" id="lo-dd" placeholder="45 days from execution"/></div>
+        <div><div class="field-label">Target Closing / Commencement</div><input class="field-input" id="lo-close" placeholder="90 days from executed PSA"/></div>
+        <div><div class="field-label">Exclusivity Period Requested</div><input class="field-input" id="lo-excl" placeholder="30 days (or None)"/></div>
+        <div><div class="field-label">Earnest / Good Faith Deposit</div><input class="field-input" id="lo-deposit" placeholder="$25,000 refundable during DD period"/></div>
+        <div><div class="field-label">Key Contingencies</div><input class="field-input" id="lo-contingencies" placeholder="Financing, Phase 1 ESA, zoning verification"/></div>
+        <div class="field-full">
+          <div class="field-label">Additional Notes</div>
+          <textarea class="field-textarea" id="lo-notes" placeholder="Any other terms, context, or special conditions to include…"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── OPTION TO PURCHASE ── -->
+  <div id="form-option" style="display:none;">
+    <div class="form-section">
+      <div class="section-label">Property & Parties</div>
+      <div class="field-grid">
+        <div class="field-full"><div class="field-label">Property Address / Legal Description</div><input class="field-input" id="op-addr" placeholder="Highway 1416, Box Elder, SD 57719 — Pennington County Parcel #…"/></div>
+        <div><div class="field-label">Optionor (Property Owner)</div><input class="field-input" id="op-or" placeholder="Full legal name"/></div>
+        <div><div class="field-label">Optionee (Purchaser)</div><input class="field-input" id="op-ee" placeholder="Full legal name or entity"/></div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="section-label">Option Terms</div>
+      <div class="field-grid">
+        <div><div class="field-label">Option Fee</div><input class="field-input" id="op-fee" placeholder="$50,000 (credited toward purchase price)"/></div>
+        <div><div class="field-label">Option Period</div><input class="field-input" id="op-period" placeholder="12 months from execution"/></div>
+        <div><div class="field-label">Purchase Price if Exercised</div><input class="field-input" id="op-price" placeholder="$3,750,000"/></div>
+        <div><div class="field-label">Exercise Notice Required</div><input class="field-input" id="op-notice" placeholder="30 days written notice prior to closing"/></div>
+        <div><div class="field-label">Closing Period After Exercise</div><input class="field-input" id="op-closeperiod" placeholder="60 days from exercise notice"/></div>
+        <div>
+          <div class="field-label">Right of First Refusal</div>
+          <div class="toggle-group">
+            <div class="toggle-opt" id="op-rofr-yes" onclick="toggleOpt('op-rofr','yes')">Yes</div>
+            <div class="toggle-opt on" id="op-rofr-no" onclick="toggleOpt('op-rofr','no')">No</div>
+          </div>
+        </div>
+        <div class="field-full">
+          <div class="field-label">Special Conditions</div>
+          <textarea class="field-textarea" id="op-notes" placeholder="e.g. Option fee non-refundable if optionee fails to exercise; optionee may record a memorandum of option…"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    <strong>Attorney Review Required.</strong> All documents generated by this tool are DRAFTS intended for review by Kevin Andreson and a licensed South Dakota real estate attorney before execution. Do not use as a final legal document.
+  </div>
+
+  <button class="btn-draft" id="draft-btn" onclick="draftContract()">Draft Contract</button>
+  <div class="status" id="status"></div>
+
+  <!-- Preview -->
+  <div id="preview-section">
+    <div class="section-label" style="margin-top:0.5rem;">Draft Document</div>
+    <div class="preview-actions">
+      <button class="btn-pdf" onclick="savePDF()">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Save as PDF
+      </button>
+      <button class="btn-copy" onclick="copyText()">Copy Text</button>
+      <button class="btn-copy" onclick="redraft()">Re-Draft</button>
+    </div>
+    <div class="preview-frame-wrap">
+      <iframe id="preview-frame" title="Contract Draft"></iframe>
     </div>
   </div>
 </main>
-<script src="../js/search.js"></script>
+
+<script>
+const STORAGE_KEY = 'kw_anthropic_key';
+let lastHTML = '';
+let currentType = 'purchase';
+
+const TYPE_LABELS = {
+  purchase: 'Commercial Purchase Agreement',
+  lease:    'Commercial Lease Agreement',
+  loi:      'Letter of Intent',
+  option:   'Option to Purchase Agreement',
+};
+
+// ── API Key ───────────────────────────────────────────────────────────────────
+function loadKey() {
+  const k = localStorage.getItem(STORAGE_KEY) || '';
+  if (k) showKeySaved(k);
+}
+function saveKey() {
+  const val = document.getElementById('key-input').value.trim();
+  if (!val.startsWith('sk-')) { alert('Doesn\'t look like an Anthropic key.'); return; }
+  localStorage.setItem(STORAGE_KEY, val);
+  showKeySaved(val);
+}
+function showKeySaved(k) {
+  const b = document.getElementById('key-banner');
+  b.className = 'key-banner ok';
+  b.innerHTML = `<div class="key-banner-label">API Key</div>
+    <div class="key-status">✓ Saved — ${k.slice(0,12)}…${k.slice(-4)}</div>
+    <span class="key-clear" onclick="clearKey()">Change</span>`;
+}
+function clearKey() {
+  localStorage.removeItem(STORAGE_KEY);
+  const b = document.getElementById('key-banner');
+  b.className = 'key-banner';
+  b.innerHTML = `<div class="key-banner-label">Anthropic API Key</div>
+    <input class="key-input" type="password" id="key-input" placeholder="sk-ant-api03-…" autocomplete="off"/>
+    <button class="key-btn" onclick="saveKey()">Save Key</button>`;
+}
+
+// ── Type tabs ─────────────────────────────────────────────────────────────────
+function setType(type) {
+  currentType = type;
+  document.querySelectorAll('.type-tab').forEach(t => t.classList.toggle('active', t.dataset.type === type));
+  ['purchase','lease','loi','option'].forEach(t =>
+    document.getElementById('form-' + t).style.display = t === type ? 'block' : 'none');
+  document.getElementById('preview-section').style.display = 'none';
+}
+
+// ── Toggle opts ───────────────────────────────────────────────────────────────
+function toggleOpt(prefix, val) {
+  const yes = document.getElementById(prefix + '-yes');
+  const no  = document.getElementById(prefix + '-no');
+  if (!yes || !no) return;
+  if (val === 'yes') {
+    yes.classList.add('on'); no.classList.remove('on', 'off-selected');
+  } else {
+    no.classList.add('on'); yes.classList.remove('on');
+  }
+  // Show/hide dependent block
+  const block = document.getElementById(prefix + '-block');
+  if (block) block.style.display = val === 'yes' ? 'block' : 'none';
+}
+
+// ── Collect form data ─────────────────────────────────────────────────────────
+function v(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+function tog(prefix) {
+  const yes = document.getElementById(prefix + '-yes');
+  return yes && yes.classList.contains('on') ? 'Yes' : 'No';
+}
+
+function collectData() {
+  const t = currentType;
+  if (t === 'purchase') return {
+    type: TYPE_LABELS[t],
+    property:    `${v('pu-addr')} | ${v('pu-size')} | ${v('pu-proptype')} | ${v('pu-legal')} | ${v('pu-county')} County, SD`,
+    buyer:       `${v('pu-buyer')}, ${v('pu-buyer-addr')}`,
+    seller:      `${v('pu-seller')}, ${v('pu-seller-addr')}`,
+    price:       v('pu-price'),
+    earnest:     v('pu-earnest'),
+    earnest_days:v('pu-earnest-days'),
+    closing:     v('pu-close'),
+    dd_period:   v('pu-dd'),
+    closing_costs:v('pu-closingcosts'),
+    financing:   tog('pu-fin'),
+    loan_detail: v('pu-loan'),
+    inspection:  tog('pu-insp'),
+    as_is:       tog('pu-asis'),
+    personal_property: v('pu-personal'),
+    notes:       v('pu-notes'),
+  };
+  if (t === 'lease') return {
+    type: TYPE_LABELS[t],
+    property:    `${v('le-addr')} | ${v('le-suite')} | ${v('le-sf')} | ${v('le-leasetype')}`,
+    landlord:    `${v('le-ll')}, ${v('le-ll-addr')}`,
+    tenant:      `${v('le-ten')}, ${v('le-ten-addr')}`,
+    start_date:  v('le-start'),
+    term:        v('le-term'),
+    base_rent:   v('le-rent'),
+    escalation:  v('le-esc'),
+    deposit:     v('le-dep'),
+    cam:         v('le-cam'),
+    use_clause:  v('le-use'),
+    renewal_opt: tog('le-opt'),
+    opt_terms:   v('le-optterms'),
+    personal_guar: tog('le-pg'),
+    ti_allowance:v('le-ti'),
+    notes:       v('le-notes'),
+  };
+  if (t === 'loi') return {
+    type: TYPE_LABELS[t],
+    property:    v('lo-addr'),
+    tx_type:     v('lo-type'),
+    date:        v('lo-date'),
+    from:        v('lo-from'),
+    to:          v('lo-to'),
+    price:       v('lo-price'),
+    dd_period:   v('lo-dd'),
+    target_close:v('lo-close'),
+    exclusivity: v('lo-excl'),
+    deposit:     v('lo-deposit'),
+    contingencies: v('lo-contingencies'),
+    notes:       v('lo-notes'),
+  };
+  if (t === 'option') return {
+    type: TYPE_LABELS[t],
+    property:    v('op-addr'),
+    optionor:    v('op-or'),
+    optionee:    v('op-ee'),
+    option_fee:  v('op-fee'),
+    option_period: v('op-period'),
+    purchase_price: v('op-price'),
+    notice:      v('op-notice'),
+    close_period:v('op-closeperiod'),
+    rofr:        tog('op-rofr'),
+    notes:       v('op-notes'),
+  };
+}
+
+// ── Build prompt ──────────────────────────────────────────────────────────────
+function buildPrompt(data) {
+  const rows = Object.entries(data)
+    .filter(([k, val]) => k !== 'type' && val)
+    .map(([k, val]) => `${k.replace(/_/g,' ').toUpperCase()}: ${val}`)
+    .join('\n');
+
+  return `You are a real estate contract drafting assistant for Kevin Andreson, a Keller Williams Realty Black Hills agent in Rapid City, South Dakota.
+
+Draft a complete, professional ${data.type} using the deal information below. Use standard South Dakota real estate contract language and formatting.
+
+DEAL INFORMATION:
+${rows}
+
+RULES:
+- Include ALL standard clauses for this document type under South Dakota law
+- Use precise legal language for property descriptions and all monetary terms
+- Spell out all numbers in legal form where required (e.g., "Three Million Seven Hundred Fifty Thousand Dollars ($3,750,000.00)")
+- Include standard contingency language for any contingencies marked Yes; use waiver language for those marked No
+- Add signature blocks for all parties with date lines
+- Include a bold "DRAFT — FOR REVIEW ONLY — NOT A FINAL LEGAL DOCUMENT" header at the top
+- Flag with [MISSING: ___] anywhere required information was not provided
+- Do NOT invent or assume deal terms not given
+
+Output the complete contract in clean HTML using a professional legal document style:
+- White background, black text, Times New Roman or Georgia serif font
+- 1-inch equivalent margins, 12pt body text
+- Bold section headings numbered 1, 2, 3...
+- Signature block at the bottom
+- Wrap everything in a single <div class="contract"> tag, no outer html/head/body`;
+}
+
+// ── Claude API call ───────────────────────────────────────────────────────────
+async function callClaude(prompt) {
+  const key = localStorage.getItem(STORAGE_KEY);
+  if (!key) throw new Error('No API key saved.');
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 4096,
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `API error ${res.status}`);
+  }
+  const data = await res.json();
+  return data.content[0].text.trim();
+}
+
+// ── Draft contract ────────────────────────────────────────────────────────────
+async function draftContract() {
+  if (!localStorage.getItem(STORAGE_KEY)) { setStatus('Save your Anthropic API key above first.', 'error'); return; }
+
+  const data = collectData();
+  const prompt = buildPrompt(data);
+
+  const btn = document.getElementById('draft-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Drafting…';
+  document.getElementById('preview-section').style.display = 'none';
+  setStatus('Sending to Claude — drafting ' + data.type + '…');
+
+  try {
+    const contractHTML = await callClaude(prompt);
+
+    lastHTML = `<!DOCTYPE html><html><head>
+<meta charset="UTF-8"/>
+<style>
+  body{font-family:Georgia,'Times New Roman',serif;font-size:12pt;line-height:1.8;color:#000;background:#fff;margin:0;padding:48px 72px;}
+  .contract{max-width:680px;margin:0 auto;}
+  h2,h3{font-size:13pt;margin-top:1.5em;}
+  p{margin:0.8em 0;}
+  .sig-block{margin-top:3em;display:grid;grid-template-columns:1fr 1fr;gap:2em;}
+  .sig-line{border-top:1px solid #000;margin-top:2.5em;padding-top:4px;font-size:10pt;}
+  @media print{body{padding:0.75in 1in;}}
+</style>
+</head><body>${contractHTML}</body></html>`;
+
+    const frame = document.getElementById('preview-frame');
+    frame.srcdoc = lastHTML;
+    document.getElementById('preview-section').style.display = 'block';
+    setStatus('Draft complete — review carefully before use.', 'ok');
+    document.getElementById('preview-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (e) {
+    setStatus('Error: ' + e.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'Draft Contract';
+}
+
+function redraft() {
+  document.getElementById('preview-section').style.display = 'none';
+  draftContract();
+}
+
+// ── Save PDF ──────────────────────────────────────────────────────────────────
+function savePDF() {
+  if (!lastHTML) return;
+  const win = window.open('', '_blank');
+  win.document.write(lastHTML);
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 600);
+}
+
+// ── Copy text ─────────────────────────────────────────────────────────────────
+function copyText() {
+  const frame = document.getElementById('preview-frame');
+  const text = frame.contentDocument?.body?.innerText || '';
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.btn-copy');
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = orig, 2000);
+  });
+}
+
+function setStatus(msg, type = '') {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status' + (type ? ' ' + type : '');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadKey();
+</script>
 </body>
 </html>
