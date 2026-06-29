@@ -96,7 +96,7 @@
       height: calc(100vh - 76px);
       flex-shrink: 0;
       position: relative;
-      z-index: 1;
+      z-index: 10;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -425,6 +425,17 @@
       border-color: rgba(255,255,255,0.25);
     }
 
+    /* Card flips above the node when node is in lower half of orbit */
+    .node.card-flip .node-card {
+      top: auto;
+      bottom: 74px;
+    }
+    .node.card-flip .node-card::before {
+      top: auto;
+      bottom: -8px;
+      background: linear-gradient(to top, transparent, rgba(255,255,255,0.2));
+    }
+
     .card-open-btn {
       display: block;
       width: 100%;
@@ -630,7 +641,6 @@
     .quicklaunch-section {
       border-top: 1px solid rgba(255,255,255,0.05);
       padding: 1.75rem 2rem 1.25rem;
-      position: relative; z-index: 1;
       background: #000;
     }
     .ql-label {
@@ -978,6 +988,12 @@ function updatePositions() {
     el.style.top  = `calc(50% + ${pos.y}px)`;
     el.style.zIndex = el.classList.contains("active") ? 500 : pos.zIndex;
     el.style.opacity = el.classList.contains("active") ? 1 : pos.opacity;
+    // Flip card to open upward when node is in the lower half of the orbit
+    if (pos.y > 60) {
+      el.classList.add("card-flip");
+    } else {
+      el.classList.remove("card-flip");
+    }
   });
 }
 
