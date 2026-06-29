@@ -101,6 +101,13 @@ h1{font-size:28px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
   <div class="section-label" style="margin-bottom:10px;">Intro Message <span style="font-weight:400;text-transform:none;letter-spacing:0;color:rgba(255,255,255,0.2);font-size:10px;">(optional — top of email)</span></div>
   <textarea class="intro-area" id="intro-msg" placeholder="e.g. Strong Q3 demand across the Ellsworth corridor. These are our top picks this month for multifamily and commercial operators."></textarea>
 
+  <!-- Development News -->
+  <div class="section-label" style="margin-top:1.75rem;margin-bottom:10px;">
+    Development News
+    <span id="dev-news-badge" style="font-weight:600;text-transform:none;letter-spacing:0;color:rgba(255,255,255,0.2);font-size:10px;">loading…</span>
+  </div>
+  <textarea class="intro-area" id="dev-news" style="min-height:110px;" placeholder="Auto-pulled from planning/zoning sources. Run fetch_dev_news.py to refresh, or type news items here manually.&#10;&#10;· Box Elder approved rezoning at 1234 Main St from R-1 to C-2.&#10;· Pennington County new subdivision plat filed near Ellsworth AFB."></textarea>
+
   <!-- Properties -->
   <div class="section-label" style="margin-top:1.75rem;">Featured Properties</div>
   <div id="properties"></div>
@@ -128,6 +135,7 @@ h1{font-size:28px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
   </div>
 </main>
 
+<script src="../js/dev-news.js"></script>
 <script>
 const STORAGE_KEY = 'kw_anthropic_key';
 let propCount = 0;
@@ -282,12 +290,23 @@ function specBadges(specs) {
   ).join('');
 }
 
-function buildNewsletterHTML(listings, introMsg) {
+function buildNewsletterHTML(listings, introMsg, devNewsText) {
   const month = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
 
   const intro = introMsg ? `
   <tr><td style="padding:0 28px 20px;">
     <p style="margin:0;font-size:14px;line-height:1.75;color:#475569;">${introMsg}</p>
+  </td></tr>` : '';
+
+  const devItems = (devNewsText || '').split('\n').map(s => s.replace(/^[·\-\*]\s*/, '').trim()).filter(Boolean);
+  const devNews = devItems.length ? `
+  <tr><td style="padding:0 28px 24px;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:18px 22px;">
+      <tr><td>
+        <p style="margin:0 0 12px;font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#64748B;">Development Update</p>
+        ${devItems.map(item => `<p style="margin:0 0 8px;font-size:12px;line-height:1.7;color:#334155;padding-left:14px;position:relative;"><span style="position:absolute;left:0;color:#1B3A6B;font-weight:900;">·</span>${item}</p>`).join('')}
+      </td></tr>
+    </table>
   </td></tr>` : '';
 
   const cards = listings.map(l => {
@@ -332,6 +351,7 @@ function buildNewsletterHTML(listings, introMsg) {
     <p style="margin:6px 0 0;font-size:12px;color:rgba(255,255,255,0.55);">Rapid City · Box Elder · Black Hills Region, South Dakota</p>
   </td></tr>
   ${intro}
+  ${devNews}
   <tr><td style="padding:24px 24px 8px;">
     <table width="100%" cellpadding="0" cellspacing="0" border="0">${cards}</table>
   </td></tr>
@@ -359,7 +379,8 @@ async function generate() {
   if (!localStorage.getItem(STORAGE_KEY)) { setStatus('Save your Anthropic API key above first.', 'error'); return; }
 
   const btn = document.getElementById('gen-btn');
-  const introMsg = document.getElementById('intro-msg').value.trim();
+  const introMsg  = document.getElementById('intro-msg').value.trim();
+  const devNewsText = document.getElementById('dev-news').value.trim();
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Generating…';
   document.getElementById('preview-section').style.display = 'none';
@@ -377,7 +398,7 @@ async function generate() {
   }
 
   setStatus('Building email…');
-  lastHTML = buildNewsletterHTML(enriched, introMsg);
+  lastHTML = buildNewsletterHTML(enriched, introMsg, devNewsText);
 
   const frame = document.getElementById('preview-frame');
   frame.srcdoc = lastHTML;
@@ -415,8 +436,23 @@ function setStatus(msg, type = '') {
   el.className = 'status' + (type ? ' ' + type : '');
 }
 
+// ── Dev News auto-load ────────────────────────────────────────────────────────
+function loadDevNews() {
+  const badge = document.getElementById('dev-news-badge');
+  const area  = document.getElementById('dev-news');
+  if (window.DEV_NEWS && window.DEV_NEWS.items && window.DEV_NEWS.items.length) {
+    area.value = window.DEV_NEWS.items.map(i => `· ${i}`).join('\n');
+    badge.textContent = `auto-pulled ${window.DEV_NEWS.generated}`;
+    badge.style.color = 'rgba(52,211,153,0.7)';
+  } else {
+    badge.textContent = 'not yet fetched — run fetch_dev_news.py to populate';
+    badge.style.color = 'rgba(255,255,255,0.2)';
+  }
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 loadKey();
+loadDevNews();
 addProperty({ name: 'Highway 1416, Box Elder SD', price: '$3,750,000', specs: '24.75 AC · C-2 · All Utilities · Hwy Frontage' });
 </script>
 </body>
