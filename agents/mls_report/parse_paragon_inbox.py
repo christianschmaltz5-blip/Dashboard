@@ -16,7 +16,7 @@ from email.header import decode_header
 from html.parser import HTMLParser
 
 sys.path.insert(0, os.path.dirname(__file__))
-from config import FROM_EMAIL, GMAIL_APP_PASSWORD, PRICE_BANDS, MLS_DETAIL_CATEGORIES
+from config import FROM_EMAIL, GMAIL_APP_PASSWORD, IMAP_EMAIL, IMAP_APP_PASSWORD, PRICE_BANDS, MLS_DETAIL_CATEGORIES
 
 MARKET_DATA_JS = os.path.join(os.path.dirname(__file__), '..', '..', 'js', 'market-data.js')
 IMAP_HOST = "imap.gmail.com"
@@ -113,9 +113,20 @@ def get_text_body(msg):
 
 
 def connect():
+    # Try arecblackhills first if App Password is set
+    if IMAP_APP_PASSWORD.strip():
+        try:
+            mail = imaplib.IMAP4_SSL(IMAP_HOST, IMAP_PORT)
+            mail.login(IMAP_EMAIL, IMAP_APP_PASSWORD)
+            print(f"✓ Connected to {IMAP_EMAIL}")
+            return mail
+        except imaplib.IMAP4.error as e:
+            print(f"  arecblackhills login failed ({e}) — falling back to {FROM_EMAIL}")
+    # Fallback to Christianschmaltz5
     try:
         mail = imaplib.IMAP4_SSL(IMAP_HOST, IMAP_PORT)
         mail.login(FROM_EMAIL, GMAIL_APP_PASSWORD)
+        print(f"✓ Connected to {FROM_EMAIL}")
         return mail
     except imaplib.IMAP4.error as e:
         print(f"\nIMAP login failed: {e}")
@@ -273,7 +284,8 @@ def main():
     ap.add_argument("--days",  type=int, default=14, help="Days back to search (default: 14)")
     args = ap.parse_args()
 
-    print(f"\nConnecting to {FROM_EMAIL} (All Mail)...")
+    inbox = IMAP_EMAIL if IMAP_APP_PASSWORD.strip() else FROM_EMAIL
+    print(f"\nConnecting to {inbox} (All Mail)...")
     mail = connect()
     print("✓ Connected\n")
 
