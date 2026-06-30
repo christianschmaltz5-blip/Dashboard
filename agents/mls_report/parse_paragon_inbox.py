@@ -11,7 +11,7 @@ Usage:
   python3 parse_paragon_inbox.py --check  # show emails found, no write
   python3 parse_paragon_inbox.py --days 30  # look back 30 days (default: 14)
 """
-import argparse, email, imaplib, json, os, re, sys
+import argparse, email, imaplib, json, os, re, sys, time
 from datetime import datetime, timedelta
 from email.header import decode_header
 from html.parser import HTMLParser
@@ -21,6 +21,7 @@ from config import FROM_EMAIL, GMAIL_APP_PASSWORD, IMAP_EMAIL, IMAP_APP_PASSWORD
 
 MARKET_DATA_JS   = os.path.join(os.path.dirname(__file__), '..', '..', 'js', 'market-data.js')
 LISTINGS_JS      = os.path.join(os.path.dirname(__file__), '..', '..', 'js', 'paragon-listings.js')
+PHOTOS_CACHE     = os.path.join(os.path.dirname(__file__), 'photos-cache.json')
 IMAP_HOST = "imap.gmail.com"
 IMAP_PORT = 993
 
@@ -447,11 +448,172 @@ def write_listings_js(all_listings):
     return unique
 
 
+# ── Paragon photo scraper (Playwright headless browser) ──────────────────────
+def load_photos_cache():
+    if os.path.exists(PHOTOS_CACHE):
+        try:
+            with open(PHOTOS_CACHE) as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {}
+
+def save_photos_cache(cache):
+    with open(PHOTOS_CACHE, 'w') as f:
+        json.dump(cache, f, indent=2)
+
+PARAGON_PLACEHOLDER_KEYWORDS = [
+    'neighborhood', 'sunsetneighborhood', 'static/', 'noimage', 'no_image',
+    'placeholder', 'blank.', 'default.', 'missing',
+]
+
+def _upscale_paragon_url(url):
+    """
+    Paragon thumbnail URLs contain width/height segments like /120/90/.
+    Replace with a large size to get the full-res version.
+    e.g. /Property/PC/GBHAR/89277/6/120/90/hash → /Property/PC/GBHAR/89277/6/800/600/hash
+    """
+    m = re.search(r'(ParagonImages/Property/[^/]+/[^/]+/\d+/\d+)/\d+/\d+/', url)
+    if m:
+        return url[:m.start(1) + len(m.group(1))] + '/800/600/' + url[url.index('/', m.start(1) + len(m.group(1)) + 1) + 1:]
+    return url
+
+def _is_placeholder(url):
+    low = url.lower()
+    return any(k in low for k in PARAGON_PLACEHOLDER_KEYWORDS)
+
+def _best_photo_from_page(page, mls_num=None):
+    """
+    Extract the best property photo URL from a rendered Paragon listing page.
+    If mls_num is given, prefer photos whose URL contains that MLS number.
+    """
+    try:
+        page.wait_for_selector('img', timeout=10000)
+    except Exception:
+        pass
+
+    try:
+        page.evaluate("window.scrollBy(0, 400)")
+        time.sleep(0.8)
+        page.evaluate("window.scrollTo(0, 0)")
+        time.sleep(0.4)
+    except Exception:
+        pass
+
+    try:
+        all_imgs = page.evaluate("""
+            (placeholders) => {
+                const imgs = [...document.querySelectorAll('img')];
+                const out  = [];
+                for (const img of imgs) {
+                    const src = img.src || img.getAttribute('src') || '';
+                    if (!src.startsWith('http')) continue;
+                    const low = src.toLowerCase();
+                    if (['icon','logo','avatar','sprite','button','kw.com','kellerwilliams','blank.'].some(s => low.includes(s))) continue;
+                    if (placeholders.some(p => low.includes(p))) continue;
+                    const r = img.getBoundingClientRect();
+                    if (r.width > 60 && r.height > 50) out.push({src, area: r.width * r.height});
+                }
+                return out;
+            }
+        """, PARAGON_PLACEHOLDER_KEYWORDS)
+    except Exception:
+        all_imgs = []
+
+    if all_imgs:
+        # Prefer photos that contain the correct MLS number in the URL
+        if mls_num:
+            mls_matches = [i for i in all_imgs if mls_num in i['src']]
+            if mls_matches:
+                best = max(mls_matches, key=lambda x: x['area'])
+                return _upscale_paragon_url(best['src'])
+        # Otherwise take the largest
+        best = max(all_imgs, key=lambda x: x['area'])
+        if not _is_placeholder(best['src']):
+            return _upscale_paragon_url(best['src'])
+
+    return None
+
+def fetch_photo_url_playwright(paragon_url, page, mls_num=None):
+    """Load a Paragon listing URL in a Playwright page and return the best photo URL."""
+    try:
+        page.goto(paragon_url, wait_until='networkidle', timeout=25000)
+        return _best_photo_from_page(page, mls_num)
+    except Exception:
+        try:
+            page.goto(paragon_url, wait_until='domcontentloaded', timeout=20000)
+            time.sleep(3)
+            return _best_photo_from_page(page, mls_num)
+        except Exception:
+            return None
+
+def enrich_with_photos(listings, skip_photos=False):
+    """Add photo_url to each listing using a persistent cache + Playwright browser."""
+    if skip_photos:
+        for l in listings:
+            l['photo_url'] = None
+        return listings
+
+    cache = load_photos_cache()
+
+    # Check how many need fetching
+    to_fetch = [l for l in listings if l.get('paragon_url') and l['paragon_url'] not in cache]
+    cached   = [l for l in listings if l.get('paragon_url') and l['paragon_url'] in cache]
+
+    # Apply cached photos first
+    for l in listings:
+        url = l.get('paragon_url')
+        if url and url in cache:
+            l['photo_url'] = cache[url]
+        elif not url:
+            l['photo_url'] = None
+
+    if not to_fetch:
+        found = sum(1 for l in listings if l.get('photo_url'))
+        print(f"✓ Photos: {found}/{len(listings)} (all from cache)")
+        return listings
+
+    print(f"  Fetching {len(to_fetch)} new photos via headless browser...")
+    try:
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as pw:
+            browser = pw.chromium.launch(headless=True)
+            ctx     = browser.new_context(
+                viewport={"width": 1280, "height": 900},
+                user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            )
+            page = ctx.new_page()
+
+            fetched = 0
+            for l in to_fetch:
+                url   = l['paragon_url']
+                photo = fetch_photo_url_playwright(url, page, mls_num=l.get('mls_num'))
+                l['photo_url'] = photo
+                cache[url]     = photo
+                fetched += 1
+                if fetched % 5 == 0:
+                    save_photos_cache(cache)
+                    print(f"    {fetched}/{len(to_fetch)} fetched...")
+
+            browser.close()
+    except Exception as e:
+        print(f"  Playwright error: {e}")
+        for l in to_fetch:
+            if 'photo_url' not in l:
+                l['photo_url'] = None
+
+    save_photos_cache(cache)
+    found = sum(1 for l in listings if l.get('photo_url'))
+    print(f"✓ Photos: {found}/{len(listings)} retrieved ({len(to_fetch)} newly fetched)")
+    return listings
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--check", action="store_true", help="Show emails, no write")
-    ap.add_argument("--days",  type=int, default=14, help="Days back (default: 14)")
+    ap.add_argument("--check",       action="store_true", help="Show emails, no write")
+    ap.add_argument("--days",        type=int, default=14, help="Days back (default: 14)")
+    ap.add_argument("--no-photos",   action="store_true", help="Skip Paragon photo fetching")
     args = ap.parse_args()
 
     inbox = IMAP_EMAIL if IMAP_APP_PASSWORD.strip() else FROM_EMAIL
@@ -487,6 +649,9 @@ def main():
     if not all_listings:
         print("\nEmails found but no listings parsed. Run --check to inspect email format.")
         return
+
+    print(f"\nFetching Paragon listing photos...")
+    all_listings = enrich_with_photos(all_listings, skip_photos=args.no_photos)
 
     detail = aggregate(all_listings)
     update_market_data(detail)

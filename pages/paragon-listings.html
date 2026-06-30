@@ -2,294 +2,401 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>MLS Listings — Kevin Andreson</title>
+<title>MLS Listings — Kevin Andreson / Keller Williams Realty Black Hills</title>
 <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Josefin Sans',sans-serif;background:#000;color:#fff;min-height:100vh;}
+body{font-family:'Josefin Sans',sans-serif;background:#060608;color:#fff;min-height:100vh;}
 
-nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;border-bottom:1px solid rgba(255,255,255,0.1);background:rgba(0,0,0,0.9);backdrop-filter:blur(12px);}
-.nav-back{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.5);text-decoration:none;transition:color .2s;} .nav-back:hover{color:#fff;}
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;border-bottom:1px solid rgba(255,255,255,0.07);background:rgba(6,6,8,0.94);backdrop-filter:blur(14px);}
+.nav-back{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.4);text-decoration:none;transition:color .2s;}
+.nav-back:hover{color:#fff;}
 .nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-.nav-right{font-size:11px;color:rgba(255,255,255,0.25);font-family:'DM Sans',sans-serif;}
+.nav-right{font-size:11px;color:rgba(255,255,255,0.2);font-family:'DM Sans',sans-serif;}
 
-main{max-width:1200px;margin:0 auto;padding:2.5rem 2rem 5rem;}
+main{max-width:1320px;margin:0 auto;padding:2.5rem 2rem 6rem;}
 
 .page-head{margin-bottom:2rem;}
-.page-head h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:4px;}
-.page-head .sub{font-size:12px;color:rgba(255,255,255,0.4);font-family:'DM Sans',sans-serif;}
-.page-head .updated{font-size:11px;color:rgba(255,255,255,0.2);margin-top:4px;font-family:'DM Sans',sans-serif;}
+.page-head h1{font-size:24px;font-weight:700;letter-spacing:0.02em;}
+.page-head .sub{font-size:11px;color:rgba(255,255,255,0.3);font-family:'DM Sans',sans-serif;margin-top:4px;}
 
 /* Summary */
-.summary-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:2rem;}
-.stat-tile{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px;text-align:center;}
-.stat-val{font-size:20px;font-weight:700;color:#fff;margin-bottom:3px;}
-.stat-label{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);}
+.summary-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:2rem;}
+.stat-tile{background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px 16px;text-align:center;}
+.stat-val{font-size:19px;font-weight:700;}
+.stat-label{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-top:3px;}
 
-/* Filters */
-.filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:1.5rem;}
-.filter-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.25);}
-.chip{padding:6px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(255,255,255,0.4);cursor:pointer;user-select:none;transition:all .15s;}
+/* Filter chips */
+.filter-section{margin-bottom:1.25rem;}
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:7px;}
+.filter-label{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.2);min-width:32px;}
+.chip{padding:5px 13px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:rgba(255,255,255,0.35);cursor:pointer;user-select:none;transition:all .15s;white-space:nowrap;}
 .chip:hover{background:rgba(255,255,255,0.06);}
-.chip.active{background:rgba(37,99,235,0.14);border-color:rgba(96,165,250,0.35);color:#60A5FA;}
-.search-box{padding:7px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:20px;font-size:11px;font-family:'Josefin Sans',sans-serif;color:#fff;outline:none;width:240px;}
-.search-box:focus{border-color:rgba(255,255,255,0.2);} .search-box::placeholder{color:rgba(255,255,255,0.2);}
-.count{margin-left:auto;font-size:11px;color:rgba(255,255,255,0.3);}
+.chip.active{background:rgba(37,99,235,0.15);border-color:rgba(96,165,250,0.3);color:#60A5FA;}
+.chip.band.active{background:rgba(139,92,246,0.15);border-color:rgba(167,139,250,0.3);color:#A78BFA;}
 
-/* Sort */
-.sort-select{padding:6px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:20px;font-size:10px;font-family:'Josefin Sans',sans-serif;color:rgba(255,255,255,0.5);outline:none;cursor:pointer;appearance:none;}
+/* Search + sort */
+.search-row{display:flex;gap:8px;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;}
+.search-box{flex:1;min-width:200px;max-width:300px;padding:8px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:20px;font-size:11px;font-family:'Josefin Sans',sans-serif;color:#fff;outline:none;}
+.search-box:focus{border-color:rgba(255,255,255,0.18);}
+.search-box::placeholder{color:rgba(255,255,255,0.2);}
+.sort-select{padding:7px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:20px;font-size:10px;font-family:'Josefin Sans',sans-serif;color:rgba(255,255,255,0.45);outline:none;cursor:pointer;appearance:none;}
 .sort-select option{background:#111;color:#fff;}
+.result-count{margin-left:auto;font-size:11px;color:rgba(255,255,255,0.25);font-family:'DM Sans',sans-serif;}
+
+/* Active filter banner */
+.filter-banner{display:none;align-items:center;gap:10px;padding:9px 16px;background:rgba(139,92,246,0.07);border:1px solid rgba(167,139,250,0.2);border-radius:10px;margin-bottom:1.25rem;font-size:11px;color:#A78BFA;font-family:'DM Sans',sans-serif;}
+.filter-banner.visible{display:flex;}
+.filter-clear{margin-left:auto;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(167,139,250,0.55);cursor:pointer;padding:3px 10px;border:1px solid rgba(167,139,250,0.18);border-radius:7px;transition:all .15s;}
+.filter-clear:hover{color:#A78BFA;border-color:rgba(167,139,250,0.4);}
 
 /* Grid */
-.listings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(295px,1fr));gap:12px;}
 
 /* Card */
-.card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;transition:border-color .2s;display:flex;flex-direction:column;}
-.card:hover{border-color:rgba(255,255,255,0.18);}
+.card{background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:14px;overflow:hidden;transition:border-color .2s,transform .18s;cursor:pointer;display:flex;flex-direction:column;}
+.card:hover{border-color:rgba(255,255,255,0.18);transform:translateY(-2px);}
 .card.hidden{display:none;}
 
-.card-img{height:160px;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
-.card-img-placeholder{display:flex;flex-direction:column;align-items:center;gap:8px;}
-.card-img-icon{width:40px;height:40px;opacity:0.15;}
-.card-img-mls{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.2);}
-.card-status{position:absolute;top:12px;left:12px;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:3px 9px;border-radius:10px;}
-.status-active{background:rgba(52,211,153,0.15);color:#34D399;border:1px solid rgba(52,211,153,0.3);}
-.status-contract{background:rgba(251,191,36,0.15);color:#FBBF24;border:1px solid rgba(251,191,36,0.3);}
-.status-sold{background:rgba(239,68,68,0.15);color:#F87171;border:1px solid rgba(239,68,68,0.3);}
+/* Photo */
+.card-photo{position:relative;height:190px;overflow:hidden;background:#0d0d12;flex-shrink:0;}
+.card-photo img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s;}
+.card:hover .card-photo img{transform:scale(1.04);}
+.placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:linear-gradient(145deg,#0e0e14 0%,#13131d 100%);}
+.ph-icon{opacity:0.09;}
+.ph-addr{font-size:10px;font-weight:600;color:rgba(255,255,255,0.13);text-align:center;padding:0 16px;line-height:1.45;}
 
-.card-body{padding:16px;flex:1;display:flex;flex-direction:column;gap:8px;}
-.card-price{font-size:20px;font-weight:700;color:#fff;letter-spacing:-0.01em;}
-.card-address{font-size:12px;font-weight:600;color:rgba(255,255,255,0.8);line-height:1.4;}
-.card-city{font-size:11px;color:rgba(255,255,255,0.4);font-family:'DM Sans',sans-serif;margin-top:-4px;}
-.card-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px;}
-.card-tag{font-size:9px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;padding:2px 8px;border-radius:8px;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.07);}
-.card-tag.commercial{background:rgba(37,99,235,0.1);color:#60A5FA;border-color:rgba(96,165,250,0.2);}
-.card-tag.residential{background:rgba(16,185,129,0.08);color:#34D399;border-color:rgba(52,211,153,0.15);}
+/* Badges on photo */
+.card-status{position:absolute;top:10px;left:10px;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:3px 9px;border-radius:9px;backdrop-filter:blur(8px);}
+.s-active  {background:rgba(16,185,129,0.2);color:#34D399;border:1px solid rgba(52,211,153,0.3);}
+.s-contract{background:rgba(251,191,36,0.2);color:#FBBF24;border:1px solid rgba(251,191,36,0.3);}
+.s-sold    {background:rgba(239,68,68,0.2); color:#F87171;border:1px solid rgba(239,68,68,0.3);}
+.badge-new{position:absolute;top:10px;right:10px;font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:3px 8px;border-radius:8px;background:rgba(37,99,235,0.3);color:#93C5FD;border:1px solid rgba(96,165,250,0.25);backdrop-filter:blur(8px);}
 
-.card-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;margin-top:auto;}
-.card-mls{font-size:10px;color:rgba(255,255,255,0.25);font-family:'DM Sans',sans-serif;}
-.card-btn{font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;background:#1B3A6B;color:#fff;border:none;border-radius:7px;cursor:pointer;text-decoration:none;display:inline-block;transition:background .15s;}
-.card-btn:hover{background:#2563EB;}
-.card-btn.no-link{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);cursor:default;}
+/* Body */
+.card-body{padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:5px;}
+.card-price{font-size:22px;font-weight:700;letter-spacing:-0.01em;}
+.card-address{font-size:12px;font-weight:600;color:rgba(255,255,255,0.75);line-height:1.35;}
+.card-city{font-size:11px;color:rgba(255,255,255,0.32);font-family:'DM Sans',sans-serif;}
+.card-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px;}
+.tag{font-size:9px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;padding:2px 8px;border-radius:7px;}
+.tag-res {background:rgba(16,185,129,0.08);color:#34D399;border:1px solid rgba(52,211,153,0.12);}
+.tag-com {background:rgba(37,99,235,0.1);color:#60A5FA;border:1px solid rgba(96,165,250,0.15);}
+.tag-land{background:rgba(245,158,11,0.1);color:#FBBF24;border:1px solid rgba(251,191,36,0.15);}
+.tag-misc{background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.3);border:1px solid rgba(255,255,255,0.07);}
 
-.empty{grid-column:1/-1;text-align:center;padding:4rem;color:rgba(255,255,255,0.2);font-size:12px;line-height:2;font-family:'DM Sans',sans-serif;}
+/* Footer */
+.card-footer{padding:10px 16px;border-top:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.card-mls{font-size:10px;color:rgba(255,255,255,0.18);font-family:'DM Sans',sans-serif;}
+.view-btn{font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:6px 14px;background:#1B3A6B;color:#93C5FD;border:none;border-radius:7px;cursor:pointer;text-decoration:none;display:inline-block;transition:background .15s;white-space:nowrap;}
+.view-btn:hover{background:#2563EB;color:#fff;}
 
-/* MLS Table section */
-.section-label{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.25);margin:2.5rem 0 1rem;display:flex;align-items:center;gap:10px;}
-.section-label::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.08);}
+/* Empty */
+.empty{grid-column:1/-1;text-align:center;padding:5rem 2rem;color:rgba(255,255,255,0.14);font-family:'DM Sans',sans-serif;line-height:2;font-size:13px;}
+.empty code{background:rgba(255,255,255,0.05);padding:2px 8px;border-radius:4px;font-size:11px;}
 
-.mls-table-wrap{margin-bottom:2rem;}
-.mls-cat-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:8px;margin-top:1.5rem;}
-.mls-table{width:100%;border-collapse:collapse;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:10px;overflow:hidden;font-size:11px;}
-.mls-table th{background:rgba(255,255,255,0.04);padding:10px 16px;text-align:left;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.35);border-bottom:1px solid rgba(255,255,255,0.07);}
-.mls-table td{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.04);color:rgba(255,255,255,0.6);font-family:'DM Sans',sans-serif;}
-.mls-table tr:last-child td{border-bottom:none;}
-.mls-table td.num{font-weight:700;color:#fff;text-align:right;}
-.mls-table td.dash{color:rgba(255,255,255,0.2);text-align:right;}
-.mls-table th.right{text-align:right;}
+/* MLS Tables */
+.section-label{font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.18);margin:3rem 0 1rem;display:flex;align-items:center;gap:10px;}
+.section-label::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.06);}
+.section-label span{font-size:10px;color:rgba(255,255,255,0.13);}
+.mls-cat-title{font-size:12px;font-weight:700;color:rgba(255,255,255,0.55);margin-bottom:8px;margin-top:1.5rem;}
+table.mls{width:100%;border-collapse:collapse;background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;font-size:11px;}
+table.mls th{background:rgba(255,255,255,0.03);padding:9px 16px;text-align:left;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.28);border-bottom:1px solid rgba(255,255,255,0.06);}
+table.mls th.r{text-align:right;}
+table.mls td{padding:9px 16px;border-bottom:1px solid rgba(255,255,255,0.04);color:rgba(255,255,255,0.45);font-family:'DM Sans',sans-serif;}
+table.mls tr:last-child td{border-bottom:none;}
+table.mls td.num{font-weight:700;color:#fff;text-align:right;}
+table.mls td.dash{color:rgba(255,255,255,0.15);text-align:right;}
+a.cell-link{font-weight:700;color:#60A5FA;text-decoration:none;display:block;text-align:right;transition:color .12s;}
+a.cell-link:hover{color:#93C5FD;text-decoration:underline;}
 </style>
 </head>
 <body>
 <nav>
-  <a class="nav-back" href="../index.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back to Dashboard</a>
+  <a class="nav-back" href="../index.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Dashboard</a>
   <div class="nav-right" id="nav-updated"></div>
 </nav>
 
 <main>
   <div class="page-head">
     <h1>MLS Active Listings</h1>
-    <div class="sub">Pulled from Paragon Collaboration Center alerts — arecblackhills@gmail.com</div>
-    <div class="updated" id="last-updated">Run the agent to load data</div>
+    <div class="sub" id="last-updated">Paragon Collaboration Center · arecblackhills@gmail.com</div>
   </div>
 
   <div class="summary-bar" id="summary-bar"></div>
 
-  <div class="filter-bar">
-    <span class="filter-label">Type:</span>
-    <div class="chip active" data-type="ALL" onclick="setFilter(this)">All</div>
-    <div id="type-chips"></div>
-    <input class="search-box" id="search" placeholder="Search address, city, MLS#…" oninput="applyFilters()"/>
-    <select class="sort-select" id="sort-sel" onchange="applyFilters()">
+  <div class="filter-section">
+    <div class="filter-row">
+      <span class="filter-label">Type</span>
+      <div class="chip active" data-type="ALL" onclick="setType(this)">All</div>
+      <div id="type-chips"></div>
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">Price</span>
+      <div class="chip band active" data-band="ALL"              onclick="setBand(this)">All Prices</div>
+      <div class="chip band"        data-band="0-350000"         onclick="setBand(this)">$100K – $350K</div>
+      <div class="chip band"        data-band="350000-500000"    onclick="setBand(this)">$350K – $500K</div>
+      <div class="chip band"        data-band="500000-800000"    onclick="setBand(this)">$500K – $800K</div>
+      <div class="chip band"        data-band="800000-1000000"   onclick="setBand(this)">$800K – $1M</div>
+      <div class="chip band"        data-band="1000000-99999999" onclick="setBand(this)">$1M+</div>
+    </div>
+  </div>
+
+  <div class="filter-banner" id="filter-banner">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+    <span id="banner-text"></span>
+    <div class="filter-clear" onclick="clearAll()">Clear filters</div>
+  </div>
+
+  <div class="search-row">
+    <input class="search-box" id="search" placeholder="Search address, city, MLS #…" oninput="apply()"/>
+    <select class="sort-select" id="sort" onchange="apply()">
       <option value="date-desc">Newest first</option>
       <option value="price-asc">Price: Low → High</option>
       <option value="price-desc">Price: High → Low</option>
     </select>
-    <div class="count" id="count"></div>
+    <div class="result-count" id="count"></div>
   </div>
 
-  <div class="listings-grid" id="grid">
-    <div class="empty">Run <code style="background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:4px;font-size:11px;">python3 agents/mls_report/parse_paragon_inbox.py</code> to load listings.</div>
+  <div class="grid" id="grid">
+    <div class="empty">Run <code>python3 agents/mls_report/parse_paragon_inbox.py</code> to load listings.</div>
   </div>
 
-  <!-- MLS Detail Tables -->
-  <div class="section-label">MLS Detail — Current Period by Price Band</div>
+  <div class="section-label">MLS Detail by Price Band <span>— click a number to filter above</span></div>
   <div id="mls-tables"></div>
 </main>
 
 <script src="../js/paragon-listings.js"></script>
 <script src="../js/market-data.js"></script>
 <script>
-let activeType = 'ALL';
-let allListings = [];
+const BANDS = [
+  { key:'0-350000',         label:'$100K–$350K',  min:0,       max:350000   },
+  { key:'350000-500000',    label:'$350K–$500K',  min:350000,  max:500000   },
+  { key:'500000-800000',    label:'$500K–$800K',  min:500000,  max:800000   },
+  { key:'800000-1000000',   label:'$800K–$1M',    min:800000,  max:1000000  },
+  { key:'1000000-99999999', label:'$1M+',         min:1000000, max:99999999 },
+];
+
+let activeType = 'ALL', activeBand = 'ALL';
 
 function fmt(n) {
-  if (!n) return '—';
-  if (n >= 1_000_000) return '$' + (n/1_000_000).toFixed(2) + 'M';
-  return '$' + n.toLocaleString();
+  if (n == null) return '—';
+  return n >= 1e6 ? '$' + (n/1e6).toFixed(n%1e6===0?0:2)+'M' : '$'+n.toLocaleString();
 }
-
+function inBand(price, key) {
+  if (key === 'ALL') return true;
+  const b = BANDS.find(b => b.key === key);
+  return b && price >= b.min && price < b.max;
+}
+function bandLabel(key) {
+  const b = BANDS.find(b => b.key === key);
+  return b ? b.label : '';
+}
+function bandKeyFromLabel(lbl) {
+  const map={'$100K–$350K':'0-350000','$350K–$500K':'350000-500000','$500K–$800K':'500000-800000','$800K–$1.0M':'800000-1000000','$1.0M+':'1000000-99999999'};
+  return map[lbl] || null;
+}
 function statusClass(s) {
-  if (!s) return 'status-active';
-  if (s === 'Under Contract') return 'status-contract';
-  if (s === 'Sold') return 'status-sold';
-  return 'status-active';
+  if (!s||s==='Active') return 's-active';
+  if (s.includes('Contract')) return 's-contract';
+  return s==='Sold' ? 's-sold' : 's-active';
 }
-
-function isCommercial(type) {
-  return type && type.startsWith('Commercial');
+function typeTag(t) {
+  if (!t) return {cls:'tag-misc',lbl:'Unknown'};
+  if (t.includes('Single Family')||t.startsWith('Residential')) return {cls:'tag-res',lbl:'Residential'};
+  if (t.startsWith('Commercial')) return {cls:'tag-com',lbl:t.replace('Commercial — ','')};
+  if (/land|lot/i.test(t)) return {cls:'tag-land',lbl:'Land'};
+  return {cls:'tag-misc',lbl:t.slice(0,20)};
+}
+function isNew(d) {
+  if (!d) return false;
+  return (new Date()-new Date(d))/86400000 <= 7;
 }
 
 function buildCard(l) {
-  const tagClass = isCommercial(l.prop_type) ? 'commercial' : 'residential';
-  const shortType = (l.prop_type || '').replace('Residential Resale (Single Family)', 'Residential').replace('Commercial — ', '');
-  const btnHtml = l.paragon_url
-    ? `<a class="card-btn" href="${l.paragon_url}" target="_blank" rel="noopener">View in Paragon →</a>`
-    : `<span class="card-btn no-link">No link</span>`;
-  const searchLabel = l.search_name ? `<span class="card-tag">${l.search_name.replace(/\$/g,'$').slice(0,40)}</span>` : '';
+  const tag = typeTag(l.prop_type);
+  const newBdg = isNew(l.alert_date) ? '<div class="badge-new">New</div>' : '';
+  const btn = l.paragon_url
+    ? `<a class="view-btn" href="${l.paragon_url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">View in Paragon →</a>`
+    : `<span class="view-btn" style="background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.2);cursor:default">No link</span>`;
+
+  let imgBlock;
+  if (l.photo_url) {
+    imgBlock = `<img src="${l.photo_url}" loading="lazy" alt="${l.address}"
+      onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+      <div class="placeholder" style="display:none">${phInner(l)}</div>`;
+  } else {
+    imgBlock = `<div class="placeholder">${phInner(l)}</div>`;
+  }
 
   return `
-  <div class="card" data-type="${l.prop_type}" data-price="${l.price||0}" data-date="${l.alert_date||''}"
-       data-search="${(l.full_address+' '+(l.city_state||'')+' '+(l.mls_num||'')+(l.prop_type||'')).toLowerCase()}">
-    <div class="card-img">
-      <div class="card-img-placeholder">
-        <svg class="card-img-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5">
-          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>
-        <div class="card-img-mls">${l.mls_num ? 'MLS #' + l.mls_num : 'Paragon Listing'}</div>
-      </div>
-      <div class="card-status ${statusClass(l.status)}">${l.status || 'Active'}</div>
+  <div class="card"
+       data-type="${l.prop_type||''}"
+       data-price="${l.price||0}"
+       data-date="${l.alert_date||''}"
+       data-search="${(l.full_address+' '+(l.mls_num||'')+' '+(l.prop_type||'')+' '+(l.city_state||'')).toLowerCase()}"
+       onclick="${l.paragon_url?`window.open('${l.paragon_url}','_blank')`:''}">
+    <div class="card-photo">
+      ${imgBlock}
+      <div class="card-status ${statusClass(l.status)}">${l.status||'Active'}</div>
+      ${newBdg}
     </div>
     <div class="card-body">
-      <div class="card-price">${l.price_display || '—'}</div>
-      <div class="card-address">${l.address || 'Address not available'}</div>
-      <div class="card-city">${l.city_state || ''}</div>
+      <div class="card-price">${l.price_display||'—'}</div>
+      <div class="card-address">${l.address||'—'}</div>
+      <div class="card-city">${l.city_state||''}</div>
       <div class="card-tags">
-        <span class="card-tag ${tagClass}">${shortType}</span>
-        ${searchLabel}
+        <span class="tag ${tag.cls}">${tag.lbl}</span>
+        ${l.search_name?`<span class="tag tag-misc">${l.search_name.slice(0,36)}</span>`:''}
       </div>
     </div>
     <div class="card-footer">
-      <div class="card-mls">${l.mls_num ? 'MLS #' + l.mls_num : ''} · ${l.alert_date || ''}</div>
-      ${btnHtml}
+      <div class="card-mls">${l.mls_num?'MLS #'+l.mls_num:''} · ${l.alert_date||''}</div>
+      ${btn}
     </div>
   </div>`;
 }
 
-function setFilter(el) {
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  activeType = el.dataset.type;
-  applyFilters();
+function phInner(l) {
+  return `<svg class="ph-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="1.2">
+    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+  </svg>
+  <div class="ph-addr">${l.address||'Paragon Listing'}</div>`;
 }
 
-function applyFilters() {
-  const q    = (document.getElementById('search').value || '').toLowerCase();
-  const sort = document.getElementById('sort-sel').value;
-  let cards  = Array.from(document.querySelectorAll('.card'));
+function setType(el) {
+  document.querySelectorAll('.chip[data-type]').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active'); activeType = el.dataset.type; apply();
+}
+function setBand(el) {
+  document.querySelectorAll('.chip[data-band]').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active'); activeBand = el.dataset.band; apply();
+}
+function clearAll() {
+  document.querySelector('.chip[data-type="ALL"]').click();
+  document.querySelector('.chip[data-band="ALL"]').click();
+  document.getElementById('search').value = '';
+  apply();
+}
 
-  let visible = 0;
+function apply() {
+  const q    = (document.getElementById('search').value||'').toLowerCase().trim();
+  const sort = document.getElementById('sort').value;
+  const cards = [...document.querySelectorAll('.card')];
+  let vis = 0;
+
   cards.forEach(c => {
-    const typeMatch   = activeType === 'ALL' || c.dataset.type === activeType;
-    const searchMatch = !q || c.dataset.search.includes(q);
-    const show = typeMatch && searchMatch;
+    const show = (activeType==='ALL'||c.dataset.type===activeType)
+              && inBand(+c.dataset.price, activeBand)
+              && (!q||c.dataset.search.includes(q));
     c.classList.toggle('hidden', !show);
-    if (show) visible++;
+    if (show) vis++;
   });
 
-  // Sort
+  const visCards = cards.filter(c=>!c.classList.contains('hidden'));
+  visCards.sort((a,b)=>{
+    if (sort==='price-asc')  return +a.dataset.price - +b.dataset.price;
+    if (sort==='price-desc') return +b.dataset.price - +a.dataset.price;
+    return (b.dataset.date||'').localeCompare(a.dataset.date||'');
+  });
   const grid = document.getElementById('grid');
-  const sorted = cards.filter(c => !c.classList.contains('hidden'));
-  sorted.sort((a, b) => {
-    if (sort === 'price-asc')  return Number(a.dataset.price) - Number(b.dataset.price);
-    if (sort === 'price-desc') return Number(b.dataset.price) - Number(a.dataset.price);
-    return b.dataset.date.localeCompare(a.dataset.date);
-  });
-  sorted.forEach(c => grid.appendChild(c));
+  visCards.forEach(c=>grid.appendChild(c));
 
-  document.getElementById('count').textContent = visible === cards.length ? `${cards.length} listings` : `${visible} of ${cards.length}`;
+  document.getElementById('count').textContent =
+    vis===cards.length ? `${cards.length} listings` : `${vis} of ${cards.length}`;
+
+  const hasFilter = activeType!=='ALL'||activeBand!=='ALL'||q;
+  const banner    = document.getElementById('filter-banner');
+  if (hasFilter) {
+    const parts=[];
+    if (activeType!=='ALL') parts.push(activeType.replace('Residential Resale (Single Family)','Residential').replace('Commercial — ',''));
+    if (activeBand!=='ALL') parts.push(bandLabel(activeBand));
+    if (q) parts.push(`"${q}"`);
+    document.getElementById('banner-text').textContent = `${vis} listing${vis!==1?'s':''} · ${parts.join(' · ')}`;
+    banner.classList.add('visible');
+  } else {
+    banner.classList.remove('visible');
+  }
 }
 
-function initListings() {
-  const d = window.PARAGON_LISTINGS;
-  if (!d || !d.listings || d.listings.length === 0) return;
+function filterTo(type, band) {
+  window.scrollTo({top:0,behavior:'smooth'});
+  document.querySelectorAll('.chip[data-type]').forEach(c=>c.classList.remove('active'));
+  const tc = [...document.querySelectorAll('.chip[data-type]')].find(c=>c.dataset.type===type);
+  if (tc){tc.classList.add('active');activeType=type;}
+  document.querySelectorAll('.chip[data-band]').forEach(c=>c.classList.remove('active'));
+  const bc = document.querySelector(`.chip[data-band="${band}"]`);
+  if (bc){bc.classList.add('active');activeBand=band;}
+  apply();
+}
 
-  allListings = d.listings;
-  const s     = d.summary;
+function applyURLParams() {
+  const p = new URLSearchParams(window.location.search);
+  const t = p.get('type'), b = p.get('band');
+  if (t) {
+    const c=[...document.querySelectorAll('.chip[data-type]')].find(c=>c.dataset.type===t);
+    if (c){document.querySelectorAll('.chip[data-type]').forEach(x=>x.classList.remove('active'));c.classList.add('active');activeType=t;}
+  }
+  if (b) {
+    const c=document.querySelector(`.chip[data-band="${b}"]`);
+    if (c){document.querySelectorAll('.chip[data-band]').forEach(x=>x.classList.remove('active'));c.classList.add('active');activeBand=b;}
+  }
+}
+
+function init() {
+  const d = window.PARAGON_LISTINGS;
+  if (!d||!d.listings||!d.listings.length) return;
 
   if (d.generated) {
-    document.getElementById('last-updated').textContent = 'Last updated: ' + d.generated;
+    document.getElementById('last-updated').textContent = 'Updated: '+d.generated+' · arecblackhills@gmail.com';
     document.getElementById('nav-updated').textContent  = d.generated;
   }
 
-  // Summary bar
+  const s = d.summary;
   document.getElementById('summary-bar').innerHTML = [
-    { val: s.total,                        label: 'Listings' },
-    { val: fmt(s.avg_price),               label: 'Avg Price' },
-    { val: fmt(s.price_range?.min),        label: 'Min Price' },
-    { val: fmt(s.price_range?.max),        label: 'Max Price' },
-    { val: Object.keys(s.by_type||{}).length, label: 'Categories' },
-  ].map(t => `<div class="stat-tile"><div class="stat-val">${t.val}</div><div class="stat-label">${t.label}</div></div>`).join('');
+    {val:s.total,               label:'Listings'},
+    {val:fmt(s.avg_price),      label:'Avg Price'},
+    {val:fmt(s.price_range?.min),label:'Min'},
+    {val:fmt(s.price_range?.max),label:'Max'},
+    {val:Object.keys(s.by_type||{}).length, label:'Categories'},
+  ].map(t=>`<div class="stat-tile"><div class="stat-val">${t.val}</div><div class="stat-label">${t.label}</div></div>`).join('');
 
-  // Type chips
-  const types = Object.entries(s.by_type || {}).sort((a,b) => b[1]-a[1]);
-  document.getElementById('type-chips').innerHTML = types.map(([t,n]) =>
-    `<div class="chip" data-type="${t}" onclick="setFilter(this)">${t.replace('Residential Resale (Single Family)','Residential').replace('Commercial — ','')} <span style="opacity:.5">${n}</span></div>`
-  ).join('');
-
-  // Cards
-  const grid = document.getElementById('grid');
-  grid.innerHTML = allListings.map(l => buildCard(l)).join('');
-  applyFilters();
-}
-
-function initMLSTables() {
-  const d = window.MARKET_DATA;
-  if (!d || !d.mlsDetail) return;
-
-  const { categories, data } = d.mlsDetail;
-  const bands = ['$100K–$350K','$350K–$500K','$500K–$800K','$800K–$1.0M','$1.0M+'];
-  const statuses = ['Active','Under Contract','Sold'];
-
-  const wrap = document.getElementById('mls-tables');
-  wrap.innerHTML = (categories || []).map(cat => {
-    const catData = data?.[cat] || {};
-    const rows = bands.map(band => {
-      const cells = catData[band] || {};
-      return `<tr>
-        <td>${band}</td>
-        ${statuses.map(s => {
-          const v = cells[s];
-          return v != null
-            ? `<td class="num">${v}</td>`
-            : `<td class="dash">—</td>`;
-        }).join('')}
-      </tr>`;
+  document.getElementById('type-chips').innerHTML = Object.entries(s.by_type||{})
+    .sort((a,b)=>b[1]-a[1])
+    .map(([t,n])=>{
+      const short = t.replace('Residential Resale (Single Family)','Residential').replace('Commercial — ','');
+      return `<div class="chip" data-type="${t}" onclick="setType(this)">${short} <span style="opacity:.4">${n}</span></div>`;
     }).join('');
 
-    return `
-    <div class="mls-cat-title">${cat}</div>
-    <table class="mls-table">
-      <thead><tr>
-        <th>Price Band</th>
-        ${statuses.map(s => `<th class="right">${s}</th>`).join('')}
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
+  document.getElementById('grid').innerHTML = d.listings.map(l=>buildCard(l)).join('');
+  applyURLParams();
+  apply();
+}
+
+function initTables() {
+  const d = window.MARKET_DATA;
+  if (!d||!d.mlsDetail) return;
+  const {categories, priceBands, data} = d.mlsDetail;
+  document.getElementById('mls-tables').innerHTML = (categories||[]).map(cat => {
+    const cd = data?.[cat]||{};
+    const rows = (priceBands||[]).map(band => {
+      const cells = cd[band]||{};
+      const bKey  = bandKeyFromLabel(band);
+      const av    = cells['Active'];
+      const uc    = cells['Under Contract'];
+      const sl    = cells['Sold'];
+      const avCell = av!=null
+        ? `<td class="num"><a class="cell-link" href="?type=${encodeURIComponent(cat)}&band=${bKey}" onclick="event.preventDefault();filterTo('${cat}','${bKey}')">${av}</a></td>`
+        : `<td class="dash">—</td>`;
+      return `<tr><td>${band}</td>${avCell}${uc!=null?`<td class="num">${uc}</td>`:`<td class="dash">—</td>`}${sl!=null?`<td class="num">${sl}</td>`:`<td class="dash">—</td>`}</tr>`;
+    }).join('');
+    return `<div class="mls-cat-title">${cat}</div>
+    <table class="mls"><thead><tr><th>Price Band</th><th class="r">Active ↗</th><th class="r">Under Contract</th><th class="r">Sold</th></tr></thead><tbody>${rows}</tbody></table>`;
   }).join('');
 }
 
-initListings();
-initMLSTables();
+init();
+initTables();
 </script>
 </body>
 </html>

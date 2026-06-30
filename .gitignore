@@ -19,3 +19,4 @@ preview_report.html
 *.pyc
 .DS_Store
 .env
+agents/mls_report/photos-cache.json
