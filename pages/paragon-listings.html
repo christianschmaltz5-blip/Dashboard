@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MLS Listings — Kevin Andreson</title>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Josefin Sans',sans-serif;background:#000;color:#fff;min-height:100vh;}
+
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;border-bottom:1px solid rgba(255,255,255,0.1);background:rgba(0,0,0,0.9);backdrop-filter:blur(12px);}
+.nav-back{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.5);text-decoration:none;transition:color .2s;} .nav-back:hover{color:#fff;}
+.nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.nav-right{font-size:11px;color:rgba(255,255,255,0.25);font-family:'DM Sans',sans-serif;}
+
+main{max-width:1200px;margin:0 auto;padding:2.5rem 2rem 5rem;}
+
+.page-head{margin-bottom:2rem;}
+.page-head h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:4px;}
+.page-head .sub{font-size:12px;color:rgba(255,255,255,0.4);font-family:'DM Sans',sans-serif;}
+.page-head .updated{font-size:11px;color:rgba(255,255,255,0.2);margin-top:4px;font-family:'DM Sans',sans-serif;}
+
+/* Summary */
+.summary-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:2rem;}
+.stat-tile{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px;text-align:center;}
+.stat-val{font-size:20px;font-weight:700;color:#fff;margin-bottom:3px;}
+.stat-label{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);}
+
+/* Filters */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:1.5rem;}
+.filter-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.25);}
+.chip{padding:6px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(255,255,255,0.4);cursor:pointer;user-select:none;transition:all .15s;}
+.chip:hover{background:rgba(255,255,255,0.06);}
+.chip.active{background:rgba(37,99,235,0.14);border-color:rgba(96,165,250,0.35);color:#60A5FA;}
+.search-box{padding:7px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:20px;font-size:11px;font-family:'Josefin Sans',sans-serif;color:#fff;outline:none;width:240px;}
+.search-box:focus{border-color:rgba(255,255,255,0.2);} .search-box::placeholder{color:rgba(255,255,255,0.2);}
+.count{margin-left:auto;font-size:11px;color:rgba(255,255,255,0.3);}
+
+/* Sort */
+.sort-select{padding:6px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:20px;font-size:10px;font-family:'Josefin Sans',sans-serif;color:rgba(255,255,255,0.5);outline:none;cursor:pointer;appearance:none;}
+.sort-select option{background:#111;color:#fff;}
+
+/* Grid */
+.listings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
+
+/* Card */
+.card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;transition:border-color .2s;display:flex;flex-direction:column;}
+.card:hover{border-color:rgba(255,255,255,0.18);}
+.card.hidden{display:none;}
+
+.card-img{height:160px;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.card-img-placeholder{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.card-img-icon{width:40px;height:40px;opacity:0.15;}
+.card-img-mls{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.2);}
+.card-status{position:absolute;top:12px;left:12px;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:3px 9px;border-radius:10px;}
+.status-active{background:rgba(52,211,153,0.15);color:#34D399;border:1px solid rgba(52,211,153,0.3);}
+.status-contract{background:rgba(251,191,36,0.15);color:#FBBF24;border:1px solid rgba(251,191,36,0.3);}
+.status-sold{background:rgba(239,68,68,0.15);color:#F87171;border:1px solid rgba(239,68,68,0.3);}
+
+.card-body{padding:16px;flex:1;display:flex;flex-direction:column;gap:8px;}
+.card-price{font-size:20px;font-weight:700;color:#fff;letter-spacing:-0.01em;}
+.card-address{font-size:12px;font-weight:600;color:rgba(255,255,255,0.8);line-height:1.4;}
+.card-city{font-size:11px;color:rgba(255,255,255,0.4);font-family:'DM Sans',sans-serif;margin-top:-4px;}
+.card-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px;}
+.card-tag{font-size:9px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;padding:2px 8px;border-radius:8px;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.07);}
+.card-tag.commercial{background:rgba(37,99,235,0.1);color:#60A5FA;border-color:rgba(96,165,250,0.2);}
+.card-tag.residential{background:rgba(16,185,129,0.08);color:#34D399;border-color:rgba(52,211,153,0.15);}
+
+.card-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;margin-top:auto;}
+.card-mls{font-size:10px;color:rgba(255,255,255,0.25);font-family:'DM Sans',sans-serif;}
+.card-btn{font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;background:#1B3A6B;color:#fff;border:none;border-radius:7px;cursor:pointer;text-decoration:none;display:inline-block;transition:background .15s;}
+.card-btn:hover{background:#2563EB;}
+.card-btn.no-link{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);cursor:default;}
+
+.empty{grid-column:1/-1;text-align:center;padding:4rem;color:rgba(255,255,255,0.2);font-size:12px;line-height:2;font-family:'DM Sans',sans-serif;}
+
+/* MLS Table section */
+.section-label{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.25);margin:2.5rem 0 1rem;display:flex;align-items:center;gap:10px;}
+.section-label::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.08);}
+
+.mls-table-wrap{margin-bottom:2rem;}
+.mls-cat-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:8px;margin-top:1.5rem;}
+.mls-table{width:100%;border-collapse:collapse;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:10px;overflow:hidden;font-size:11px;}
+.mls-table th{background:rgba(255,255,255,0.04);padding:10px 16px;text-align:left;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.35);border-bottom:1px solid rgba(255,255,255,0.07);}
+.mls-table td{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.04);color:rgba(255,255,255,0.6);font-family:'DM Sans',sans-serif;}
+.mls-table tr:last-child td{border-bottom:none;}
+.mls-table td.num{font-weight:700;color:#fff;text-align:right;}
+.mls-table td.dash{color:rgba(255,255,255,0.2);text-align:right;}
+.mls-table th.right{text-align:right;}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-back" href="../index.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back to Dashboard</a>
+  <div class="nav-right" id="nav-updated"></div>
+</nav>
+
+<main>
+  <div class="page-head">
+    <h1>MLS Active Listings</h1>
+    <div class="sub">Pulled from Paragon Collaboration Center alerts — arecblackhills@gmail.com</div>
+    <div class="updated" id="last-updated">Run the agent to load data</div>
+  </div>
+
+  <div class="summary-bar" id="summary-bar"></div>
+
+  <div class="filter-bar">
+    <span class="filter-label">Type:</span>
+    <div class="chip active" data-type="ALL" onclick="setFilter(this)">All</div>
+    <div id="type-chips"></div>
+    <input class="search-box" id="search" placeholder="Search address, city, MLS#…" oninput="applyFilters()"/>
+    <select class="sort-select" id="sort-sel" onchange="applyFilters()">
+      <option value="date-desc">Newest first</option>
+      <option value="price-asc">Price: Low → High</option>
+      <option value="price-desc">Price: High → Low</option>
+    </select>
+    <div class="count" id="count"></div>
+  </div>
+
+  <div class="listings-grid" id="grid">
+    <div class="empty">Run <code style="background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:4px;font-size:11px;">python3 agents/mls_report/parse_paragon_inbox.py</code> to load listings.</div>
+  </div>
+
+  <!-- MLS Detail Tables -->
+  <div class="section-label">MLS Detail — Current Period by Price Band</div>
+  <div id="mls-tables"></div>
+</main>
+
+<script src="../js/paragon-listings.js"></script>
+<script src="../js/market-data.js"></script>
+<script>
+let activeType = 'ALL';
+let allListings = [];
+
+function fmt(n) {
+  if (!n) return '—';
+  if (n >= 1_000_000) return '$' + (n/1_000_000).toFixed(2) + 'M';
+  return '$' + n.toLocaleString();
+}
+
+function statusClass(s) {
+  if (!s) return 'status-active';
+  if (s === 'Under Contract') return 'status-contract';
+  if (s === 'Sold') return 'status-sold';
+  return 'status-active';
+}
+
+function isCommercial(type) {
+  return type && type.startsWith('Commercial');
+}
+
+function buildCard(l) {
+  const tagClass = isCommercial(l.prop_type) ? 'commercial' : 'residential';
+  const shortType = (l.prop_type || '').replace('Residential Resale (Single Family)', 'Residential').replace('Commercial — ', '');
+  const btnHtml = l.paragon_url
+    ? `<a class="card-btn" href="${l.paragon_url}" target="_blank" rel="noopener">View in Paragon →</a>`
+    : `<span class="card-btn no-link">No link</span>`;
+  const searchLabel = l.search_name ? `<span class="card-tag">${l.search_name.replace(/\$/g,'$').slice(0,40)}</span>` : '';
+
+  return `
+  <div class="card" data-type="${l.prop_type}" data-price="${l.price||0}" data-date="${l.alert_date||''}"
+       data-search="${(l.full_address+' '+(l.city_state||'')+' '+(l.mls_num||'')+(l.prop_type||'')).toLowerCase()}">
+    <div class="card-img">
+      <div class="card-img-placeholder">
+        <svg class="card-img-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        <div class="card-img-mls">${l.mls_num ? 'MLS #' + l.mls_num : 'Paragon Listing'}</div>
+      </div>
+      <div class="card-status ${statusClass(l.status)}">${l.status || 'Active'}</div>
+    </div>
+    <div class="card-body">
+      <div class="card-price">${l.price_display || '—'}</div>
+      <div class="card-address">${l.address || 'Address not available'}</div>
+      <div class="card-city">${l.city_state || ''}</div>
+      <div class="card-tags">
+        <span class="card-tag ${tagClass}">${shortType}</span>
+        ${searchLabel}
+      </div>
+    </div>
+    <div class="card-footer">
+      <div class="card-mls">${l.mls_num ? 'MLS #' + l.mls_num : ''} · ${l.alert_date || ''}</div>
+      ${btnHtml}
+    </div>
+  </div>`;
+}
+
+function setFilter(el) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  activeType = el.dataset.type;
+  applyFilters();
+}
+
+function applyFilters() {
+  const q    = (document.getElementById('search').value || '').toLowerCase();
+  const sort = document.getElementById('sort-sel').value;
+  let cards  = Array.from(document.querySelectorAll('.card'));
+
+  let visible = 0;
+  cards.forEach(c => {
+    const typeMatch   = activeType === 'ALL' || c.dataset.type === activeType;
+    const searchMatch = !q || c.dataset.search.includes(q);
+    const show = typeMatch && searchMatch;
+    c.classList.toggle('hidden', !show);
+    if (show) visible++;
+  });
+
+  // Sort
+  const grid = document.getElementById('grid');
+  const sorted = cards.filter(c => !c.classList.contains('hidden'));
+  sorted.sort((a, b) => {
+    if (sort === 'price-asc')  return Number(a.dataset.price) - Number(b.dataset.price);
+    if (sort === 'price-desc') return Number(b.dataset.price) - Number(a.dataset.price);
+    return b.dataset.date.localeCompare(a.dataset.date);
+  });
+  sorted.forEach(c => grid.appendChild(c));
+
+  document.getElementById('count').textContent = visible === cards.length ? `${cards.length} listings` : `${visible} of ${cards.length}`;
+}
+
+function initListings() {
+  const d = window.PARAGON_LISTINGS;
+  if (!d || !d.listings || d.listings.length === 0) return;
+
+  allListings = d.listings;
+  const s     = d.summary;
+
+  if (d.generated) {
+    document.getElementById('last-updated').textContent = 'Last updated: ' + d.generated;
+    document.getElementById('nav-updated').textContent  = d.generated;
+  }
+
+  // Summary bar
+  document.getElementById('summary-bar').innerHTML = [
+    { val: s.total,                        label: 'Listings' },
+    { val: fmt(s.avg_price),               label: 'Avg Price' },
+    { val: fmt(s.price_range?.min),        label: 'Min Price' },
+    { val: fmt(s.price_range?.max),        label: 'Max Price' },
+    { val: Object.keys(s.by_type||{}).length, label: 'Categories' },
+  ].map(t => `<div class="stat-tile"><div class="stat-val">${t.val}</div><div class="stat-label">${t.label}</div></div>`).join('');
+
+  // Type chips
+  const types = Object.entries(s.by_type || {}).sort((a,b) => b[1]-a[1]);
+  document.getElementById('type-chips').innerHTML = types.map(([t,n]) =>
+    `<div class="chip" data-type="${t}" onclick="setFilter(this)">${t.replace('Residential Resale (Single Family)','Residential').replace('Commercial — ','')} <span style="opacity:.5">${n}</span></div>`
+  ).join('');
+
+  // Cards
+  const grid = document.getElementById('grid');
+  grid.innerHTML = allListings.map(l => buildCard(l)).join('');
+  applyFilters();
+}
+
+function initMLSTables() {
+  const d = window.MARKET_DATA;
+  if (!d || !d.mlsDetail) return;
+
+  const { categories, data } = d.mlsDetail;
+  const bands = ['$100K–$350K','$350K–$500K','$500K–$800K','$800K–$1.0M','$1.0M+'];
+  const statuses = ['Active','Under Contract','Sold'];
+
+  const wrap = document.getElementById('mls-tables');
+  wrap.innerHTML = (categories || []).map(cat => {
+    const catData = data?.[cat] || {};
+    const rows = bands.map(band => {
+      const cells = catData[band] || {};
+      return `<tr>
+        <td>${band}</td>
+        ${statuses.map(s => {
+          const v = cells[s];
+          return v != null
+            ? `<td class="num">${v}</td>`
+            : `<td class="dash">—</td>`;
+        }).join('')}
+      </tr>`;
+    }).join('');
+
+    return `
+    <div class="mls-cat-title">${cat}</div>
+    <table class="mls-table">
+      <thead><tr>
+        <th>Price Band</th>
+        ${statuses.map(s => `<th class="right">${s}</th>`).join('')}
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  }).join('');
+}
+
+initListings();
+initMLSTables();
+</script>
+</body>
+</html>
