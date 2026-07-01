@@ -91,16 +91,21 @@ PHOTOS = [
 ]
 
 DEFAULT_MESSAGE = """
-24.75± acres of C-2 zoned commercial land fronting Highway 1416 in Box Elder, SD, with
-approximately 1,200 linear feet of highway frontage and all utilities available at the site.
-The parcel sits within minutes of the Ellsworth Air Force Base main gate, on the primary
-corridor connecting the base to Box Elder and I-90.
+24.75± acres of C-2 zoned commercial land on Highway 1416 — the primary access corridor
+into Ellsworth Air Force Base, the largest employer in the Black Hills region. The parcel
+carries approximately 1,200 linear feet of highway frontage with all utilities already at
+the site.
 
 Box Elder is one of the fastest-growing communities in South Dakota, driven by Ellsworth's
-continued presence as the region's largest employer and steady residential expansion along
-the I-90/Highway 1416 corridor. Zoning and utility access are in place — a buyer can move
-directly into site planning without rezoning or annexation contingencies.
+continued presence and steady residential expansion along the I-90/Highway 1416 corridor.
+Zoning and utility access are in place — a buyer can move directly into site planning
+without rezoning or annexation contingencies.
 """.strip()
+
+BROKER_QUOTE = (
+    "“Box Elder is growing toward Ellsworth, not away from it. Frontage on this corridor "
+    "doesn't come up often — worth a serious look before it's off the market.”"
+)
 
 
 def build_html(message: str) -> str:
@@ -175,8 +180,8 @@ def build_html(message: str) -> str:
     <tr>
       <td style="background:{NAVY};padding:24px 28px 22px;">
         <p style="margin:0 0 8px 0;font-size:10px;font-weight:bold;letter-spacing:0.18em;text-transform:uppercase;color:{GOLD};">Offering Summary &middot; {month}</p>
-        <p style="margin:0;font-family:{SERIF};font-size:25px;font-weight:bold;color:#ffffff;line-height:1.3;">{ACRES}&plusmn; Acres &mdash; Highway 1416 Growth Corridor</p>
-        <p style="margin:8px 0 0 0;font-size:13px;color:#9FB3C8;">Box Elder, SD 57719 &nbsp;&middot;&nbsp; Commercial Land &nbsp;&middot;&nbsp; {ZONING} Zoning</p>
+        <p style="margin:0;font-family:{SERIF};font-size:26px;font-weight:bold;color:#ffffff;line-height:1.3;">{ACRES}&plusmn; Acres on the Ellsworth AFB Access Corridor</p>
+        <p style="margin:8px 0 0 0;font-size:13px;color:#9FB3C8;">Highway 1416, Box Elder, SD 57719 &nbsp;&middot;&nbsp; Commercial Land &nbsp;&middot;&nbsp; {ZONING} Zoning</p>
       </td>
     </tr>
 
@@ -186,23 +191,23 @@ def build_html(message: str) -> str:
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
           <tr>
             <td width="20%" align="center" style="padding:16px 6px;border-right:1px solid #22405C;">
-              <p style="margin:0;font-family:{SERIF};font-size:19px;font-weight:bold;color:#ffffff;">{ACRES}</p>
+              <p style="margin:0;font-family:{SERIF};font-size:26px;font-weight:bold;color:#ffffff;">{ACRES}</p>
               <p style="margin:4px 0 0 0;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:{GOLD_DIM};">Acres</p>
             </td>
             <td width="20%" align="center" style="padding:16px 6px;border-right:1px solid #22405C;">
-              <p style="margin:0;font-family:{SERIF};font-size:19px;font-weight:bold;color:#ffffff;">{price_fmt}</p>
+              <p style="margin:0;font-family:{SERIF};font-size:26px;font-weight:bold;color:#ffffff;">{price_fmt}</p>
               <p style="margin:4px 0 0 0;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:{GOLD_DIM};">Asking Price</p>
             </td>
             <td width="20%" align="center" style="padding:16px 6px;border-right:1px solid #22405C;">
-              <p style="margin:0;font-family:{SERIF};font-size:19px;font-weight:bold;color:#ffffff;">{price_per_acre_fmt}</p>
+              <p style="margin:0;font-family:{SERIF};font-size:26px;font-weight:bold;color:#ffffff;">{price_per_acre_fmt}</p>
               <p style="margin:4px 0 0 0;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:{GOLD_DIM};">Per Acre</p>
             </td>
             <td width="20%" align="center" style="padding:16px 6px;border-right:1px solid #22405C;">
-              <p style="margin:0;font-family:{SERIF};font-size:19px;font-weight:bold;color:#ffffff;">{FRONTAGE_FT:,}'</p>
+              <p style="margin:0;font-family:{SERIF};font-size:26px;font-weight:bold;color:#ffffff;">{FRONTAGE_FT:,}'</p>
               <p style="margin:4px 0 0 0;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:{GOLD_DIM};">Frontage</p>
             </td>
             <td width="20%" align="center" style="padding:16px 6px;">
-              <p style="margin:0;font-family:{SERIF};font-size:19px;font-weight:bold;color:#ffffff;">{ZONING}</p>
+              <p style="margin:0;font-family:{SERIF};font-size:26px;font-weight:bold;color:#ffffff;">{ZONING}</p>
               <p style="margin:4px 0 0 0;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:{GOLD_DIM};">Zoning</p>
             </td>
           </tr>
@@ -215,6 +220,18 @@ def build_html(message: str) -> str:
       <td style="padding:28px 28px 6px;">
         <p style="margin:0 0 12px 0;font-family:{SERIF};font-size:15px;font-weight:bold;color:{NAVY};">Investment Thesis</p>
         {body_html}
+      </td>
+    </tr>
+
+    <!-- Broker Quote -->
+    <tr>
+      <td style="padding:4px 28px 24px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-left:3px solid {GOLD};">
+          <tr><td style="padding:2px 0 2px 18px;">
+            <p style="margin:0;font-family:{SERIF};font-size:15px;font-style:italic;line-height:1.6;color:{NAVY};">{BROKER_QUOTE}</p>
+            <p style="margin:8px 0 0 0;font-size:11px;font-weight:bold;letter-spacing:0.04em;color:{MUTED};">&mdash; Kevin Andreson, Keller Williams Realty Black Hills</p>
+          </td></tr>
+        </table>
       </td>
     </tr>
 
