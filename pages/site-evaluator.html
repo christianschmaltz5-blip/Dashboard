@@ -347,6 +347,21 @@ table.lot-table input.bt-cell{width:80px;}
     </div>
 
     <div class="form-section">
+      <div class="section-label">Site Plan / Lot Map <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:9px;color:rgba(255,255,255,0.2)">(optional — upload a plat map or site plan for this project)</span></div>
+      <input type="file" accept="image/*" id="bt-siteplan-input" style="display:none;" onchange="handleSitePlanUpload(event)"/>
+      <div id="bt-siteplan-empty" style="border:1px dashed rgba(255,255,255,0.15);border-radius:10px;padding:28px;text-align:center;cursor:pointer;" onclick="document.getElementById('bt-siteplan-input').click()">
+        <div style="font-size:12px;color:rgba(255,255,255,0.4);">Click to upload a plat map or site plan image (PNG, JPG)</div>
+      </div>
+      <div id="bt-siteplan-controls" style="margin-top:10px;display:none;gap:8px;">
+        <button class="btn-cp" onclick="document.getElementById('bt-siteplan-input').click()">Replace</button>
+        <button class="btn-reset" onclick="removeSitePlan()">Remove</button>
+      </div>
+    </div>
+    <div id="bt-siteplan-preview" style="display:none;margin-bottom:1.75rem;">
+      <img id="bt-siteplan-img" style="max-width:100%;border-radius:10px;border:1px solid rgba(255,255,255,0.1);"/>
+    </div>
+
+    <div class="form-section">
       <div class="section-label">Rate Assumptions</div>
       <div class="field-grid">
         <div><div class="field-label">Land Cost / Acre</div><input class="field-input bt-rate" id="bt-rate-landAcre" type="number" placeholder="12963" oninput="computeAll()"/></div>
@@ -891,8 +906,30 @@ function resetBudget() {
   document.getElementById('bt-summary-massgrade').value = '';
   computeAll();
   resetLotTable();
+  removeSitePlan();
   const el = document.getElementById('budget-status');
   el.textContent = 'Cleared.'; el.className = 'status ok';
+}
+
+// ── Site Plan / Lot Map upload ──────────────────────────────────────────────
+function handleSitePlanUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('bt-siteplan-img').src = ev.target.result;
+    document.getElementById('bt-siteplan-empty').style.display = 'none';
+    document.getElementById('bt-siteplan-controls').style.display = 'flex';
+    document.getElementById('bt-siteplan-preview').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+function removeSitePlan() {
+  document.getElementById('bt-siteplan-img').src = '';
+  document.getElementById('bt-siteplan-input').value = '';
+  document.getElementById('bt-siteplan-empty').style.display = 'block';
+  document.getElementById('bt-siteplan-controls').style.display = 'none';
+  document.getElementById('bt-siteplan-preview').style.display = 'none';
 }
 
 // ── Lot Pricing Detail (optional lot-by-lot reference table) ───────────────
