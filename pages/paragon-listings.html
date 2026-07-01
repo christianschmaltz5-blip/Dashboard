@@ -72,6 +72,7 @@ main{max-width:1320px;margin:0 auto;padding:2.5rem 2rem 6rem;}
 .s-contract{background:rgba(251,191,36,0.2);color:#FBBF24;border:1px solid rgba(251,191,36,0.3);}
 .s-sold    {background:rgba(239,68,68,0.2); color:#F87171;border:1px solid rgba(239,68,68,0.3);}
 .badge-new{position:absolute;top:10px;right:10px;font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:3px 8px;border-radius:8px;background:rgba(37,99,235,0.3);color:#93C5FD;border:1px solid rgba(96,165,250,0.25);backdrop-filter:blur(8px);}
+.dom-cell{color:rgba(255,255,255,0.6)!important;}.dom-unit{font-size:8px;color:rgba(255,255,255,0.3);margin-left:1px;}
 .badge-dom{position:absolute;bottom:10px;right:10px;font-size:9px;font-weight:700;letter-spacing:0.05em;padding:3px 8px;border-radius:8px;background:rgba(0,0,0,0.55);color:rgba(255,255,255,0.75);border:1px solid rgba(255,255,255,0.12);backdrop-filter:blur(8px);white-space:nowrap;}
 
 /* Body */
@@ -167,7 +168,7 @@ a.cell-link:hover{color:#93C5FD;text-decoration:underline;}
   <div id="mls-tables"></div>
 </main>
 
-<script src="../js/paragon-listings.js?v=20260630e"></script>
+<script src="../js/paragon-listings.js?v=20260630f"></script>
 <script src="../js/market-data.js?v=20260630d"></script>
 <script>
 const BANDS = [
@@ -209,10 +210,6 @@ function typeTag(t) {
   if (/land|lot/i.test(t)) return {cls:'tag-land',lbl:'Land'};
   return {cls:'tag-misc',lbl:t.slice(0,20)};
 }
-function isNew(d) {
-  if (!d) return false;
-  return (new Date()-new Date(d))/86400000 <= 7;
-}
 function daysOnMLS(d) {
   if (!d) return null;
   const days = Math.floor((new Date()-new Date(d))/86400000);
@@ -223,7 +220,6 @@ function daysOnMLS(d) {
 
 function buildCard(l) {
   const tag = typeTag(l.prop_type);
-  const newBdg = isNew(l.alert_date) ? '<div class="badge-new">New</div>' : '';
   const dom = daysOnMLS(l.alert_date);
   const domBdg = dom ? `<div class="badge-dom">${dom}</div>` : '';
   const btn = l.paragon_url
@@ -249,7 +245,6 @@ function buildCard(l) {
     <div class="card-photo">
       ${imgBlock}
       <div class="card-status ${statusClass(l.status)}">${l.status||'Active'}</div>
-      ${newBdg}
       ${domBdg}
     </div>
     <div class="card-body">
@@ -391,6 +386,23 @@ function init() {
 function initTables() {
   const d = window.MARKET_DATA;
   if (!d||!d.mlsDetail) return;
+  const listings = (window.PARAGON_LISTINGS||{}).listings||[];
+  const today = new Date();
+
+  // Build DOM lookup: {type -> {bandKey -> avgDays}}
+  const domMap = {};
+  listings.forEach(l => {
+    if (!l.alert_date || !l.price) return;
+    const days = Math.floor((today - new Date(l.alert_date))/86400000);
+    const band = BANDS.find(b => l.price >= b.min && l.price < b.max);
+    if (!band) return;
+    const type = l.prop_type||'';
+    if (!domMap[type]) domMap[type] = {};
+    if (!domMap[type][band.key]) domMap[type][band.key] = {sum:0,cnt:0};
+    domMap[type][band.key].sum += days;
+    domMap[type][band.key].cnt += 1;
+  });
+
   const {categories, priceBands, data} = d.mlsDetail;
   document.getElementById('mls-tables').innerHTML = (categories||[]).map(cat => {
     const cd = data?.[cat]||{};
@@ -400,13 +412,18 @@ function initTables() {
       const av    = cells['Active'];
       const uc    = cells['Under Contract'];
       const sl    = cells['Sold'];
+      const domEntry = (domMap[cat]||{})[bKey];
+      const avgDom = domEntry && domEntry.cnt ? Math.round(domEntry.sum/domEntry.cnt) : null;
+      const domCell = avgDom!=null
+        ? `<td class="num dom-cell">${avgDom}<span class="dom-unit">d</span></td>`
+        : `<td class="dash">—</td>`;
       const avCell = av!=null
         ? `<td class="num"><a class="cell-link" href="?type=${encodeURIComponent(cat)}&band=${bKey}" onclick="event.preventDefault();filterTo('${cat}','${bKey}')">${av}</a></td>`
         : `<td class="dash">—</td>`;
-      return `<tr><td>${band}</td>${avCell}${uc!=null?`<td class="num">${uc}</td>`:`<td class="dash">—</td>`}${sl!=null?`<td class="num">${sl}</td>`:`<td class="dash">—</td>`}</tr>`;
+      return `<tr><td>${band}</td>${avCell}${domCell}${uc!=null?`<td class="num">${uc}</td>`:`<td class="dash">—</td>`}${sl!=null?`<td class="num">${sl}</td>`:`<td class="dash">—</td>`}</tr>`;
     }).join('');
     return `<div class="mls-cat-title">${cat}</div>
-    <table class="mls"><thead><tr><th>Price Band</th><th class="r">Active ↗</th><th class="r">Under Contract</th><th class="r">Sold</th></tr></thead><tbody>${rows}</tbody></table>`;
+    <table class="mls"><thead><tr><th>Price Band</th><th class="r">Active ↗</th><th class="r">Avg DOM</th><th class="r">Under Contract</th><th class="r">Sold</th></tr></thead><tbody>${rows}</tbody></table>`;
   }).join('');
 }
 
