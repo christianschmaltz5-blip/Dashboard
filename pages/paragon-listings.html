@@ -168,7 +168,7 @@ a.cell-link:hover{color:#93C5FD;text-decoration:underline;}
   <div id="mls-tables"></div>
 </main>
 
-<script src="../js/paragon-listings.js?v=20260630i"></script>
+<script src="../js/paragon-listings.js?v=20260630j"></script>
 <script src="../js/market-data.js?v=20260630d"></script>
 <script>
 const BANDS = [
@@ -403,12 +403,13 @@ function initTables() {
     domMap[type][band.key].cnt += 1;
   });
 
-  // Only show categories that have actual listings in our paragon data
-  const catsWithListings = new Set(listings.map(l => l.prop_type).filter(Boolean));
+  // Only show categories that have at least 2 of our own listings (avoids single-outlier commercial rows)
+  const catCounts = {};
+  listings.forEach(l => { if (l.prop_type) catCounts[l.prop_type] = (catCounts[l.prop_type]||0)+1; });
 
   const {categories, priceBands, data} = d.mlsDetail;
   const blocks = (categories||[]).map(cat => {
-    if (!catsWithListings.has(cat)) return '';
+    if ((catCounts[cat]||0) < 2) return '';
     const cd = data?.[cat]||{};
     let hasData = false;
     const rows = (priceBands||[]).map(band => {
