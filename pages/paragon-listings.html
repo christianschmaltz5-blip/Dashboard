@@ -72,6 +72,7 @@ main{max-width:1320px;margin:0 auto;padding:2.5rem 2rem 6rem;}
 .s-contract{background:rgba(251,191,36,0.2);color:#FBBF24;border:1px solid rgba(251,191,36,0.3);}
 .s-sold    {background:rgba(239,68,68,0.2); color:#F87171;border:1px solid rgba(239,68,68,0.3);}
 .badge-new{position:absolute;top:10px;right:10px;font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:3px 8px;border-radius:8px;background:rgba(37,99,235,0.3);color:#93C5FD;border:1px solid rgba(96,165,250,0.25);backdrop-filter:blur(8px);}
+.badge-dom{position:absolute;bottom:10px;right:10px;font-size:9px;font-weight:700;letter-spacing:0.05em;padding:3px 8px;border-radius:8px;background:rgba(0,0,0,0.55);color:rgba(255,255,255,0.75);border:1px solid rgba(255,255,255,0.12);backdrop-filter:blur(8px);white-space:nowrap;}
 
 /* Body */
 .card-body{padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:5px;}
@@ -166,7 +167,7 @@ a.cell-link:hover{color:#93C5FD;text-decoration:underline;}
   <div id="mls-tables"></div>
 </main>
 
-<script src="../js/paragon-listings.js?v=20260630"></script>
+<script src="../js/paragon-listings.js?v=20260630e"></script>
 <script src="../js/market-data.js?v=20260630d"></script>
 <script>
 const BANDS = [
@@ -212,10 +213,19 @@ function isNew(d) {
   if (!d) return false;
   return (new Date()-new Date(d))/86400000 <= 7;
 }
+function daysOnMLS(d) {
+  if (!d) return null;
+  const days = Math.floor((new Date()-new Date(d))/86400000);
+  if (days <= 0) return 'Listed today';
+  if (days === 1) return '1 day on MLS';
+  return days+' days on MLS';
+}
 
 function buildCard(l) {
   const tag = typeTag(l.prop_type);
   const newBdg = isNew(l.alert_date) ? '<div class="badge-new">New</div>' : '';
+  const dom = daysOnMLS(l.alert_date);
+  const domBdg = dom ? `<div class="badge-dom">${dom}</div>` : '';
   const btn = l.paragon_url
     ? `<a class="view-btn" href="${l.paragon_url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">View in Paragon →</a>`
     : `<span class="view-btn" style="background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.2);cursor:default">No link</span>`;
@@ -240,6 +250,7 @@ function buildCard(l) {
       ${imgBlock}
       <div class="card-status ${statusClass(l.status)}">${l.status||'Active'}</div>
       ${newBdg}
+      ${domBdg}
     </div>
     <div class="card-body">
       <div class="card-price">${l.price_display||'—'}</div>
@@ -251,7 +262,7 @@ function buildCard(l) {
       </div>
     </div>
     <div class="card-footer">
-      <div class="card-mls">${l.mls_num?'MLS #'+l.mls_num:''} · ${l.alert_date||''}</div>
+      <div class="card-mls">${l.mls_num?'MLS #'+l.mls_num:''}${l.alert_date?' · Added '+new Date(l.alert_date).toLocaleDateString('en-US',{month:'short',day:'numeric'}):''}</div>
       ${btn}
     </div>
   </div>`;
