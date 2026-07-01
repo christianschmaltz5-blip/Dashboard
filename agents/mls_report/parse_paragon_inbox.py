@@ -120,7 +120,12 @@ def decode_str(s):
     return " ".join(out)
 
 
-def get_body_and_links(msg):
+def get_body_links_and_view_links(msg):
+    """
+    Returns (body_text, all_links, view_this_listing_links).
+    view_this_listing_links: ordered list of DetailTokenLogon hrefs, one per
+    'View This Listing' occurrence, taken from the <a> tag wrapping that text.
+    """
     html_body = ""
     for part in msg.walk():
         ct = part.get_content_type()
@@ -132,18 +137,35 @@ def get_body_and_links(msg):
                 html_body += part.get_payload(decode=True).decode("utf-8", errors="replace")
             except Exception:
                 pass
+
     if html_body:
         p = ParagonEmailParser()
         p.feed(html_body)
-        return p.get_text(), p.get_links()
+        body_text = p.get_text()
+        all_links = p.get_links()
+
+        # For each "View This Listing" in the raw HTML, get the nearest
+        # DetailTokenLogon href immediately preceding it (its own <a> tag)
+        view_links = []
+        for m in re.finditer(r'(?i)view\s+this\s+listing', html_body):
+            before = html_body[max(0, m.start()-800):m.start()]
+            found = re.findall(r'href=["\']([^"\']*DetailTokenLogon[^"\']*)["\']', before)
+            view_links.append(found[-1] if found else None)
+
+        return body_text, all_links, view_links
+
     # Plain text fallback
     for part in msg.walk():
         if part.get_content_type() == "text/plain":
             try:
-                return part.get_payload(decode=True).decode("utf-8", errors="replace"), []
+                return part.get_payload(decode=True).decode("utf-8", errors="replace"), [], []
             except Exception:
                 pass
-    return "", []
+    return "", [], []
+
+def get_body_and_links(msg):
+    body, links, _ = get_body_links_and_view_links(msg)
+    return body, links
 
 
 # ── IMAP connection ───────────────────────────────────────────────────────────
@@ -191,7 +213,7 @@ def fetch_paragon_emails(mail, days=14):
             if not _is_paragon(sender, subject):
                 continue
 
-            body, links = get_body_and_links(msg)
+            body, links, view_links = get_body_links_and_view_links(msg)
 
             # Extract saved search name from subject or body
             search_name = ""
@@ -211,6 +233,7 @@ def fetch_paragon_emails(mail, days=14):
                 "date":        date_str,
                 "body":        body,
                 "links":       links,
+                "view_links":  view_links,  # per-listing DetailTokenLogon links in order
                 "search_name": search_name,
             })
         break
@@ -245,6 +268,7 @@ def parse_listings(email_data):
     """
     body        = email_data["body"]
     links       = email_data["links"]
+    view_links  = email_data.get("view_links", [])  # per-listing links in document order
     date_raw    = email_data["date"]
     search_name = email_data.get("search_name", "")
 
@@ -283,10 +307,13 @@ def parse_listings(email_data):
         while j < len(window):
             wl = window[j]
 
-            # "View This Listing" anchor → grab next DetailToken link if available
+            # "View This Listing" — use the pre-matched per-listing link (in order)
             if "view this listing" in wl.lower():
-                if detail_links:
-                    view_link = detail_links[len(listings) % max(len(detail_links), 1)]
+                idx = len(listings)  # number of listings already completed
+                if view_links and idx < len(view_links) and view_links[idx]:
+                    view_link = view_links[idx]
+                elif detail_links:
+                    view_link = detail_links[idx % max(len(detail_links), 1)]
 
             # MLS number — line after "MLS #"
             if wl.strip() == "MLS #" and j + 1 < len(window):
@@ -535,146 +562,145 @@ def _best_photo_from_page(page, mls_num=None):
 
     return None
 
-def fetch_photo_and_bytes(paragon_url, page, mls_num=None):
-    """
-    Load a Paragon listing page, capture all property photo responses,
-    then pick the one that appears FIRST in the DOM (= primary/exterior photo).
-    Returns (photo_url, image_bytes).
-    """
-    all_captured = {}  # url -> bytes
+MLS_IN_URL_RE = re.compile(r'/ParagonImages/Property/[^/]+/[^/]+/(\d{4,6})/')
 
-    def on_response(response):
-        url = response.url
-        if 'zimg.paragon.ice.com/ParagonImages/Property' not in url:
-            return
-        if url in all_captured:
-            return
-        low = url.lower()
-        if any(k in low for k in PARAGON_PLACEHOLDER_KEYWORDS):
-            return
-        try:
-            body = response.body()
-            if len(body) > 5000:
-                all_captured[url] = body
-        except Exception:
-            pass
-
-    page.on('response', on_response)
+def _on_photo_response(response, photo_bank):
+    """Shared response handler: extract MLS# from CDN URL and store bytes."""
+    url = response.url
+    if 'zimg.paragon.ice.com/ParagonImages/Property' not in url:
+        return
+    low = url.lower()
+    if any(k in low for k in PARAGON_PLACEHOLDER_KEYWORDS):
+        return
+    m = MLS_IN_URL_RE.search(url)
+    if not m:
+        return
+    url_mls = m.group(1)
     try:
-        page.goto(paragon_url, wait_until='networkidle', timeout=25000)
+        body = response.body()
+        if len(body) < 3000:
+            return
+        if url_mls not in photo_bank or len(body) > len(photo_bank[url_mls][1]):
+            photo_bank[url_mls] = (url, body)
+    except Exception:
+        pass
+
+def _load_page_into_bank(paragon_url, page, photo_bank):
+    """
+    Navigate to paragon_url. Capture every Paragon CDN photo response.
+    Also scrape CCR sidebar listing links and click through them so we
+    capture photos for all listings in the same batch email.
+    """
+    handler = lambda r: _on_photo_response(r, photo_bank)
+    page.on('response', handler)
+    try:
+        page.goto(paragon_url, wait_until='networkidle', timeout=30000)
     except Exception:
         try:
             page.goto(paragon_url, wait_until='domcontentloaded', timeout=20000)
-            time.sleep(3)
+            time.sleep(4)
         except Exception:
             pass
 
-    # Click the listing's thumbnail to trigger full-size photo load
-    if mls_num:
-        try:
-            sel = f'img[src*="ParagonImages/Property"][src*="{mls_num}"]'
-            thumb = page.locator(sel).first
-            if thumb.count() > 0:
-                thumb.click(timeout=3000)
-                page.wait_for_load_state('networkidle', timeout=8000)
-        except Exception:
-            pass
+    # Find all CCR listing links in the sidebar and click through each one
+    # to capture photos for every listing in this batch
+    try:
+        sidebar_links = page.evaluate("""() => {
+            const seen = new Set();
+            const out  = [];
+            document.querySelectorAll('a[href]').forEach(a => {
+                const h = a.href;
+                if (h.includes('DetailTokenLogon') || h.includes('/CollabLink/')) {
+                    if (!seen.has(h)) { seen.add(h); out.push(h); }
+                }
+            });
+            return out;
+        }""")
+        for link in sidebar_links[1:12]:  # skip first (current page), visit up to 11 more
+            try:
+                page.goto(link, wait_until='networkidle', timeout=20000)
+            except Exception:
+                try:
+                    page.goto(link, wait_until='domcontentloaded', timeout=15000)
+                    time.sleep(3)
+                except Exception:
+                    pass
+    except Exception:
+        pass
 
-    page.remove_listener('response', on_response)
-
-    if not all_captured:
-        return None, None
-
-    # Only accept photos whose URL contains THIS listing's MLS number.
-    # This guarantees we never show a neighbour listing's photo.
-    if mls_num:
-        mls_photos = {u: b for u, b in all_captured.items() if mls_num in u}
-        if mls_photos:
-            # Among confirmed-correct photos, pick the largest (best quality)
-            best = max(mls_photos, key=lambda u: len(mls_photos[u]))
-            return best, mls_photos[best]
-        # No MLS-matching photo found — page loaded wrong listing, return nothing
-        return None, None
-
-    # No MLS number available: largest captured by byte size
-    best_url = max(all_captured, key=lambda u: len(all_captured[u]))
-    return best_url, all_captured[best_url]
+    page.remove_listener('response', handler)
 
 def enrich_with_photos(listings, skip_photos=False):
-    """Add photo_url to each listing using a persistent cache + Playwright browser."""
+    """
+    Add photo_url to each listing.
+    Strategy: visit every unique Paragon URL; every page load captures photos for the
+    main listing AND all sidebar thumbnails (each has its MLS# in the CDN URL).
+    Build a global photo_bank keyed by MLS number, then assign.
+    """
     if skip_photos:
         for l in listings:
             l['photo_url'] = None
         return listings
 
-    cache = load_photos_cache()
+    cache = load_photos_cache()  # mls_num -> local_path (from previous runs)
 
-    # Check how many need fetching
-    to_fetch = [l for l in listings if l.get('paragon_url') and l['paragon_url'] not in cache]
-    cached   = [l for l in listings if l.get('paragon_url') and l['paragon_url'] in cache]
+    # Listings already in photo cache (by mls_num)
+    mls_in_cache = set(cache.keys())
+    need_mls     = {l['mls_num'] for l in listings if l.get('mls_num') and l['mls_num'] not in mls_in_cache}
 
-    # Apply cached photos first
-    for l in listings:
-        url = l.get('paragon_url')
-        if url and url in cache:
-            l['photo_url'] = cache[url]
-        elif not url:
-            l['photo_url'] = None
+    # Unique URLs we haven't visited yet — deduplicated
+    visited_urls = cache.get('__visited_urls__', [])
+    all_urls     = list({l['paragon_url'] for l in listings if l.get('paragon_url')})
+    to_visit     = [u for u in all_urls if u not in visited_urls]
 
-    if not to_fetch:
-        found = sum(1 for l in listings if l.get('photo_url'))
-        print(f"✓ Photos: {found}/{len(listings)} (all from cache)")
-        return listings
+    os.makedirs(PHOTOS_DIR, exist_ok=True)
+    photo_bank = {}  # mls_num -> (url, bytes) — built during this run
 
-    print(f"  Fetching {len(to_fetch)} new photos via headless browser...")
-    try:
-        from playwright.sync_api import sync_playwright
-        with sync_playwright() as pw:
-            browser = pw.chromium.launch(headless=True)
-            ctx     = browser.new_context(
-                viewport={"width": 1280, "height": 900},
-                user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-            )
-            fetched = 0
-            os.makedirs(PHOTOS_DIR, exist_ok=True)
-            for l in to_fetch:
-                url     = l['paragon_url']
-                mls_num = l.get('mls_num') or ''
+    if to_visit:
+        print(f"  Visiting {len(to_visit)} unique Paragon URLs (capturing all photos seen)...")
+        try:
+            from playwright.sync_api import sync_playwright
+            with sync_playwright() as pw:
+                browser = pw.chromium.launch(headless=True)
+                ctx = browser.new_context(
+                    viewport={"width": 1280, "height": 900},
+                    user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                )
+                for i, url in enumerate(to_visit, 1):
+                    page = ctx.new_page()
+                    try:
+                        _load_page_into_bank(url, page, photo_bank)
+                    finally:
+                        page.close()
+                    visited_urls.append(url)
+                    if i % 5 == 0:
+                        print(f"    {i}/{len(to_visit)} pages loaded, {len(photo_bank)} MLS photos captured...")
+                browser.close()
+        except Exception as e:
+            print(f"  Playwright error: {e}")
 
-                # Fresh page for every listing — prevents Paragon SPA from carrying
-                # the previous listing's DOM/images into the next page inspection
-                page = ctx.new_page()
-                try:
-                    photo_url, img_bytes = fetch_photo_and_bytes(url, page, mls_num=mls_num)
-                finally:
-                    page.close()
+    # Save captured photo files and update cache
+    newly_saved = 0
+    for mls_num, (photo_url, img_bytes) in photo_bank.items():
+        if mls_num in cache:
+            continue  # already have a saved photo for this listing
+        fname = f"{mls_num}.jpg"
+        fpath = os.path.join(PHOTOS_DIR, fname)
+        with open(fpath, 'wb') as f:
+            f.write(img_bytes)
+        cache[mls_num] = f"../img/listings/{fname}"
+        newly_saved += 1
 
-                local_path = None
-                if img_bytes and mls_num:
-                    fname = f"{mls_num}.jpg"
-                    fpath = os.path.join(PHOTOS_DIR, fname)
-                    with open(fpath, 'wb') as f:
-                        f.write(img_bytes)
-                    local_path = f"../img/listings/{fname}"
-
-                result = local_path or photo_url
-                l['photo_url'] = result
-                cache[url]     = result
-                fetched += 1
-                if fetched % 5 == 0:
-                    save_photos_cache(cache)
-                    print(f"    {fetched}/{len(to_fetch)} fetched...")
-
-            browser.close()
-    except Exception as e:
-        print(f"  Playwright error: {e}")
-        for l in to_fetch:
-            if 'photo_url' not in l:
-                l['photo_url'] = None
-
+    cache['__visited_urls__'] = visited_urls
     save_photos_cache(cache)
+
+    # Assign photo_url to each listing by MLS number
+    for l in listings:
+        mls = l.get('mls_num', '')
+        l['photo_url'] = cache.get(mls) or None
+
     found = sum(1 for l in listings if l.get('photo_url'))
-    print(f"✓ Photos: {found}/{len(listings)} retrieved ({len(to_fetch)} newly fetched)")
+    print(f"✓ Photos: {found}/{len(listings)} ({newly_saved} newly saved)")
     return listings
 
 
