@@ -537,27 +537,25 @@ def _best_photo_from_page(page, mls_num=None):
 
 def fetch_photo_and_bytes(paragon_url, page, mls_num=None):
     """
-    Load a Paragon listing page, intercept the first property photo response,
-    and return (photo_url, image_bytes). image_bytes is None if capture failed.
+    Load a Paragon listing page, capture all property photo responses,
+    then pick the one that appears FIRST in the DOM (= primary/exterior photo).
+    Returns (photo_url, image_bytes).
     """
-    captured = {'url': None, 'body': None}
+    all_captured = {}  # url -> bytes
 
     def on_response(response):
-        if captured['body'] is not None:
-            return
         url = response.url
         if 'zimg.paragon.ice.com/ParagonImages/Property' not in url:
+            return
+        if url in all_captured:
             return
         low = url.lower()
         if any(k in low for k in PARAGON_PLACEHOLDER_KEYWORDS):
             return
-        if mls_num and mls_num not in url:
-            return
         try:
             body = response.body()
-            if len(body) > 10000:  # real photo, not an error page
-                captured['url']  = url
-                captured['body'] = body
+            if len(body) > 5000:
+                all_captured[url] = body
         except Exception:
             pass
 
@@ -572,12 +570,25 @@ def fetch_photo_and_bytes(paragon_url, page, mls_num=None):
             pass
     page.remove_listener('response', on_response)
 
-    if captured['url']:
-        return captured['url'], captured['body']
+    if not all_captured:
+        return None, None
 
-    # Fallback: DOM inspection (no download)
-    photo_url = _best_photo_from_page(page, mls_num)
-    return photo_url, None
+    # Pick the photo that appears first in DOM order (primary listing photo)
+    try:
+        dom_urls = page.evaluate("""() => {
+            return Array.from(document.querySelectorAll('img'))
+                .map(i => i.src)
+                .filter(s => s.includes('zimg.paragon.ice.com/ParagonImages/Property'));
+        }""")
+        for dom_url in dom_urls:
+            if dom_url in all_captured:
+                return dom_url, all_captured[dom_url]
+    except Exception:
+        pass
+
+    # Fallback: first captured by network order
+    first_url = next(iter(all_captured))
+    return first_url, all_captured[first_url]
 
 def enrich_with_photos(listings, skip_photos=False):
     """Add photo_url to each listing using a persistent cache + Playwright browser."""
