@@ -110,12 +110,35 @@ h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
 
 .disclaimer{margin-top:16px;padding:14px 18px;background:rgba(245,158,11,0.06);border:1px solid rgba(251,191,36,0.15);border-radius:8px;font-size:10px;color:rgba(255,255,255,0.35);line-height:1.8;font-family:'DM Sans',sans-serif;}
 
+/* Tabs */
+.tabs{display:flex;gap:8px;margin-bottom:1.75rem;border-bottom:1px solid var(--border);}
+.tab-btn{padding:10px 4px;margin-bottom:-1px;background:none;border:none;border-bottom:2px solid transparent;color:rgba(255,255,255,0.4);font-family:'Josefin Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;margin-right:20px;}
+.tab-btn:hover{color:rgba(255,255,255,0.7);}
+.tab-btn.active{color:#60A5FA;border-bottom-color:#60A5FA;}
+
+/* Budget Table */
+.budget-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;}
+table.budget-table{border-collapse:collapse;width:100%;min-width:920px;font-family:'DM Sans',sans-serif;}
+table.budget-table th,table.budget-table td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.06);text-align:right;white-space:nowrap;}
+table.budget-table th{position:sticky;top:0;background:#0a0a0a;font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.4);text-align:right;}
+table.budget-table th:first-child,table.budget-table td:first-child{position:sticky;left:0;background:#0a0a0a;text-align:left;font-size:11px;color:rgba(255,255,255,0.6);z-index:2;min-width:190px;}
+table.budget-table td.bt-section{background:rgba(37,99,235,0.08);color:#60A5FA;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;text-align:left;position:static;}
+table.budget-table tr.bt-total td{background:rgba(37,99,235,0.06);font-weight:700;}
+table.budget-table tr.bt-total td:first-child{background:rgba(37,99,235,0.1);}
+table.budget-table input.bt-cell{width:90px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:5px;padding:5px 7px;font-size:11px;font-family:'DM Sans',sans-serif;color:#fff;text-align:right;outline:none;}
+table.budget-table input.bt-cell:focus{border-color:rgba(96,165,250,0.5);}
+table.budget-table span.bt-computed{display:inline-block;min-width:90px;font-size:11px;color:rgba(255,255,255,0.75);font-variant-numeric:tabular-nums;}
+table.budget-table span.bt-computed.negative{color:#F87171;}
+table.budget-table span.bt-computed.positive{color:#34D399;}
+
 @media print{
-  nav,.btn-row,.action-row,.key-banner,.disclaimer,.form-section,.section-label{display:none!important;}
+  nav,.btn-row,.action-row,.key-banner,.disclaimer,.form-section,.section-label,.tabs{display:none!important;}
   body{background:#fff;color:#000;}
   .report-body,.pf-label,.pf-value,.return-label{color:#333!important;}
   .return-val{color:#000!important;}
   #output-section{display:block!important;}
+  table.budget-table th,table.budget-table td,table.budget-table span.bt-computed{color:#000!important;}
+  table.budget-table th:first-child,table.budget-table td:first-child,table.budget-table th{background:#f5f5f5!important;}
 }
 </style>
 </head>
@@ -129,6 +152,13 @@ h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
 <main>
   <h1>Site Evaluator + Proforma</h1>
   <p class="subtitle">Enter a parcel's address, size, zoning, and price. Claude evaluates development feasibility and generates a proforma with estimated costs, returns, and investment metrics.</p>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-btn-ai" onclick="switchTab('ai')">AI Feasibility Report</button>
+    <button class="tab-btn" id="tab-btn-budget" onclick="switchTab('budget')">Phased Development Budget</button>
+  </div>
+
+  <div id="tab-ai">
 
   <div class="key-banner" id="key-banner">
     <div class="key-banner-label">Anthropic API Key</div>
@@ -299,6 +329,66 @@ h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
       DISCLAIMER: This proforma is an AI-generated estimate for preliminary planning purposes only. All figures are approximations based on provided inputs and general South Dakota market data. Do not make investment decisions based solely on this output. Engage a licensed appraiser, contractor, and CPA before committing capital. Kevin Andreson | Keller Williams Realty Black Hills does not warrant the accuracy of any figures herein.
     </div>
   </div>
+
+  </div><!-- /#tab-ai -->
+
+  <div id="tab-budget" style="display:none;">
+    <p class="subtitle" style="margin-top:-8px;">Live phased-development budget — modeled on the Highpointe North format: Crescent Sale + 5 phases, cost buildup, per-phase lot absorption/revenue, and gain/loss. Type in any cell; totals recalculate automatically. <span style="color:rgba(255,255,255,0.2);">(Simplified from the source workbook: land/SWS/engineering/inspection use one rate applied consistently across all phases including Crescent, rather than per-phase manual overrides.)</span></p>
+
+    <div class="form-section">
+      <div class="section-label">Project</div>
+      <div class="field-grid">
+        <div class="field-full"><div class="field-label">Project Name</div><input class="field-input" id="bt-project-name" placeholder="Highpointe North"/></div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="section-label">Rate Assumptions</div>
+      <div class="field-grid">
+        <div><div class="field-label">Land Cost / Acre</div><input class="field-input bt-rate" id="bt-rate-landAcre" type="number" placeholder="12963" oninput="computeAll()"/></div>
+        <div><div class="field-label">SWS Cost / Lot</div><input class="field-input bt-rate" id="bt-rate-swsLot" type="number" placeholder="31500" oninput="computeAll()"/></div>
+        <div><div class="field-label">Engineering / Survey / Pins per Lot</div><input class="field-input bt-rate" id="bt-rate-engLot" type="number" placeholder="1200" oninput="computeAll()"/></div>
+        <div><div class="field-label">Rapid City Inspection per Lot</div><input class="field-input bt-rate" id="bt-rate-inspLot" type="number" placeholder="400" oninput="computeAll()"/></div>
+        <div><div class="field-label">Marketing / Misc (% of Phase Revenue)</div><input class="field-input bt-rate" id="bt-rate-marketPct" type="number" step="0.1" placeholder="7" oninput="computeAll()"/></div>
+        <div><div class="field-label">Interest Rate (annual %)</div><input class="field-input bt-rate" id="bt-rate-interestPct" type="number" step="0.01" placeholder="4.25" oninput="computeAll()"/></div>
+      </div>
+    </div>
+
+    <div class="budget-wrap">
+      <table class="budget-table" id="budget-table"></table>
+    </div>
+
+    <div class="form-section" style="margin-top:1.75rem;">
+      <div class="section-label">Summary</div>
+      <div class="field-grid">
+        <div><div class="field-label">Water Line <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:9px;color:rgba(255,255,255,0.2)">(manual, use negative for a cost)</span></div><input class="field-input" id="bt-summary-waterline" type="number" placeholder="-170000" oninput="computeAll()"/></div>
+        <div><div class="field-label">Mass Grade Entire Site <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:9px;color:rgba(255,255,255,0.2)">(manual, use negative for a cost)</span></div><input class="field-input" id="bt-summary-massgrade" type="number" placeholder="-800000" oninput="computeAll()"/></div>
+      </div>
+    </div>
+
+    <div class="proforma-card">
+      <div class="proforma-section-head">Payback &amp; Debt Reduction (Crescent Sale + Phase 1)</div>
+      <div class="proforma-rows">
+        <div class="proforma-row"><div class="pf-label">Payback to Land</div><div class="pf-value" id="bt-out-payback">$0</div></div>
+        <div class="proforma-row"><div class="pf-label">Potential Profit</div><div class="pf-value" id="bt-out-potentialProfit">$0</div></div>
+        <div class="proforma-row"><div class="pf-label">Water Line</div><div class="pf-value" id="bt-out-waterline">$0</div></div>
+        <div class="proforma-row"><div class="pf-label">Mass Grade Entire Site</div><div class="pf-value" id="bt-out-massgrade">$0</div></div>
+        <div class="proforma-row total"><div class="pf-label">Debt Reduction Potential</div><div class="pf-value" id="bt-out-debtReduction">$0</div></div>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-print" onclick="window.print()">Print / Save as PDF</button>
+      <button class="btn-cp" onclick="copyBudgetReport()">Copy Report Text</button>
+      <button class="btn-reset" onclick="resetBudget()">Clear Budget</button>
+    </div>
+    <div class="status" id="budget-status"></div>
+
+    <div class="disclaimer">
+      This template replicates the structure and formulas of the Highpointe North Phasing Budget workbook for reuse on new deals. Figures are only as accurate as the inputs entered — verify against actual contracts, engineering estimates, and lender terms before relying on them.
+    </div>
+  </div>
+
 </main>
 
 <script>
@@ -581,6 +671,240 @@ function pfRow(r) {
 function copyReport() {
   navigator.clipboard.writeText(lastReportText).then(() => setStatus('Report copied to clipboard.', 'ok'));
 }
+
+// ── Tabs ──────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.getElementById('tab-ai').style.display     = name === 'ai'     ? '' : 'none';
+  document.getElementById('tab-budget').style.display  = name === 'budget' ? '' : 'none';
+  document.getElementById('tab-btn-ai').classList.toggle('active', name === 'ai');
+  document.getElementById('tab-btn-budget').classList.toggle('active', name === 'budget');
+}
+
+// ── Phased Development Budget (Highpointe North template) ──────────────────
+const COLS = ['crescent','p1','p2','p3','p4','p5'];
+const P15  = ['p1','p2','p3','p4','p5'];
+const COL_LABELS = { crescent:'Crescent Sale', p1:'Phase 1', p2:'Phase 2', p3:'Phase 3', p4:'Phase 4', p5:'Phase 5' };
+
+// Default interest financing period (years) per column — matches the source
+// workbook's per-phase interest multipliers (crescent carries none, phase 1
+// runs ~1.5yr, phases 2-5 run ~3yr construction-to-sellout).
+const BT_DEFAULTS = { interestYears: { crescent:0, p1:1.5, p2:3, p3:3, p4:3, p5:3 } };
+
+const BT_ROWS = [
+  { section: 'Lot Count & Acreage' },
+  { key:'lotCount', label:'Lot Count', editable:true, decimals:0, totalType:'p15' },
+  { key:'acres',    label:'Acres',     editable:true, decimals:1, totalType:'all6' },
+
+  { section: 'Development Budget' },
+  { key:'landCost',     label:'Land Cost',                       editable:false, isMoney:true, totalType:'all6' },
+  { key:'sws',          label:'SWS',                             editable:false, isMoney:true, totalType:'all6' },
+  { key:'liftStation',  label:'Lift Station',                    editable:true,  isMoney:true, totalType:'all6' },
+  { key:'engineering',  label:'Engineering / Survey / Pins',     editable:false, isMoney:true, totalType:'all6' },
+  { key:'legal',        label:'Legal',                           editable:true,  isMoney:true, totalType:'all6' },
+  { key:'marketing',    label:'Marketing / Misc',                editable:false, isMoney:true, totalType:'all6' },
+  { key:'interestYears',label:'Interest Period (yrs)',           editable:true,  decimals:1, totalType:'none' },
+  { key:'interest',     label:'Interest Cost',                   editable:false, isMoney:true, totalType:'all6' },
+  { key:'trails',       label:'Trails, Sign, Parks',             editable:true,  isMoney:true, totalType:'all6' },
+  { key:'inspection',   label:'Rapid City Inspection',           editable:false, isMoney:true, totalType:'all6' },
+  { key:'insurance',    label:'Liability Ins &amp; Bond',        editable:true,  isMoney:true, totalType:'all6' },
+  { key:'totalDevCost', label:'Total Development Cost',          editable:false, isMoney:true, totalType:'all6', bold:true },
+  { key:'grandTotal',   label:'Grand Total (Land + Dev)',        editable:false, isMoney:true, totalType:'all6', bold:true },
+
+  { section: 'Sales Revenue' },
+  { key:'lotPrice', label:'Lot Price',            editable:true,  isMoney:true, totalType:'avgP15' },
+  { key:'lotsY1',   label:'Lots Sold — Year 1',   editable:true,  decimals:0,   totalType:'all6' },
+  { key:'lotsY2',   label:'Lots Sold — Year 2',   editable:true,  decimals:0,   totalType:'all6' },
+  { key:'lotsY3',   label:'Lots Sold — Year 3',   editable:true,  decimals:0,   totalType:'all6' },
+  { key:'lotsY4',   label:'Lots Sold — Year 4',   editable:true,  decimals:0,   totalType:'all6' },
+  { key:'lotsY5',   label:'Lots Sold — Year 5',   editable:true,  decimals:0,   totalType:'all6' },
+  { key:'revenueTotal', label:'Revenue Total',    editable:false, isMoney:true, totalType:'p15', bold:true },
+  { key:'tif',      label:'TIF Revenue',          editable:true,  isMoney:true, totalType:'all6' },
+
+  { section: 'Returns' },
+  { key:'gainLoss',     label:'Gain / Loss', editable:false, isMoney:true, totalType:'special', colorize:true, bold:true },
+  { key:'profitPerLot', label:'Profit / Lot',editable:false, isMoney:true, totalType:'special', colorize:true, bold:true },
+];
+
+function btNum(id) {
+  const el = document.getElementById(id);
+  if (!el) return 0;
+  const val = parseFloat(el.value);
+  return isNaN(val) ? 0 : val;
+}
+function btReadRow(key) {
+  const o = {};
+  COLS.forEach(c => o[c] = btNum(`bt-${key}-${c}`));
+  return o;
+}
+function fmtMoney(n) {
+  n = Math.round(n || 0);
+  return (n < 0 ? '-$' : '$') + Math.abs(n).toLocaleString();
+}
+function btSetMoney(id, val, colorize) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = fmtMoney(val);
+  el.className = 'bt-computed' + (val < 0 ? ' negative' : (colorize && val > 0 ? ' positive' : ''));
+}
+function btSetNum(id, val, decimals) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = Number(val || 0).toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  el.className = 'bt-computed';
+}
+
+function buildBudgetTable() {
+  let html = '<thead><tr><th>Field</th>' + COLS.map(c => `<th>${COL_LABELS[c]}</th>`).join('') + '<th>Grand Total</th></tr></thead><tbody>';
+  BT_ROWS.forEach(r => {
+    if (r.section) {
+      html += `<tr><td class="bt-section" colspan="${COLS.length + 2}">${r.section}</td></tr>`;
+      return;
+    }
+    html += `<tr${r.bold ? ' class="bt-total"' : ''}><td>${r.label}</td>`;
+    COLS.forEach(c => {
+      if (r.editable) {
+        const dv = (BT_DEFAULTS[r.key] && BT_DEFAULTS[r.key][c] !== undefined) ? BT_DEFAULTS[r.key][c] : '';
+        html += `<td><input class="bt-cell" type="number" step="${r.decimals === 0 ? '1' : 'any'}" id="bt-${r.key}-${c}" value="${dv}" oninput="computeAll()"/></td>`;
+      } else {
+        html += `<td><span class="bt-computed" id="bt-${r.key}-${c}">&mdash;</span></td>`;
+      }
+    });
+    html += `<td><span class="bt-computed" id="bt-total-${r.key}">&mdash;</span></td></tr>`;
+  });
+  html += '</tbody>';
+  document.getElementById('budget-table').innerHTML = html;
+}
+
+function computeAll() {
+  const rate = {
+    landAcre: btNum('bt-rate-landAcre'), swsLot: btNum('bt-rate-swsLot'), engLot: btNum('bt-rate-engLot'),
+    inspLot: btNum('bt-rate-inspLot'), marketPct: btNum('bt-rate-marketPct'), interestPct: btNum('bt-rate-interestPct'),
+  };
+  const lotCount = btReadRow('lotCount'), acres = btReadRow('acres'), liftStation = btReadRow('liftStation'),
+        legal = btReadRow('legal'), interestYears = btReadRow('interestYears'), trails = btReadRow('trails'),
+        insurance = btReadRow('insurance'), lotPrice = btReadRow('lotPrice'), tif = btReadRow('tif'),
+        y1 = btReadRow('lotsY1'), y2 = btReadRow('lotsY2'), y3 = btReadRow('lotsY3'), y4 = btReadRow('lotsY4'), y5 = btReadRow('lotsY5');
+
+  const landCost = {}, sws = {}, engineering = {}, inspection = {}, revenueTotal = {}, marketing = {}, interest = {}, totalDevCost = {}, grandTotal = {}, gainLoss = {}, profitPerLot = {};
+  COLS.forEach(c => {
+    landCost[c] = rate.landAcre * acres[c];
+    sws[c] = rate.swsLot * lotCount[c];
+    engineering[c] = rate.engLot * lotCount[c];
+    inspection[c] = rate.inspLot * lotCount[c];
+    revenueTotal[c] = (y1[c] + y2[c] + y3[c] + y4[c] + y5[c]) * lotPrice[c];
+    marketing[c] = revenueTotal[c] * rate.marketPct / 100;
+  });
+  COLS.forEach(c => {
+    interest[c] = (landCost[c] + sws[c] + liftStation[c] + engineering[c]) * rate.interestPct / 100 * interestYears[c];
+    totalDevCost[c] = sws[c] + liftStation[c] + engineering[c] + legal[c] + marketing[c] + interest[c] + trails[c] + inspection[c] + insurance[c];
+    grandTotal[c] = landCost[c] + totalDevCost[c];
+    gainLoss[c] = revenueTotal[c] - grandTotal[c] + tif[c];
+    profitPerLot[c] = lotCount[c] ? gainLoss[c] / lotCount[c] : 0;
+  });
+
+  const M = { landCost, sws, engineering, inspection, revenueTotal, marketing, interest, totalDevCost, grandTotal, gainLoss, profitPerLot };
+  Object.keys(M).forEach(key => {
+    COLS.forEach(c => btSetMoney(`bt-${key}-${c}`, M[key][c], key === 'gainLoss' || key === 'profitPerLot'));
+  });
+
+  const sumAll6 = o => COLS.reduce((s, c) => s + (o[c] || 0), 0);
+  const sumP15  = o => P15.reduce((s, c) => s + (o[c] || 0), 0);
+
+  btSetMoney('bt-total-landCost', sumAll6(landCost));
+  btSetMoney('bt-total-sws', sumAll6(sws));
+  btSetMoney('bt-total-liftStation', sumAll6(liftStation));
+  btSetMoney('bt-total-engineering', sumAll6(engineering));
+  btSetMoney('bt-total-legal', sumAll6(legal));
+  btSetMoney('bt-total-marketing', sumAll6(marketing));
+  btSetMoney('bt-total-interest', sumAll6(interest));
+  btSetMoney('bt-total-trails', sumAll6(trails));
+  btSetMoney('bt-total-inspection', sumAll6(inspection));
+  btSetMoney('bt-total-insurance', sumAll6(insurance));
+  btSetMoney('bt-total-totalDevCost', sumAll6(totalDevCost));
+  btSetMoney('bt-total-grandTotal', sumAll6(grandTotal));
+  btSetMoney('bt-total-tif', sumAll6(tif));
+
+  btSetNum('bt-total-lotCount', sumP15(lotCount), 0);
+  btSetNum('bt-total-acres', sumAll6(acres), 1);
+  btSetNum('bt-total-lotsY1', sumAll6(y1), 0);
+  btSetNum('bt-total-lotsY2', sumAll6(y2), 0);
+  btSetNum('bt-total-lotsY3', sumAll6(y3), 0);
+  btSetNum('bt-total-lotsY4', sumAll6(y4), 0);
+  btSetNum('bt-total-lotsY5', sumAll6(y5), 0);
+
+  const lotCountTotal = sumP15(lotCount);
+  const revenueTotalTotal = sumP15(revenueTotal);
+  const grandTotalTotal = sumAll6(grandTotal);
+  const tifTotal = sumAll6(tif);
+  const gainLossTotal = revenueTotalTotal - grandTotalTotal + tifTotal;
+  const profitPerLotTotal = lotCountTotal ? gainLossTotal / lotCountTotal : 0;
+  btSetMoney('bt-total-revenueTotal', revenueTotalTotal);
+  btSetMoney('bt-total-gainLoss', gainLossTotal, true);
+  btSetMoney('bt-total-profitPerLot', profitPerLotTotal, true);
+
+  const lotPriceNZ = P15.filter(c => lotPrice[c] > 0);
+  const lotPriceAvg = lotPriceNZ.length ? lotPriceNZ.reduce((s, c) => s + lotPrice[c], 0) / lotPriceNZ.length : 0;
+  btSetMoney('bt-total-lotPrice', lotPriceAvg);
+
+  const payback = landCost.crescent + landCost.p1;
+  const potentialProfit = gainLoss.crescent + gainLoss.p1;
+  const waterline = btNum('bt-summary-waterline');
+  const massgrade = btNum('bt-summary-massgrade');
+  const debtReduction = payback + potentialProfit + waterline + massgrade;
+  btSetMoney('bt-out-payback', payback);
+  btSetMoney('bt-out-potentialProfit', potentialProfit, true);
+  btSetMoney('bt-out-waterline', waterline, true);
+  btSetMoney('bt-out-massgrade', massgrade, true);
+  btSetMoney('bt-out-debtReduction', debtReduction, true);
+
+  window.lastBudgetModel = { landCost, sws, liftStation, engineering, legal, marketing, interest, trails, inspection, insurance, totalDevCost, grandTotal, revenueTotal, tif, gainLoss, profitPerLot, payback, potentialProfit, debtReduction };
+}
+
+function resetBudget() {
+  document.querySelectorAll('#budget-table input.bt-cell').forEach(el => {
+    const parts = el.id.split('-'); // bt-<key>-<col>
+    const col = parts.pop();
+    const key = parts.slice(1).join('-');
+    el.value = (BT_DEFAULTS[key] && BT_DEFAULTS[key][col] !== undefined) ? BT_DEFAULTS[key][col] : '';
+  });
+  document.querySelectorAll('.bt-rate').forEach(el => el.value = '');
+  document.getElementById('bt-project-name').value = '';
+  document.getElementById('bt-summary-waterline').value = '';
+  document.getElementById('bt-summary-massgrade').value = '';
+  computeAll();
+  const el = document.getElementById('budget-status');
+  el.textContent = 'Cleared.'; el.className = 'status ok';
+}
+
+function copyBudgetReport() {
+  const m = window.lastBudgetModel;
+  if (!m) return;
+  const name = document.getElementById('bt-project-name').value.trim() || 'Untitled Project';
+  const grandTotalAll = COLS.reduce((s, c) => s + m.grandTotal[c], 0);
+  const revenueAll = P15.reduce((s, c) => s + m.revenueTotal[c], 0);
+  const lines = [
+    'PHASED DEVELOPMENT BUDGET — ' + name,
+    'Kevin Andreson | Keller Williams Realty Black Hills',
+    '',
+    'Grand Total (Land + Dev): ' + fmtMoney(grandTotalAll),
+    'Revenue Total (Phase 1-5): ' + fmtMoney(revenueAll),
+    'Payback to Land (Crescent + Phase 1): ' + fmtMoney(m.payback),
+    'Potential Profit (Crescent + Phase 1): ' + fmtMoney(m.potentialProfit),
+    'Debt Reduction Potential: ' + fmtMoney(m.debtReduction),
+    '',
+    'Per-Phase Gain / Loss:',
+    ...COLS.map(c => '  ' + COL_LABELS[c] + ': ' + fmtMoney(m.gainLoss[c]) + '  (' + fmtMoney(m.profitPerLot[c]) + '/lot)'),
+  ].join('\n');
+  navigator.clipboard.writeText(lines).then(() => {
+    const el = document.getElementById('budget-status');
+    el.textContent = 'Budget report copied to clipboard.'; el.className = 'status ok';
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  buildBudgetTable();
+  computeAll();
+});
 </script>
 </body>
 </html>
