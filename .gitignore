@@ -13,6 +13,9 @@ agents/hwy1416_newsletter/images/
 agents/hwy1416_newsletter/__pycache__/
 agents/loopnet_parser/config.py
 agents/loopnet_parser/__pycache__/
+agents/hwy1416_dev_watch/config.py
+agents/hwy1416_dev_watch/state.json
+agents/hwy1416_dev_watch/__pycache__/
 preview_report.html
 .claude-flow/
 **/.claude-flow/
