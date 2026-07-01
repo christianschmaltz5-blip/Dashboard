@@ -14,7 +14,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/b1e51e75-ee66-4e3e-82b6-eb2aacbea1d7",
       "alert_date": "2026-06-30",
       "search_name": "Rapid City Residential $350k-500k",
-      "photo_url": "img/listings/89286.jpg"
+      "photo_url": "../img/listings/89286.jpg"
     },
     {
       "status": "Active",
@@ -56,7 +56,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/3b0d0113-cf92-4d3a-aefa-b4de91f14de6",
       "alert_date": "2026-06-30",
       "search_name": "$330,000",
-      "photo_url": "img/listings/89277.jpg"
+      "photo_url": "../img/listings/89277.jpg"
     },
     {
       "status": "Active",
@@ -84,7 +84,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/6eb15d04-dd14-4180-8303-bbaf670a38d2",
       "alert_date": "2026-06-30",
       "search_name": "Rapid City Residential $100k-350k",
-      "photo_url": "img/listings/88931.jpg"
+      "photo_url": "../img/listings/88931.jpg"
     },
     {
       "status": "Active",
@@ -140,7 +140,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/83743a80-0b42-4a08-afcc-c9557b095c0e",
       "alert_date": "2026-06-29",
       "search_name": "$310,000",
-      "photo_url": "img/listings/88522.jpg"
+      "photo_url": "../img/listings/88522.jpg"
     },
     {
       "status": "Active",
@@ -196,7 +196,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/16970185-1102-4230-80b9-039550628e7f",
       "alert_date": "2026-06-29",
       "search_name": "$369,900",
-      "photo_url": "img/listings/89257.jpg"
+      "photo_url": "../img/listings/89257.jpg"
     },
     {
       "status": "Active",
@@ -210,7 +210,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/befba932-4deb-4b8d-bbe3-5e15ba65bfb6",
       "alert_date": "2026-06-28",
       "search_name": "Rapid City Residential $350k-500k",
-      "photo_url": "img/listings/88865.jpg"
+      "photo_url": "../img/listings/88865.jpg"
     },
     {
       "status": "Active",
@@ -224,7 +224,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/213ca50d-1c69-4c51-b400-c55c6801d630",
       "alert_date": "2026-06-28",
       "search_name": "Rapid City Residential $100k-350k",
-      "photo_url": "img/listings/89272.jpg"
+      "photo_url": "../img/listings/89272.jpg"
     },
     {
       "status": "Active",
@@ -252,7 +252,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/ceee656d-b607-47c5-952e-b7072b096091",
       "alert_date": "2026-06-27",
       "search_name": "Rapid City Residential $350k-500k",
-      "photo_url": "img/listings/89258.jpg"
+      "photo_url": "../img/listings/89258.jpg"
     },
     {
       "status": "Active",
@@ -280,7 +280,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/a8e6a560-a950-4bbf-9068-fc5f4a3fe7c5",
       "alert_date": "2026-06-27",
       "search_name": "$335,000",
-      "photo_url": "img/listings/89263.jpg"
+      "photo_url": "../img/listings/89263.jpg"
     },
     {
       "status": "Active",
@@ -308,7 +308,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/0982f93a-a2cf-4613-947c-64efc6c69493",
       "alert_date": "2026-06-27",
       "search_name": "Rapid City Residential $100k-350k",
-      "photo_url": "img/listings/89267.jpg"
+      "photo_url": "../img/listings/89267.jpg"
     },
     {
       "status": "Active",
@@ -350,7 +350,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/07df8d58-e85d-421b-839b-cef2a47f8281",
       "alert_date": "2026-06-26",
       "search_name": "Rapid City Residential $350k-500k",
-      "photo_url": "img/listings/89248.jpg"
+      "photo_url": "../img/listings/89248.jpg"
     },
     {
       "status": "Active",
@@ -378,7 +378,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/d8a10005-e2ac-43c0-b8d9-596589b38af0",
       "alert_date": "2026-06-26",
       "search_name": "$484,900",
-      "photo_url": "img/listings/89239.jpg"
+      "photo_url": "../img/listings/89239.jpg"
     },
     {
       "status": "Active",
@@ -406,7 +406,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/fd52f68c-98f4-4273-9ae4-56132ef93dde",
       "alert_date": "2026-06-26",
       "search_name": "$414,495",
-      "photo_url": "img/listings/89096.jpg"
+      "photo_url": "../img/listings/89096.jpg"
     },
     {
       "status": "Active",
@@ -420,7 +420,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/c4145dd6-9094-42a0-96ee-9afa2dc5ea14",
       "alert_date": "2026-06-26",
       "search_name": "$765,000",
-      "photo_url": "img/listings/89242.jpg"
+      "photo_url": "../img/listings/89242.jpg"
     },
     {
       "status": "Active",
@@ -462,7 +462,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/33f36118-cd20-4275-8cea-004a1fc4ae8e",
       "alert_date": "2026-06-26",
       "search_name": "$624,900",
-      "photo_url": "img/listings/89210.jpg"
+      "photo_url": "../img/listings/89210.jpg"
     },
     {
       "status": "Active",
@@ -476,7 +476,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/ebbf986e-3aa4-4edc-8d93-a02c94070792",
       "alert_date": "2026-06-26",
       "search_name": "Rapid City Residential $100k-350k",
-      "photo_url": "img/listings/89241.jpg"
+      "photo_url": "../img/listings/89241.jpg"
     },
     {
       "status": "Active",
@@ -532,7 +532,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/1a1fadcf-866b-4f30-ad37-dd3a9b35806e",
       "alert_date": "2026-06-25",
       "search_name": "Rapid City Commercial & Land",
-      "photo_url": "img/listings/89225.jpg"
+      "photo_url": "../img/listings/89225.jpg"
     },
     {
       "status": "Active",
@@ -560,7 +560,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/76e4db4e-cad5-4031-8e7b-e7a44ddc0a78",
       "alert_date": "2026-06-25",
       "search_name": "$747,000",
-      "photo_url": "img/listings/87205.jpg"
+      "photo_url": "../img/listings/87205.jpg"
     },
     {
       "status": "Active",
@@ -574,7 +574,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/ee3c67b0-c9a2-4f81-94b3-baff8e2480d0",
       "alert_date": "2026-06-25",
       "search_name": "Rapid City Residential $100k-350k",
-      "photo_url": "img/listings/88766.jpg"
+      "photo_url": "../img/listings/88766.jpg"
     },
     {
       "status": "Active",
@@ -602,7 +602,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/2eb6dd44-6498-46e8-97e2-52f22bdfe41c",
       "alert_date": "2026-06-25",
       "search_name": "Rapid City Residential $350k-500k",
-      "photo_url": "img/listings/89228.jpg"
+      "photo_url": "../img/listings/89228.jpg"
     },
     {
       "status": "Active",
@@ -658,7 +658,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/9b271b3d-10cf-4f26-bde7-aa9030f668b8",
       "alert_date": "2026-06-25",
       "search_name": "$1,849,000",
-      "photo_url": "img/listings/89233.jpg"
+      "photo_url": "../img/listings/89233.jpg"
     },
     {
       "status": "Active",
@@ -672,7 +672,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/9ee71a68-5442-45f3-b2a3-067075c02778",
       "alert_date": "2026-06-25",
       "search_name": "$950,000",
-      "photo_url": "img/listings/88025.jpg"
+      "photo_url": "../img/listings/88025.jpg"
     },
     {
       "status": "Active",
@@ -686,7 +686,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/a6cd2984-cf87-4a0c-99ce-369595eddc84",
       "alert_date": "2026-06-25",
       "search_name": "$1,150,000",
-      "photo_url": "img/listings/89236.jpg"
+      "photo_url": "../img/listings/89236.jpg"
     },
     {
       "status": "Active",
@@ -714,7 +714,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/7383a48b-010e-45f7-9e12-215de38b8d82",
       "alert_date": "2026-06-24",
       "search_name": "Rapid City Residential $350k-500k",
-      "photo_url": "img/listings/89214.jpg"
+      "photo_url": "../img/listings/89214.jpg"
     },
     {
       "status": "Active",
@@ -742,7 +742,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/b39323c6-30db-489f-81a5-f863e3d2d7c5",
       "alert_date": "2026-06-24",
       "search_name": "$220,000",
-      "photo_url": "img/listings/89219.jpg"
+      "photo_url": "../img/listings/89219.jpg"
     },
     {
       "status": "Active",
@@ -756,7 +756,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/a5fdec9d-e647-4f1d-ad9b-5d5545aad55e",
       "alert_date": "2026-06-24",
       "search_name": "$979,500",
-      "photo_url": "img/listings/87856.jpg"
+      "photo_url": "../img/listings/87856.jpg"
     },
     {
       "status": "Active",
@@ -770,7 +770,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/31570835-0f8f-4106-9685-7bab9d1bd4dd",
       "alert_date": "2026-06-24",
       "search_name": "Rapid City Residential $100k-350k",
-      "photo_url": "img/listings/88728.jpg"
+      "photo_url": "../img/listings/88728.jpg"
     },
     {
       "status": "Active",
@@ -784,7 +784,7 @@ window.PARAGON_LISTINGS = {
       "paragon_url": "https://gbhar.paragonrels.com/CCR/KevinAndreson/Account/DetailTokenLogon/8e9bc9da-3537-4aea-ae7a-09c97259bc36/622881f6-32a2-4846-b4d4-b3d90ca737e1",
       "alert_date": "2026-06-24",
       "search_name": "Manufactured Home w/Land",
-      "photo_url": "img/listings/89221.jpg"
+      "photo_url": "../img/listings/89221.jpg"
     }
   ],
   "summary": {

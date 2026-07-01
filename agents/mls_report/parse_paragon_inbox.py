@@ -630,7 +630,7 @@ def enrich_with_photos(listings, skip_photos=False):
                     fpath = os.path.join(PHOTOS_DIR, fname)
                     with open(fpath, 'wb') as f:
                         f.write(img_bytes)
-                    local_path = f"img/listings/{fname}"
+                    local_path = f"../img/listings/{fname}"
 
                 result = local_path or photo_url
                 l['photo_url'] = result
