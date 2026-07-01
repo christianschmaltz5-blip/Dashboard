@@ -419,8 +419,8 @@ function addProperty(data = {}) {
         <input class="field-input" id="p${id}-price" placeholder="$3,750,000" value="${data.price||''}"/>
       </div>
       <div>
-        <div class="field-label">Key Specs</div>
-        <input class="field-input" id="p${id}-specs" placeholder="24.75 AC · C-2 · All Utilities" value="${data.specs||''}"/>
+        <div class="field-label">Key Specs <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;font-size:9px;">(shown as a data table — use Label: Value pairs)</span></div>
+        <input class="field-input" id="p${id}-specs" placeholder="Acreage: 24.75± · Zoning: C-2 · Utilities: Available at site" value="${data.specs||''}"/>
       </div>
       <div class="prop-grid-full">
         <div class="field-label">Photo URL <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;font-size:9px;">(right-click LoopNet photo → Copy image address)</span></div>
@@ -465,17 +465,20 @@ async function claudeCopy(prop, introMsg) {
     prop.notes  ? prop.notes : '',
   ].filter(Boolean).join(', ');
 
-  const prompt = `You are a commercial real estate marketing copywriter for Kevin Andreson at Keller Williams Realty Black Hills, Rapid City SD.
-
-Write email newsletter copy for this listing. Recipients are apartment developers, commercial investors, and operators in the Black Hills/Ellsworth AFB corridor.
+  const prompt = `You are writing an institutional-style investment offering summary for Kevin Andreson, a commercial real estate advisor at Keller Williams Realty Black Hills, Rapid City SD. The recipients are serious commercial investors, developers, and operators — model the tone on how CBRE/JLL-style offering memorandums write, not a generic listing flyer.
 
 Property: ${detail}
 Context: ${introMsg || 'No additional context.'}
 
+Rules:
+- Never use vague adjectives like "exceptional," "prime," "incredible," or "amazing." Every claim must be a specific, checkable fact (a number, a named place, a named driver) — if you don't have one, state the plain fact instead of hedging with an adjective.
+- Lead with the investment thesis (why this deal, why now), not just a property description.
+- If market context is available (proximity to named employers/infrastructure, growth drivers), cite it specifically rather than generically.
+
 Return ONLY a JSON object:
-- headline: 6-10 word ALL CAPS headline, investment-focused
-- copy: 2-3 sentences. Lead with the strongest investment angle. Use specific numbers.
-- cta: one punchy call-to-action sentence
+- headline: 6-10 word headline stating the investment thesis in plain terms (title case, not ALL CAPS)
+- copy: 2-3 sentences. Lead with the strongest specific, checkable fact. No filler adjectives.
+- cta: one specific next-step sentence (e.g. requesting a package, a call, a site tour) — not a generic "contact us"
 
 Output only valid JSON, no other text.`;
 
@@ -506,12 +509,20 @@ Output only valid JSON, no other text.`;
   return JSON.parse(match[0]);
 }
 
-// ── Email HTML builder ────────────────────────────────────────────────────────
-function specBadges(specs) {
+// ── Email HTML builder (navy/gold institutional design) ────────────────────────
+const NAVY = '#0B1C2E', NAVY_2 = '#14283D', GOLD = '#C9A961', GOLD_DIM = '#9C8557', BODY_GRAY = '#334155', MUTED = '#64748B', LINE = '#E2E8F0', SERIF = "Georgia,'Times New Roman',serif";
+
+function snapshotRows(specs) {
   if (!specs) return '';
-  return specs.split(/[·|,]/).map(s => s.trim()).filter(Boolean).map(s =>
-    `<span style="display:inline-block;background:#EFF6FF;border:1px solid #BFDBFE;color:#1E40AF;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;margin:0 5px 5px 0;letter-spacing:0.04em;text-transform:uppercase;">${s}</span>`
-  ).join('');
+  const parts = specs.split(/[·|,]/).map(s => s.trim()).filter(Boolean);
+  return parts.map(s => {
+    const [label, ...rest] = s.split(':');
+    const val = rest.length ? rest.join(':').trim() : '';
+    return `<tr>
+      <td style="padding:8px 0;border-bottom:1px solid ${LINE};font-size:10px;font-weight:bold;letter-spacing:0.06em;text-transform:uppercase;color:${MUTED};width:38%;">${val ? label.trim() : ''}</td>
+      <td style="padding:8px 0;border-bottom:1px solid ${LINE};font-size:12px;color:${BODY_GRAY};">${val || s}</td>
+    </tr>`;
+  }).join('');
 }
 
 function buildNewsletterHTML(listings, introMsg, devNewsText) {
@@ -519,37 +530,39 @@ function buildNewsletterHTML(listings, introMsg, devNewsText) {
 
   const intro = introMsg ? `
   <tr><td style="padding:0 28px 20px;">
-    <p style="margin:0;font-size:14px;line-height:1.75;color:#475569;">${introMsg}</p>
+    <p style="margin:0;font-size:14px;line-height:1.8;color:${BODY_GRAY};">${introMsg}</p>
   </td></tr>` : '';
 
   const devItems = (devNewsText || '').split('\n').map(s => s.replace(/^[·\-\*]\s*/, '').trim()).filter(Boolean);
   const devNews = devItems.length ? `
   <tr><td style="padding:0 28px 24px;">
-    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:18px 22px;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F8FAFC;border:1px solid ${LINE};border-radius:6px;padding:18px 22px;">
       <tr><td>
-        <p style="margin:0 0 12px;font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#64748B;">Development Update</p>
-        ${devItems.map(item => `<p style="margin:0 0 8px;font-size:12px;line-height:1.7;color:#334155;padding-left:14px;position:relative;"><span style="position:absolute;left:0;color:#1B3A6B;font-weight:900;">·</span>${item}</p>`).join('')}
+        <p style="margin:0 0 12px;font-size:10px;font-weight:bold;letter-spacing:0.14em;text-transform:uppercase;color:${MUTED};">Market &amp; Development Update</p>
+        ${devItems.map(item => `<p style="margin:0 0 8px;font-size:12px;line-height:1.7;color:${BODY_GRAY};padding-left:14px;position:relative;"><span style="position:absolute;left:0;color:${GOLD_DIM};font-weight:900;">&middot;</span>${item}</p>`).join('')}
       </td></tr>
     </table>
   </td></tr>` : '';
 
   const cards = listings.map(l => {
     const photo  = l.photo ? `<tr><td style="padding:0;"><img src="${l.photo}" width="620" style="display:block;width:100%;max-height:300px;object-fit:cover;" alt=""/></td></tr>` : '';
-    const price  = l.price ? `<span style="display:inline-block;background:#1B3A6B;color:#fff;font-size:18px;font-weight:900;padding:6px 16px;border-radius:6px;letter-spacing:0.02em;margin-bottom:10px;">${l.price}</span>` : '';
-    const badges = specBadges(l.specs) ? `<div style="margin:0 0 14px;">${specBadges(l.specs)}</div>` : '';
+    const price  = l.price ? `<p style="margin:0 0 12px;font-family:${SERIF};font-size:20px;font-weight:bold;color:${NAVY};">${l.price}</p>` : '';
+    const snapshot = snapshotRows(l.specs) ? `
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:2px 0 16px;">${snapshotRows(l.specs)}</table>` : '';
     return `
   <tr><td style="padding:0 0 28px;">
-    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #E2E8F0;border-radius:10px;overflow:hidden;background:#fff;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid ${LINE};border-radius:4px;overflow:hidden;background:#fff;">
       ${photo}
-      <tr><td style="background:#0F172A;padding:16px 22px;">
-        <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#60A5FA;">${l.name}</p>
-        <p style="margin:6px 0 0;font-size:15px;font-weight:900;color:#fff;letter-spacing:0.04em;text-transform:uppercase;line-height:1.2;">${l.headline}</p>
+      <tr><td style="height:3px;background:${GOLD};line-height:3px;font-size:0;">&nbsp;</td></tr>
+      <tr><td style="background:${NAVY};padding:18px 22px;">
+        <p style="margin:0;font-size:10px;font-weight:bold;letter-spacing:0.14em;text-transform:uppercase;color:${GOLD};">${l.name}</p>
+        <p style="margin:8px 0 0;font-family:${SERIF};font-size:17px;font-weight:bold;color:#fff;line-height:1.3;">${l.headline}</p>
       </td></tr>
-      <tr><td style="padding:18px 22px 20px;">
+      <tr><td style="padding:20px 22px 22px;">
         ${price}
-        ${badges}
-        <p style="margin:0 0 16px;font-size:13px;line-height:1.75;color:#334155;">${l.copy}</p>
-        <a href="mailto:arecblackhills@gmail.com?subject=Inquiry — ${encodeURIComponent(l.name)}" style="display:inline-block;background:#1B3A6B;color:#fff;font-size:12px;font-weight:700;letter-spacing:0.06em;text-decoration:none;padding:10px 22px;border-radius:5px;">${l.cta}</a>
+        ${snapshot}
+        <p style="margin:0 0 16px;font-size:13px;line-height:1.8;color:${BODY_GRAY};">${l.copy}</p>
+        <a href="mailto:arecblackhills@gmail.com?subject=Inquiry — ${encodeURIComponent(l.name)}" style="display:inline-block;background:${NAVY};color:#fff;font-size:12px;font-weight:bold;letter-spacing:0.06em;text-transform:uppercase;text-decoration:none;padding:11px 22px;border-radius:3px;border:1px solid ${GOLD};">${l.cta}</a>
       </td></tr>
     </table>
   </td></tr>`;
@@ -559,36 +572,37 @@ function buildNewsletterHTML(listings, introMsg, devNewsText) {
 <html><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <style>@media print{body{margin:0;padding:0;}}</style>
 </head>
-<body style="margin:0;padding:0;background:#F1F5F9;font-family:Arial,Helvetica,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F1F5F9;">
+<body style="margin:0;padding:0;background:#EEF1F5;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#EEF1F5;">
 <tr><td align="center" style="padding:24px 12px;">
-<table width="620" cellpadding="0" cellspacing="0" border="0" style="max-width:620px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-  <tr><td style="background:#0F172A;padding:18px 28px;">
+<table width="620" cellpadding="0" cellspacing="0" border="0" style="max-width:620px;background:#fff;border-radius:4px;overflow:hidden;box-shadow:0 4px 28px rgba(11,28,46,0.12);">
+  <tr><td style="background:${NAVY};padding:14px 28px;">
     <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
-      <td style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#94A3B8;">KELLER WILLIAMS REALTY BLACK HILLS</td>
-      <td align="right" style="font-size:11px;color:#475569;letter-spacing:0.04em;">Kevin Andreson</td>
+      <td style="font-size:11px;font-weight:bold;letter-spacing:0.14em;text-transform:uppercase;color:#fff;">Keller Williams Realty Black Hills</td>
+      <td align="right" style="font-size:10px;font-weight:bold;letter-spacing:0.18em;text-transform:uppercase;color:${GOLD};">Investor Update</td>
     </tr></table>
   </td></tr>
-  <tr><td style="background:#1B3A6B;padding:22px 28px 18px;">
-    <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#93C5FD;">${month} Featured Listings</p>
-    <p style="margin:0;font-size:22px;font-weight:900;color:#fff;line-height:1.2;">Black Hills Commercial Properties</p>
-    <p style="margin:6px 0 0;font-size:12px;color:rgba(255,255,255,0.55);">Rapid City · Box Elder · Black Hills Region, South Dakota</p>
+  <tr><td style="background:${NAVY};padding:8px 28px 24px;">
+    <p style="margin:0 0 6px;font-size:10px;font-weight:bold;letter-spacing:0.16em;text-transform:uppercase;color:${GOLD};">${month} Featured Opportunities</p>
+    <p style="margin:0;font-family:${SERIF};font-size:23px;font-weight:bold;color:#fff;line-height:1.3;">Black Hills Commercial Real Estate</p>
+    <p style="margin:8px 0 0;font-size:12px;color:#9FB3C8;">Rapid City &nbsp;&middot;&nbsp; Box Elder &nbsp;&middot;&nbsp; Black Hills Region, South Dakota</p>
   </td></tr>
   ${intro}
   ${devNews}
   <tr><td style="padding:24px 24px 8px;">
     <table width="100%" cellpadding="0" cellspacing="0" border="0">${cards}</table>
   </td></tr>
-  <tr><td style="background:#0F172A;padding:18px 28px;border-top:1px solid #1E293B;">
+  <tr><td style="background:${NAVY};padding:22px 28px;border-top:2px solid ${GOLD};">
     <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
       <td>
-        <p style="margin:0;font-size:13px;font-weight:700;color:#fff;">Kevin Andreson</p>
-        <p style="margin:3px 0 0;font-size:11px;color:#64748B;">Keller Williams Realty Black Hills &nbsp;·&nbsp;
-        <a href="mailto:arecblackhills@gmail.com" style="color:#60A5FA;text-decoration:none;">arecblackhills@gmail.com</a> &nbsp;·&nbsp; 605-646-5409</p>
+        <p style="margin:0;font-family:${SERIF};font-size:14px;font-weight:bold;color:#fff;">Kevin Andreson</p>
+        <p style="margin:3px 0 0;font-size:11px;color:${GOLD_DIM};letter-spacing:0.04em;">Commercial Real Estate Advisor</p>
+        <p style="margin:6px 0 0;font-size:11px;color:#9FB3C8;">Keller Williams Realty Black Hills &nbsp;&middot;&nbsp;
+        <a href="mailto:arecblackhills@gmail.com" style="color:${GOLD};text-decoration:none;">arecblackhills@gmail.com</a> &nbsp;&middot;&nbsp; 605-646-5409</p>
       </td>
-      <td align="right"><p style="margin:0;font-size:10px;color:#475569;">KWBLACKHILLS.COM</p></td>
+      <td align="right" valign="top"><p style="margin:0;font-size:10px;color:#9FB3C8;">KWBLACKHILLS.COM</p></td>
     </tr></table>
-    <p style="margin:14px 0 0;font-size:9px;color:#475569;line-height:1.6;">You are receiving this as part of our commercial real estate investor network. Reply "unsubscribe" to be removed.</p>
+    <p style="margin:16px 0 0;font-size:9px;color:#5C7691;line-height:1.7;">The information contained herein has been obtained from sources believed reliable but has not been independently verified; no representation is made as to its accuracy or completeness. You are receiving this as part of our commercial real estate investor network. Reply "unsubscribe" to be removed.</p>
   </td></tr>
 </table>
 </td></tr>
@@ -677,7 +691,7 @@ function loadDevNews() {
 // ── Init ──────────────────────────────────────────────────────────────────────
 loadKey();
 loadDevNews();
-addProperty({ name: 'Highway 1416, Box Elder SD', price: '$3,750,000', specs: '24.75 AC · C-2 · All Utilities · Hwy Frontage' });
+addProperty({ name: 'Highway 1416, Box Elder SD', price: '$3.75M', specs: 'Acreage: 24.75± · Zoning: C-2 · Frontage: ~1,200 ft · Utilities: Available at site' });
 </script>
 </body>
 </html>
