@@ -568,30 +568,35 @@ def fetch_photo_and_bytes(paragon_url, page, mls_num=None):
             time.sleep(3)
         except Exception:
             pass
+
+    # Click the listing's thumbnail to trigger full-size photo load
+    if mls_num:
+        try:
+            sel = f'img[src*="ParagonImages/Property"][src*="{mls_num}"]'
+            thumb = page.locator(sel).first
+            if thumb.count() > 0:
+                thumb.click(timeout=3000)
+                page.wait_for_load_state('networkidle', timeout=8000)
+        except Exception:
+            pass
+
     page.remove_listener('response', on_response)
 
     if not all_captured:
         return None, None
 
-    # Pick the photo with the LARGEST rendered area — the main listing photo
-    # is always the biggest element; sidebar/thumbnail images of other listings are small
-    try:
-        dom_imgs = page.evaluate("""() => {
-            return Array.from(document.querySelectorAll('img'))
-                .filter(i => i.src.includes('zimg.paragon.ice.com/ParagonImages/Property'))
-                .map(i => {
-                    const r = i.getBoundingClientRect();
-                    return {src: i.src, area: r.width * r.height};
-                })
-                .sort((a, b) => b.area - a.area);
-        }""")
-        for img in dom_imgs:
-            if img['src'] in all_captured:
-                return img['src'], all_captured[img['src']]
-    except Exception:
-        pass
+    # Only accept photos whose URL contains THIS listing's MLS number.
+    # This guarantees we never show a neighbour listing's photo.
+    if mls_num:
+        mls_photos = {u: b for u, b in all_captured.items() if mls_num in u}
+        if mls_photos:
+            # Among confirmed-correct photos, pick the largest (best quality)
+            best = max(mls_photos, key=lambda u: len(mls_photos[u]))
+            return best, mls_photos[best]
+        # No MLS-matching photo found — page loaded wrong listing, return nothing
+        return None, None
 
-    # Fallback: largest captured image by byte size (bigger file = main photo)
+    # No MLS number available: largest captured by byte size
     best_url = max(all_captured, key=lambda u: len(all_captured[u]))
     return best_url, all_captured[best_url]
 
@@ -630,15 +635,19 @@ def enrich_with_photos(listings, skip_photos=False):
                 viewport={"width": 1280, "height": 900},
                 user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
             )
-            page = ctx.new_page()
-
             fetched = 0
             os.makedirs(PHOTOS_DIR, exist_ok=True)
             for l in to_fetch:
                 url     = l['paragon_url']
                 mls_num = l.get('mls_num') or ''
 
-                photo_url, img_bytes = fetch_photo_and_bytes(url, page, mls_num=mls_num)
+                # Fresh page for every listing — prevents Paragon SPA from carrying
+                # the previous listing's DOM/images into the next page inspection
+                page = ctx.new_page()
+                try:
+                    photo_url, img_bytes = fetch_photo_and_bytes(url, page, mls_num=mls_num)
+                finally:
+                    page.close()
 
                 local_path = None
                 if img_bytes and mls_num:
