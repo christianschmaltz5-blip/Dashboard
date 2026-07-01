@@ -22,6 +22,7 @@ from config import FROM_EMAIL, GMAIL_APP_PASSWORD, IMAP_EMAIL, IMAP_APP_PASSWORD
 MARKET_DATA_JS   = os.path.join(os.path.dirname(__file__), '..', '..', 'js', 'market-data.js')
 LISTINGS_JS      = os.path.join(os.path.dirname(__file__), '..', '..', 'js', 'paragon-listings.js')
 PHOTOS_CACHE     = os.path.join(os.path.dirname(__file__), 'photos-cache.json')
+PHOTOS_DIR       = os.path.join(os.path.dirname(__file__), '..', '..', 'img', 'listings')
 IMAP_HOST = "imap.gmail.com"
 IMAP_PORT = 993
 
@@ -534,18 +535,49 @@ def _best_photo_from_page(page, mls_num=None):
 
     return None
 
-def fetch_photo_url_playwright(paragon_url, page, mls_num=None):
-    """Load a Paragon listing URL in a Playwright page and return the best photo URL."""
+def fetch_photo_and_bytes(paragon_url, page, mls_num=None):
+    """
+    Load a Paragon listing page, intercept the first property photo response,
+    and return (photo_url, image_bytes). image_bytes is None if capture failed.
+    """
+    captured = {'url': None, 'body': None}
+
+    def on_response(response):
+        if captured['body'] is not None:
+            return
+        url = response.url
+        if 'zimg.paragon.ice.com/ParagonImages/Property' not in url:
+            return
+        low = url.lower()
+        if any(k in low for k in PARAGON_PLACEHOLDER_KEYWORDS):
+            return
+        if mls_num and mls_num not in url:
+            return
+        try:
+            body = response.body()
+            if len(body) > 10000:  # real photo, not an error page
+                captured['url']  = url
+                captured['body'] = body
+        except Exception:
+            pass
+
+    page.on('response', on_response)
     try:
         page.goto(paragon_url, wait_until='networkidle', timeout=25000)
-        return _best_photo_from_page(page, mls_num)
     except Exception:
         try:
             page.goto(paragon_url, wait_until='domcontentloaded', timeout=20000)
             time.sleep(3)
-            return _best_photo_from_page(page, mls_num)
         except Exception:
-            return None
+            pass
+    page.remove_listener('response', on_response)
+
+    if captured['url']:
+        return captured['url'], captured['body']
+
+    # Fallback: DOM inspection (no download)
+    photo_url = _best_photo_from_page(page, mls_num)
+    return photo_url, None
 
 def enrich_with_photos(listings, skip_photos=False):
     """Add photo_url to each listing using a persistent cache + Playwright browser."""
@@ -585,11 +617,24 @@ def enrich_with_photos(listings, skip_photos=False):
             page = ctx.new_page()
 
             fetched = 0
+            os.makedirs(PHOTOS_DIR, exist_ok=True)
             for l in to_fetch:
-                url   = l['paragon_url']
-                photo = fetch_photo_url_playwright(url, page, mls_num=l.get('mls_num'))
-                l['photo_url'] = photo
-                cache[url]     = photo
+                url     = l['paragon_url']
+                mls_num = l.get('mls_num') or ''
+
+                photo_url, img_bytes = fetch_photo_and_bytes(url, page, mls_num=mls_num)
+
+                local_path = None
+                if img_bytes and mls_num:
+                    fname = f"{mls_num}.jpg"
+                    fpath = os.path.join(PHOTOS_DIR, fname)
+                    with open(fpath, 'wb') as f:
+                        f.write(img_bytes)
+                    local_path = f"img/listings/{fname}"
+
+                result = local_path or photo_url
+                l['photo_url'] = result
+                cache[url]     = result
                 fetched += 1
                 if fetched % 5 == 0:
                     save_photos_cache(cache)
