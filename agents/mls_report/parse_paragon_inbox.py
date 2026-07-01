@@ -573,22 +573,27 @@ def fetch_photo_and_bytes(paragon_url, page, mls_num=None):
     if not all_captured:
         return None, None
 
-    # Pick the photo that appears first in DOM order (primary listing photo)
+    # Pick the photo with the LARGEST rendered area — the main listing photo
+    # is always the biggest element; sidebar/thumbnail images of other listings are small
     try:
-        dom_urls = page.evaluate("""() => {
+        dom_imgs = page.evaluate("""() => {
             return Array.from(document.querySelectorAll('img'))
-                .map(i => i.src)
-                .filter(s => s.includes('zimg.paragon.ice.com/ParagonImages/Property'));
+                .filter(i => i.src.includes('zimg.paragon.ice.com/ParagonImages/Property'))
+                .map(i => {
+                    const r = i.getBoundingClientRect();
+                    return {src: i.src, area: r.width * r.height};
+                })
+                .sort((a, b) => b.area - a.area);
         }""")
-        for dom_url in dom_urls:
-            if dom_url in all_captured:
-                return dom_url, all_captured[dom_url]
+        for img in dom_imgs:
+            if img['src'] in all_captured:
+                return img['src'], all_captured[img['src']]
     except Exception:
         pass
 
-    # Fallback: first captured by network order
-    first_url = next(iter(all_captured))
-    return first_url, all_captured[first_url]
+    # Fallback: largest captured image by byte size (bigger file = main photo)
+    best_url = max(all_captured, key=lambda u: len(all_captured[u]))
+    return best_url, all_captured[best_url]
 
 def enrich_with_photos(listings, skip_photos=False):
     """Add photo_url to each listing using a persistent cache + Playwright browser."""
