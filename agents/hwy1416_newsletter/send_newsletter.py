@@ -35,6 +35,18 @@ except ImportError:
 
 IMAGES_DIR = "images"  # local folder: agents/hwy1416_newsletter/images/
 
+# NOTE (2026-07-01): photo1.png is a stormwater/utility engineering overlay and
+# photo6.jpg is a rough iPad screenshot of a planning sketch — neither is a
+# customer-facing marketing photo, so they're excluded from HERO/LOCAL_PHOTOS
+# below. photo2.png is the clean vector "Freedom Estates" site plan exhibit
+# (has the Andreson Real Estate Co. logo) — used as its own PDF exhibit page,
+# not in the photo grid. photo3-5.jpg are real aerial drone shots of the site.
+HERO_LOCAL      = f"{IMAGES_DIR}/photo3.jpg"   # confirmed real aerial — PDF hero fallback
+SITE_PLAN_LOCAL = f"{IMAGES_DIR}/photo2.png"   # Freedom Estates site plan exhibit
+
+DEV_NAME           = "Freedom Estates"
+DISTANCE_TO_EAFB   = "1.8 miles"   # from Exit 67, per the Freedom Estates site plan locator inset
+
 # Map LoopNet URLs → local filenames (drop the long hash prefix)
 LOCAL_PHOTOS = [
     f"{IMAGES_DIR}/photo1.png",
@@ -90,16 +102,17 @@ PHOTOS = [
     "https://images1.loopnet.com/i2/mMaKnCff4F3QSIofyudastA7AdLVFHTIn2ftqOOjYnk/116/Highway-1416-Box-Elder-SD-Building-Photo-6-LargeHighDefinition.png",
 ]
 
-DEFAULT_MESSAGE = """
-24.75± acres of C-2 zoned commercial land on Highway 1416 — the primary access corridor
-into Ellsworth Air Force Base, the largest employer in the Black Hills region. The parcel
-carries approximately 1,200 linear feet of highway frontage with all utilities already at
-the site.
+DEFAULT_MESSAGE = f"""
+24.75± acres of C-2 zoned commercial land on Highway 1416, {DISTANCE_TO_EAFB} from the
+Ellsworth Air Force Base main gate at Exit 67 — the primary access corridor into the
+Black Hills region's largest employer. The parcel carries approximately 1,200 linear feet
+of highway frontage with all utilities already at the site.
 
-Box Elder is one of the fastest-growing communities in South Dakota, driven by Ellsworth's
-continued presence and steady residential expansion along the I-90/Highway 1416 corridor.
-Zoning and utility access are in place — a buyer can move directly into site planning
-without rezoning or annexation contingencies.
+The parcel sits within {DEV_NAME}, a master-planned tract that also includes a 7.57-acre
+light industrial parcel, planned single-family and commercial phases, and a future site
+for Douglas High School directly adjacent — rooftop growth that compounds the case for
+this corridor. Zoning and utility access are already in place: a buyer can move directly
+into site planning without rezoning or annexation contingencies.
 """.strip()
 
 BROKER_QUOTE = (
@@ -131,12 +144,14 @@ def build_html(message: str) -> str:
     price_per_acre_fmt = f"${PRICE_PER_ACRE/1000:.0f}K"
 
     snapshot_rows = [
+        ("Development", f"{DEV_NAME}, Box Elder"),
         ("Acreage", f"{ACRES}± acres"),
         ("Zoning", f"{ZONING} — Commercial"),
         ("Highway Frontage", f"~{FRONTAGE_FT:,} linear feet"),
         ("Utilities", "Available at site"),
-        ("Proximity", "Minutes from Ellsworth AFB main gate"),
+        ("Proximity", f"{DISTANCE_TO_EAFB} from Ellsworth AFB (Exit 67)"),
         ("Access", "Direct frontage on Highway 1416 / I-90 corridor"),
+        ("Adjacent Uses", "Light industrial, single-family, future Douglas H.S. site"),
     ]
     snapshot_html = "".join(
         f"""<tr>
@@ -181,7 +196,7 @@ def build_html(message: str) -> str:
       <td style="background:{NAVY};padding:24px 28px 22px;">
         <p style="margin:0 0 8px 0;font-size:10px;font-weight:bold;letter-spacing:0.18em;text-transform:uppercase;color:{GOLD};">Offering Summary &middot; {month}</p>
         <p style="margin:0;font-family:{SERIF};font-size:26px;font-weight:bold;color:#ffffff;line-height:1.3;">{ACRES}&plusmn; Acres on the Ellsworth AFB Access Corridor</p>
-        <p style="margin:8px 0 0 0;font-size:13px;color:#9FB3C8;">Highway 1416, Box Elder, SD 57719 &nbsp;&middot;&nbsp; Commercial Land &nbsp;&middot;&nbsp; {ZONING} Zoning</p>
+        <p style="margin:8px 0 0 0;font-size:13px;color:#9FB3C8;">{DEV_NAME} &nbsp;&middot;&nbsp; Highway 1416, Box Elder, SD 57719 &nbsp;&middot;&nbsp; {ZONING} Zoning</p>
       </td>
     </tr>
 
@@ -299,6 +314,9 @@ def build_html(message: str) -> str:
 
 
 def build_pdf(message: str) -> bytes | None:
+    """Landscape one-pager matching the email's navy/gold institutional design —
+    same color tokens (NAVY/NAVY_2/GOLD) and framing (offering summary, big-number
+    stat grid, broker quote, confidentiality footer) as build_html()."""
     if not PDF_ENABLED:
         return None
     import warnings, os
@@ -309,29 +327,40 @@ def build_pdf(message: str) -> bytes | None:
         W, H = landscape(letter)   # 792 x 612 pt
         c = _rl_canvas.Canvas(buf, pagesize=(W, H))
 
-        # ── Colors ────────────────────────────────────────────────────────────
-        RED    = HexColor("#8B1A1A")
-        BLACK  = HexColor("#1C1C1C")
-        LGRAY  = HexColor("#E4E4E4")
-        WHITE  = white
+        # ── Colors (match build_html's design tokens) ───────────────────────────
+        PDF_NAVY   = HexColor(NAVY)
+        PDF_NAVY_2 = HexColor(NAVY_2)
+        PDF_GOLD   = HexColor(GOLD)
+        PDF_GOLD_DIM = HexColor(GOLD_DIM)
+        PDF_BODY   = HexColor(BODY_GRAY)
+        PDF_MUTED  = HexColor(MUTED)
+        LGRAY      = HexColor("#F8FAFC")
+        WHITE      = white
 
-        # ── Section heights (bottom → top) ────────────────────────────────────
-        FT_H   = 72    # footer
-        FE_H   = 62    # features
-        UT_H   = 82    # utilities
-        HR_H   = 196   # hero
-        HD_H   = H - FT_H - FE_H - UT_H - HR_H   # header (~200)
+        # ── Section heights (bottom → top) ───────────────────────────────────────
+        FT_H = 76    # footer
+        QT_H = 80    # broker quote
+        SN_H = 90    # property snapshot facts
+        ST_H = 85    # stat bar
+        HD_H = 50    # top bar
+        HR_H = H - FT_H - QT_H - SN_H - ST_H - HD_H   # hero (~260)
 
         ft_y = 0
-        fe_y = FT_H
-        ut_y = fe_y + FE_H
-        hr_y = ut_y + UT_H
-        hd_y = hr_y + HR_H
+        qt_y = FT_H
+        sn_y = qt_y + QT_H
+        st_y = sn_y + SN_H
+        hr_y = st_y + ST_H
+        hd_y = hr_y + HR_H   # == H - HD_H
+
+        month = datetime.now().strftime("%B %Y")
+        price_millions = f"{ASKING_PRICE/1_000_000:.2f}".rstrip("0").rstrip(".")
+        price_fmt = f"${price_millions}M"
+        price_per_acre_fmt = f"${PRICE_PER_ACRE/1000:.0f}K"
 
         # ── Helpers ───────────────────────────────────────────────────────────
-        def rect(x, y, w, h, fill_color, stroke=False):
+        def rect(x, y, w, h, fill_color):
             c.setFillColor(fill_color)
-            c.rect(x, y, w, h, fill=1, stroke=1 if stroke else 0)
+            c.rect(x, y, w, h, fill=1, stroke=0)
 
         def text(txt, x, y, font, size, color=WHITE, align="left"):
             c.setFont(font, size)
@@ -343,235 +372,175 @@ def build_pdf(message: str) -> bytes | None:
             else:
                 c.drawString(x, y, txt)
 
-        # ══════════════════════════════════════════════════════════════════════
-        # HEADER (white)
-        # ══════════════════════════════════════════════════════════════════════
-        rect(0, hd_y, W, HD_H, WHITE)
-
-        # Left logo area — mountain peaks drawn as filled polygons
-        mx, my = 30, hd_y + 55
-        mscale = 1.15
-        def peak(pts):
-            p = c.beginPath()
-            p.moveTo(pts[0][0]*mscale+mx, pts[0][1]*mscale+my)
-            for px, py in pts[1:]:
-                p.lineTo(px*mscale+mx, py*mscale+my)
-            p.close()
-            c.drawPath(p, fill=1, stroke=0)
-
-        c.setFillColor(HexColor("#2C2C2C"))
-        peak([(0,0),(25,65),(50,0)])        # left peak
-        peak([(35,0),(65,80),(95,0)])       # center peak (tallest)
-        peak([(75,0),(100,55),(125,0)])     # right peak
-
-        # Snow caps (white triangles on top)
-        c.setFillColor(WHITE)
-        peak([(18,42),(25,65),(32,42)])
-        peak([(55,56),(65,80),(75,56)])
-        peak([(93,38),(100,55),(107,38)])
-
-        # Horizontal rule under mountains
-        c.setStrokeColor(HexColor("#1C1C1C"))
-        c.setLineWidth(1.5)
-        logo_text_x = 30
-        logo_text_y = hd_y + 38
-        c.line(logo_text_x, logo_text_y + 11, logo_text_x + 185, logo_text_y + 11)
-
-        text("KEVIN ANDRESON", logo_text_x, logo_text_y, "Helvetica-Bold", 14, BLACK)
-
-        c.setLineWidth(0.8)
-        c.line(logo_text_x, logo_text_y - 3, logo_text_x + 185, logo_text_y - 3)
-
-        # "— COMPANY —" spaced
-        text("C O M P A N Y", logo_text_x + 28, logo_text_y - 14, "Helvetica", 8, BLACK)
-
-        # KW branding
-        text("kw", logo_text_x, logo_text_y - 32, "Helvetica-Bold", 15, HexColor("#CC0000"))
-        text("BLACK HILLS", logo_text_x + 24, logo_text_y - 28, "Helvetica-Bold", 11, BLACK)
-        text("KELLER WILLIAMS. REALTY", logo_text_x + 24, logo_text_y - 39, "Helvetica", 6.5, BLACK)
-
-        # Vertical divider
-        c.setStrokeColor(HexColor("#CCCCCC"))
-        c.setLineWidth(1)
-        divX = W * 0.42
-        c.line(divX, hd_y + 18, divX, hd_y + HD_H - 18)
-
-        # Right: Headline
-        hx = divX + 28
-        text("COMMERCIAL LAND", hx, hd_y + HD_H*0.56, "Helvetica-Bold", 42, BLACK)
-        text("FOR", hx, hd_y + HD_H*0.28, "Helvetica-Bold", 42, BLACK)
-        # "SALE" in red — measure "FOR " width to position
-        c.setFont("Helvetica-Bold", 42)
-        for_w = c.stringWidth("FOR ", "Helvetica-Bold", 42)
-        text("SALE", hx + for_w, hd_y + HD_H*0.28, "Helvetica-Bold", 42, RED)
+        def wrap_text(txt, font, size, max_width):
+            """Greedy word-wrap: returns a list of lines that each fit max_width."""
+            words = txt.split()
+            lines, line = [], ""
+            for w in words:
+                trial = f"{line} {w}".strip()
+                if c.stringWidth(trial, font, size) <= max_width:
+                    line = trial
+                else:
+                    if line:
+                        lines.append(line)
+                    line = w
+            if line:
+                lines.append(line)
+            return lines
 
         # ══════════════════════════════════════════════════════════════════════
-        # HERO — left red band + right aerial photo
+        # TOP BAR (navy)
         # ══════════════════════════════════════════════════════════════════════
-        SPLIT  = W * 0.41
-        DIAG   = 28   # diagonal offset
+        rect(0, hd_y, W, HD_H, PDF_NAVY)
+        text("KELLER WILLIAMS REALTY BLACK HILLS", 30, hd_y + HD_H * 0.4, "Helvetica-Bold", 11, WHITE)
+        text("INVESTMENT OFFERING", W - 30, hd_y + HD_H * 0.4, "Helvetica-Bold", 10, PDF_GOLD, align="right")
 
-        # Dark red polygon (diagonal right edge)
-        c.setFillColor(RED)
-        p = c.beginPath()
-        p.moveTo(0, hr_y)
-        p.lineTo(SPLIT + DIAG, hr_y)
-        p.lineTo(SPLIT - DIAG, hr_y + HR_H)
-        p.lineTo(0, hr_y + HR_H)
-        p.close()
-        c.drawPath(p, fill=1, stroke=0)
+        # ══════════════════════════════════════════════════════════════════════
+        # HERO — aerial photo (right) + navy overlay panel (left) with headline
+        # ══════════════════════════════════════════════════════════════════════
+        PANEL_W = W * 0.40
 
-        # Hero photo (right side)
         print("  Loading photos for PDF...")
-        hero_buf = _fetch_image(PHOTOS[0], LOCAL_PHOTOS[0])
+        hero_buf = _fetch_image(PHOTOS[0], HERO_LOCAL)
         if hero_buf:
-            img_x = SPLIT - DIAG
-            c.drawImage(ImageReader(hero_buf), img_x, hr_y,
-                        width=W - img_x, height=HR_H,
+            c.drawImage(ImageReader(hero_buf), PANEL_W, hr_y,
+                        width=W - PANEL_W, height=HR_H,
                         preserveAspectRatio=False, mask="auto")
+        else:
+            rect(PANEL_W, hr_y, W - PANEL_W, HR_H, PDF_NAVY_2)
 
-        # Big acreage number
-        c.setFillColor(WHITE)
-        c.setFont("Helvetica-BoldOblique", 82)
-        c.drawString(14, hr_y + HR_H * 0.44, "24.75")
-        c.setFont("Helvetica-BoldOblique", 62)
-        c.drawString(14, hr_y + HR_H * 0.10, "ACRES")
+        # Thin gold seam between panel and photo
+        rect(PANEL_W - 3, hr_y, 3, HR_H, PDF_GOLD)
 
-        # Price tag below acreage
-        c.setFont("Helvetica-Bold", 16)
-        c.setFillColor(HexColor("#FFCCCC"))
-        c.drawString(18, hr_y + HR_H * 0.04 - 2, "$3,750,000")
+        # Navy overlay panel (left)
+        rect(0, hr_y, PANEL_W, HR_H, PDF_NAVY)
+        px = 30
+        text(f"OFFERING SUMMARY · {month}".upper(), px, hr_y + HR_H - 40, "Helvetica-Bold", 9, PDF_GOLD)
+        text(f"{ACRES}± ACRES", px, hr_y + HR_H * 0.62, "Times-Bold", 34, WHITE)
+        text("ON THE ELLSWORTH AFB", px, hr_y + HR_H * 0.48, "Times-Bold", 22, WHITE)
+        text("ACCESS CORRIDOR", px, hr_y + HR_H * 0.38, "Times-Bold", 22, WHITE)
+        text(f"{DEV_NAME} · Highway 1416, Box Elder, SD 57719", px, hr_y + 34, "Helvetica", 10, HexColor("#9FB3C8"))
+        text(f"Commercial Land · {ZONING} Zoning", px, hr_y + 20, "Helvetica", 10, HexColor("#9FB3C8"))
 
         # ══════════════════════════════════════════════════════════════════════
-        # UTILITIES ROW (light gray)
+        # STAT BAR (navy_2) — matches the email's 5-stat grid
         # ══════════════════════════════════════════════════════════════════════
-        rect(0, ut_y, W, UT_H, LGRAY)
-
-        utils = [
-            ("ALL UTILITIES", "TO SITE"),
-            ("NATURAL", "GAS"),
-            ("WEST RIVER", "ELECTRIC"),
-            ("CITY WATER", "& SEWER"),
-            ("ZONED", "COMMERCIAL"),
+        rect(0, st_y, W, ST_H, PDF_NAVY_2)
+        stats = [
+            (f"{ACRES}", "ACRES"),
+            (price_fmt, "ASKING PRICE"),
+            (price_per_acre_fmt, "PER ACRE"),
+            (f"{FRONTAGE_FT:,}'", "FRONTAGE"),
+            (ZONING, "ZONING"),
         ]
-        col_w = W / len(utils)
-        icon_syms = ["*", "*", "~", "o", "#"]   # placeholders for circle content
-
-        for i, (l1, l2) in enumerate(utils):
+        col_w = W / len(stats)
+        for i, (big, label) in enumerate(stats):
             cx = col_w * i + col_w / 2
-            cy_circle = ut_y + UT_H * 0.72
-            # Black filled circle
-            c.setFillColor(BLACK)
-            c.circle(cx, cy_circle, 16, fill=1, stroke=0)
-            # White line icon (simplified)
-            c.setFillColor(WHITE)
-            c.setFont("Helvetica-Bold", 10)
-            c.drawCentredString(cx, cy_circle - 4, str(i + 1))
-            # Label lines
-            c.setFillColor(BLACK)
-            c.setFont("Helvetica-Bold", 8.5)
-            c.drawCentredString(cx, ut_y + UT_H * 0.35, l1)
-            c.setFont("Helvetica", 7.5)
-            c.drawCentredString(cx, ut_y + UT_H * 0.15, l2)
-            # Column dividers
+            text(big, cx, st_y + ST_H * 0.52, "Times-Bold", 28, WHITE, align="center")
+            text(label, cx, st_y + ST_H * 0.2, "Helvetica-Bold", 8.5, PDF_GOLD_DIM, align="center")
             if i > 0:
-                c.setStrokeColor(HexColor("#BBBBBB"))
-                c.setLineWidth(0.5)
-                c.line(col_w * i, ut_y + 8, col_w * i, ut_y + UT_H - 8)
+                c.setStrokeColor(HexColor("#22405C"))
+                c.setLineWidth(0.75)
+                c.line(col_w * i, st_y + 10, col_w * i, st_y + ST_H - 10)
 
         # ══════════════════════════════════════════════════════════════════════
-        # FEATURES ROW (dark)
+        # PROPERTY SNAPSHOT (light) — data facts, not adjectives
         # ══════════════════════════════════════════════════════════════════════
-        rect(0, fe_y, W, FE_H, BLACK)
+        rect(0, sn_y, W, SN_H, LGRAY)
+        c.setStrokeColor(HexColor("#E2E8F0"))
+        c.setLineWidth(0.75)
+        c.line(0, sn_y, W, sn_y)
+        c.line(0, sn_y + SN_H, W, sn_y + SN_H)
 
-        features = [
-            ("EXCELLENT VISIBILITY", "HIGH TRAFFIC CORRIDOR EXPOSURE"),
-            ("DIRECT HWY 1416 ACCESS", "PRIME HIGHWAY FRONTAGE FOR BUSINESS GROWTH"),
+        facts = [
+            ("DEVELOPMENT", f"{DEV_NAME}, Box Elder"),
+            ("ZONING", f"{ZONING} — Commercial"),
+            ("FRONTAGE", f"~{FRONTAGE_FT:,} linear feet"),
+            ("UTILITIES", "Available at site"),
+            ("PROXIMITY", f"{DISTANCE_TO_EAFB} to Ellsworth AFB"),
+            ("ACCESS", "Direct Hwy 1416 / I-90 frontage"),
         ]
-        col_w2 = W / 2
-        for i, (title, sub) in enumerate(features):
-            cx = col_w2 * i + col_w2 / 2
-            # Icon circle
-            ic_x = col_w2 * i + 36
-            ic_y = fe_y + FE_H / 2
-            c.setFillColor(HexColor("#333333"))
-            c.circle(ic_x, ic_y, 18, fill=1, stroke=0)
-            c.setStrokeColor(WHITE)
-            c.setLineWidth(1.5)
-            if i == 0:  # eye-like shape
-                c.circle(ic_x, ic_y, 7, fill=0, stroke=1)
-                c.setFillColor(WHITE)
-                c.circle(ic_x, ic_y, 3, fill=1, stroke=0)
-            else:  # road lines
-                c.setLineWidth(2)
-                c.line(ic_x - 6, ic_y + 8, ic_x, ic_y - 8)
-                c.line(ic_x + 6, ic_y + 8, ic_x, ic_y - 8)
-            # Text
-            c.setFillColor(WHITE)
-            c.setFont("Helvetica-Bold", 14)
-            c.drawString(ic_x + 28, fe_y + FE_H * 0.6, title)
-            c.setFont("Helvetica", 8)
-            c.setFillColor(HexColor("#AAAAAA"))
-            c.drawString(ic_x + 28, fe_y + FE_H * 0.28, sub)
-            # Center divider
-            if i == 0:
-                c.setStrokeColor(HexColor("#3A3A3A"))
-                c.setLineWidth(1)
-                c.line(W / 2, fe_y + 10, W / 2, fe_y + FE_H - 10)
+        col_w3 = W / len(facts)
+        fact_font_size = 10
+        for i, (label, val) in enumerate(facts):
+            fx = col_w3 * i + 22
+            usable_w = col_w3 - 34   # column width minus left padding + gutter to next divider
+            text(label, fx, sn_y + SN_H * 0.72, "Helvetica-Bold", 8, PDF_MUTED)
+            val_lines = wrap_text(val, "Helvetica-Bold", fact_font_size, usable_w)
+            line_y = sn_y + SN_H * 0.48
+            for ln in val_lines[:2]:
+                text(ln, fx, line_y, "Helvetica-Bold", fact_font_size, PDF_NAVY)
+                line_y -= fact_font_size + 3
+            if i > 0:
+                c.setStrokeColor(HexColor("#E2E8F0"))
+                c.setLineWidth(0.75)
+                c.line(col_w3 * i, sn_y + 12, col_w3 * i, sn_y + SN_H - 12)
 
         # ══════════════════════════════════════════════════════════════════════
-        # FOOTER (dark red)
+        # BROKER QUOTE (white, gold rule)
         # ══════════════════════════════════════════════════════════════════════
-        rect(0, ft_y, W, FT_H, RED)
+        rect(0, qt_y, W, QT_H, WHITE)
+        rect(30, qt_y + 10, 3, QT_H - 20, PDF_GOLD)
+        quote_lines = wrap_text(BROKER_QUOTE, "Times-BoldItalic", 13, W - 96)
+        line_y = qt_y + QT_H - 26
+        for ln in quote_lines[:2]:
+            text(ln, 48, line_y, "Times-BoldItalic", 13, PDF_NAVY)
+            line_y -= 17
+        text("— Kevin Andreson, Keller Williams Realty Black Hills", 48, qt_y + 14, "Helvetica-Bold", 9, PDF_MUTED)
 
-        # Phone icon circle
-        c.setFillColor(HexColor("#6B0000"))
-        c.circle(30, ft_y + FT_H / 2, 20, fill=1, stroke=0)
-        c.setFillColor(WHITE)
-        c.setFont("Helvetica-Bold", 14)
-        c.drawCentredString(30, ft_y + FT_H / 2 - 5, "t")
+        # ══════════════════════════════════════════════════════════════════════
+        # FOOTER (navy, gold top rule)
+        # ══════════════════════════════════════════════════════════════════════
+        rect(0, ft_y, W, FT_H, PDF_NAVY)
+        rect(0, ft_y + FT_H - 2, W, 2, PDF_GOLD)
 
-        # Contact info
-        c.setFillColor(WHITE)
-        c.setFont("Helvetica-Bold", 8)
-        c.drawString(58, ft_y + FT_H * 0.78, "CONTACT")
-        c.setFont("Helvetica-Bold", 17)
-        c.drawString(58, ft_y + FT_H * 0.48, "KEVIN ANDRESON")
-        c.setFont("Helvetica-Bold", 13)
-        c.drawString(58, ft_y + FT_H * 0.18, "605-646-5409")
+        text("KEVIN ANDRESON", 30, ft_y + FT_H - 24, "Times-Bold", 15, WHITE)
+        text("Commercial Real Estate Advisor", 30, ft_y + FT_H - 40, "Helvetica-Bold", 9, PDF_GOLD_DIM)
+        text("Keller Williams Realty Black Hills · 605-646-5409 · arecblackhills@gmail.com", 30, ft_y + FT_H - 54, "Helvetica", 8.5, HexColor("#9FB3C8"))
 
-        # Center divider
-        c.setStrokeColor(HexColor("#6B0000"))
-        c.setLineWidth(1)
-        c.line(W * 0.38, ft_y + 8, W * 0.38, ft_y + FT_H - 8)
-
-        # Globe icon + website
-        c.setFillColor(HexColor("#6B0000"))
-        c.circle(W * 0.5, ft_y + FT_H / 2, 20, fill=1, stroke=0)
-        c.setFillColor(WHITE)
-        c.setFont("Helvetica-Bold", 14)
-        c.drawCentredString(W * 0.5, ft_y + FT_H / 2 - 5, "w")
-        c.setFont("Helvetica-Bold", 13)
-        c.drawCentredString(W * 0.62, ft_y + FT_H / 2 - 4, "KWBLACKHILLS.COM")
-
-        # QR Code
+        # QR Code — kept clear of the bottom disclaimer line
         try:
             qr = _qrcode.QRCode(box_size=3, border=1)
             qr.add_data("https://kwblackhills.com")
             qr.make(fit=True)
-            qr_img = qr.make_image(fill_color="black", back_color="white")
+            qr_img = qr.make_image(fill_color="#0B1C2E", back_color="white")
             qr_buf = io.BytesIO()
             qr_img.save(qr_buf, format="PNG")
             qr_buf.seek(0)
-            qr_size = FT_H - 10
-            c.drawImage(ImageReader(qr_buf), W - qr_size - 60, ft_y + 5,
-                        width=qr_size, height=qr_size)
-            c.setFillColor(WHITE)
-            c.setFont("Helvetica-Bold", 7)
-            c.drawCentredString(W - 30, ft_y + FT_H * 0.65, "SCAN FOR")
-            c.drawCentredString(W - 30, ft_y + FT_H * 0.45, "DETAILS")
+            qr_size = 40
+            qr_x = W - qr_size - 100
+            qr_y = ft_y + FT_H - qr_size - 16
+            c.drawImage(ImageReader(qr_buf), qr_x, qr_y, width=qr_size, height=qr_size)
+            text("SCAN FOR", qr_x - 8, qr_y + qr_size - 12, "Helvetica-Bold", 7, HexColor("#9FB3C8"), align="right")
+            text("KWBLACKHILLS.COM", qr_x - 8, qr_y + qr_size - 24, "Helvetica-Bold", 7, HexColor("#9FB3C8"), align="right")
         except Exception:
             pass
+
+        text("Information believed reliable but not independently verified; not an offer to sell securities.",
+             W / 2, ft_y + 9, "Helvetica", 6.5, HexColor("#5C7691"), align="center")
+
+        # ══════════════════════════════════════════════════════════════════════
+        # PAGE 2 — SITE PLAN EXHIBIT (the actual Freedom Estates plat, not a placeholder)
+        # ══════════════════════════════════════════════════════════════════════
+        if os.path.exists(SITE_PLAN_LOCAL):
+            c.showPage()
+            rect(0, 0, W, H, WHITE)
+            rect(0, H - HD_H, W, HD_H, PDF_NAVY)
+            text("KELLER WILLIAMS REALTY BLACK HILLS", 30, H - HD_H + HD_H * 0.4, "Helvetica-Bold", 11, WHITE)
+            text("SITE PLAN EXHIBIT", W - 30, H - HD_H + HD_H * 0.4, "Helvetica-Bold", 10, PDF_GOLD, align="right")
+
+            with open(SITE_PLAN_LOCAL, "rb") as f:
+                sp_img = ImageReader(io.BytesIO(f.read()))
+            sp_iw, sp_ih = sp_img.getSize()
+            avail_w, avail_h = W - 60, H - HD_H - 50
+            scale = min(avail_w / sp_iw, avail_h / sp_ih)
+            draw_w, draw_h = sp_iw * scale, sp_ih * scale
+            draw_x = (W - draw_w) / 2
+            draw_y = (H - HD_H - draw_h) / 2 + 10
+            c.drawImage(sp_img, draw_x, draw_y, width=draw_w, height=draw_h)
+
+            text(f"{DEV_NAME} conceptual site plan — not to scale; subject to final engineering and regulatory approval.",
+                 W / 2, 16, "Helvetica", 7.5, PDF_MUTED, align="center")
 
         c.save()
         kb = len(buf.getvalue()) // 1024
