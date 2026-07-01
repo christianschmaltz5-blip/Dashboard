@@ -168,7 +168,7 @@ a.cell-link:hover{color:#93C5FD;text-decoration:underline;}
   <div id="mls-tables"></div>
 </main>
 
-<script src="../js/paragon-listings.js?v=20260630f"></script>
+<script src="../js/paragon-listings.js?v=20260630g"></script>
 <script src="../js/market-data.js?v=20260630d"></script>
 <script>
 const BANDS = [
@@ -404,8 +404,9 @@ function initTables() {
   });
 
   const {categories, priceBands, data} = d.mlsDetail;
-  document.getElementById('mls-tables').innerHTML = (categories||[]).map(cat => {
+  const blocks = (categories||[]).map(cat => {
     const cd = data?.[cat]||{};
+    let hasData = false;
     const rows = (priceBands||[]).map(band => {
       const cells = cd[band]||{};
       const bKey  = bandKeyFromLabel(band);
@@ -414,6 +415,7 @@ function initTables() {
       const sl    = cells['Sold'];
       const domEntry = (domMap[cat]||{})[bKey];
       const avgDom = domEntry && domEntry.cnt ? Math.round(domEntry.sum/domEntry.cnt) : null;
+      if (av!=null||uc!=null||sl!=null||avgDom!=null) hasData = true;
       const domCell = avgDom!=null
         ? `<td class="num dom-cell">${avgDom}<span class="dom-unit">d</span></td>`
         : `<td class="dash">—</td>`;
@@ -422,9 +424,11 @@ function initTables() {
         : `<td class="dash">—</td>`;
       return `<tr><td>${band}</td>${avCell}${domCell}${uc!=null?`<td class="num">${uc}</td>`:`<td class="dash">—</td>`}${sl!=null?`<td class="num">${sl}</td>`:`<td class="dash">—</td>`}</tr>`;
     }).join('');
+    if (!hasData) return '';
     return `<div class="mls-cat-title">${cat}</div>
     <table class="mls"><thead><tr><th>Price Band</th><th class="r">Active ↗</th><th class="r">Avg DOM</th><th class="r">Under Contract</th><th class="r">Sold</th></tr></thead><tbody>${rows}</tbody></table>`;
-  }).join('');
+  }).filter(Boolean).join('');
+  document.getElementById('mls-tables').innerHTML = blocks || '<p style="color:rgba(255,255,255,0.2);font-size:11px;padding:8px 0">No market data available</p>';
 }
 
 init();
