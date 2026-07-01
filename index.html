@@ -229,6 +229,17 @@
     .node.active .node-circle svg { stroke: #000; }
     .node.related .node-circle svg { stroke: rgba(255,255,255,0.9); }
 
+    .pinned-node {
+      position: absolute;
+      left: 50%; top: calc(50% + 210px);
+      transform: translate(-50%, -50%);
+      display: flex; flex-direction: column; align-items: center;
+      cursor: pointer; text-decoration: none; z-index: 50;
+    }
+    .pinned-node .node-circle { transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+    .pinned-node:hover .node-circle { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.5); transform: scale(1.15); }
+    .pinned-node:hover .node-label { color: #fff; letter-spacing: 0.18em; }
+
     .node-aura {
       position: absolute;
       border-radius: 50%;
@@ -249,14 +260,14 @@
       font-weight: 700;
       letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: var(--text-faint);
+      color: rgba(255,255,255,0.75);
       transition: all 0.3s ease;
       pointer-events: none;
     }
 
     .node.active .node-label,
     .node:hover .node-label {
-      color: rgba(255,255,255,0.8);
+      color: #fff;
       letter-spacing: 0.18em;
     }
 
@@ -718,6 +729,15 @@
   <div class="orbit-ring orbit-ring-1"></div>
   <div class="orbit-ring orbit-ring-3"></div>
   <div class="center-orb"><div class="center-monogram">KA</div></div>
+  <a class="pinned-node" href="pages/paragon-listings.html">
+    <div class="node-aura" style="width:95px;height:95px;"></div>
+    <div class="node-circle">
+      <svg viewBox="0 0 24 24" width="20" height="20" stroke="rgba(255,255,255,0.7)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" fill="none">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+      </svg>
+    </div>
+    <div class="node-label">New MLS Listings</div>
+  </a>
 </div>
 
 <div class="hint">Click a node &nbsp;&middot;&nbsp; Click background to close</div>
@@ -770,17 +790,6 @@ const NODES = [
     page: "pages/contract-drafter.html",
     body: "Drafts Purchase Agreements, Commercial Leases, LOIs, and Option contracts from a simple form. Claude generates full SD-law documents — review and save as PDF.",
     icon: `<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>`,
-  },
-  {
-    id: 10,
-    title: "New MLS Listings",
-    date: "DAILY",
-    status: "live",
-    energy: 100,
-    relatedIds: [1, 9],
-    page: "pages/paragon-listings.html",
-    body: "Live Paragon MLS listings with real property photos — filter by type and price band, click any listing to open it directly in Paragon.",
-    icon: `<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>`,
   },
   {
     id: 4,
@@ -859,7 +868,7 @@ const TOP_BAR_COLOR = {
 };
 
 const scene = document.getElementById("scene");
-let rotationAngle = -18;
+let rotationAngle = 0;
 let autoRotate = true;
 let activeId = null;
 const nodeEls = {};
