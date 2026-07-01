@@ -130,6 +130,10 @@ table.budget-table input.bt-cell:focus{border-color:rgba(96,165,250,0.5);}
 table.budget-table span.bt-computed{display:inline-block;min-width:90px;font-size:11px;color:rgba(255,255,255,0.75);font-variant-numeric:tabular-nums;}
 table.budget-table span.bt-computed.negative{color:#F87171;}
 table.budget-table span.bt-computed.positive{color:#34D399;}
+table.lot-table th:first-child,table.lot-table td:first-child{min-width:90px;}
+table.lot-table input.bt-cell{width:80px;}
+.lot-remove{cursor:pointer;color:rgba(255,255,255,0.3);font-size:15px;line-height:1;}
+.lot-remove:hover{color:#F87171;}
 
 @media print{
   nav,.btn-row,.action-row,.key-banner,.disclaimer,.form-section,.section-label,.tabs{display:none!important;}
@@ -356,6 +360,20 @@ table.budget-table span.bt-computed.positive{color:#34D399;}
 
     <div class="budget-wrap">
       <table class="budget-table" id="budget-table"></table>
+    </div>
+
+    <div class="form-section" style="margin-top:1.75rem;">
+      <div class="section-label">Lot Pricing Detail <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:9px;color:rgba(255,255,255,0.2)">(optional reference — build up pricing lot-by-lot; doesn't auto-fill the phase table above)</span></div>
+      <div class="budget-wrap">
+        <table class="budget-table lot-table" id="lot-table">
+          <thead><tr><th>Phase</th><th>Block</th><th>Lot</th><th>Lot Price</th><th>Acreage</th><th>Sq Ft</th><th>$/Sq Ft</th><th></th></tr></thead>
+          <tbody id="lot-table-body"></tbody>
+          <tfoot>
+            <tr class="bt-total"><td>Grand Total Revenue</td><td></td><td></td><td><span class="bt-computed" id="lot-grand-total">$0</span></td><td colspan="4"></td></tr>
+          </tfoot>
+        </table>
+      </div>
+      <button class="btn-secondary" style="margin-top:10px;padding:9px 16px;" onclick="addLotRow()">+ Add Lot</button>
     </div>
 
     <div class="form-section" style="margin-top:1.75rem;">
@@ -872,8 +890,57 @@ function resetBudget() {
   document.getElementById('bt-summary-waterline').value = '';
   document.getElementById('bt-summary-massgrade').value = '';
   computeAll();
+  resetLotTable();
   const el = document.getElementById('budget-status');
   el.textContent = 'Cleared.'; el.className = 'status ok';
+}
+
+// ── Lot Pricing Detail (optional lot-by-lot reference table) ───────────────
+let lotRowId = 0;
+
+function addLotRow() {
+  lotRowId++;
+  const id = lotRowId;
+  const tr = document.createElement('tr');
+  tr.id = 'lot-row-' + id;
+  tr.innerHTML = `
+    <td><input class="bt-cell" type="text" id="lot-phase-${id}" placeholder="Phase 1" oninput="recalcLots()"/></td>
+    <td><input class="bt-cell" type="number" id="lot-block-${id}" oninput="recalcLots()"/></td>
+    <td><input class="bt-cell" type="number" id="lot-lot-${id}" oninput="recalcLots()"/></td>
+    <td><input class="bt-cell" type="number" id="lot-price-${id}" placeholder="175000" oninput="recalcLots()"/></td>
+    <td><input class="bt-cell" type="number" step="0.01" id="lot-acres-${id}" placeholder="0.72" oninput="recalcLots()"/></td>
+    <td><span class="bt-computed" id="lot-sqft-${id}">&mdash;</span></td>
+    <td><span class="bt-computed" id="lot-psf-${id}">&mdash;</span></td>
+    <td><span class="lot-remove" onclick="removeLotRow(${id})" title="Remove row">&times;</span></td>
+  `;
+  document.getElementById('lot-table-body').appendChild(tr);
+  recalcLots();
+}
+
+function removeLotRow(id) {
+  const el = document.getElementById('lot-row-' + id);
+  if (el) el.remove();
+  recalcLots();
+}
+
+function resetLotTable() {
+  document.getElementById('lot-table-body').innerHTML = '';
+  lotRowId = 0;
+  for (let i = 0; i < 3; i++) addLotRow();
+}
+
+function recalcLots() {
+  let total = 0;
+  document.querySelectorAll('#lot-table-body tr').forEach(tr => {
+    const id = tr.id.replace('lot-row-', '');
+    const price = btNum('lot-price-' + id);
+    const acres = btNum('lot-acres-' + id);
+    const sqft = acres * 43560;
+    document.getElementById('lot-sqft-' + id).textContent = sqft ? Math.round(sqft).toLocaleString() : '—';
+    document.getElementById('lot-psf-' + id).textContent = (sqft && price) ? '$' + (price / sqft).toFixed(2) : '—';
+    total += price;
+  });
+  document.getElementById('lot-grand-total').textContent = fmtMoney(total);
 }
 
 function copyBudgetReport() {
@@ -904,6 +971,7 @@ function copyBudgetReport() {
 document.addEventListener('DOMContentLoaded', () => {
   buildBudgetTable();
   computeAll();
+  resetLotTable();
 });
 </script>
 </body>
