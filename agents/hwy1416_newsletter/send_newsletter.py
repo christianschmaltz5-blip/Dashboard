@@ -77,20 +77,28 @@ from config import FROM_EMAIL, REPLY_TO, GMAIL_APP_PASSWORD, RECIPIENTS, SUBJECT
 # ── Property constants ────────────────────────────────────────────────────────
 LOOPNET_URL = "https://www.loopnet.com/listing/highway-1416-box-elder-sd/"
 
-ACRES        = 24.75
+ACRES        = 24.76
 ASKING_PRICE = 3_750_000
+LI_ACRES     = 7.30            # light industrial / commercial parcel
+LI_PRICE     = 1_150_000
 FRONTAGE_FT  = 1200   # matches the conceptual site plan on listing-newsletter.html
 ZONING       = "C-2"
 PRICE_PER_ACRE = round(ASKING_PRICE / ACRES)
 
-# ── Design tokens (navy / gold institutional palette, serif headline) ─────────
-NAVY      = "#0B1C2E"
-NAVY_2    = "#14283D"
-GOLD      = "#C9A961"
-GOLD_DIM  = "#9C8557"
-BODY_GRAY = "#334155"
-MUTED     = "#64748B"
-LINE      = "#E2E8F0"
+# ── Design tokens ─────────────────────────────────────────────────────────────
+# Palette remapped 2026-07-02 to the Freedom Estates artifact (prairie green /
+# cream / terracotta). Variable NAMES kept for stability across build_html +
+# build_pdf: NAVY = deep green, NAVY_2 = darker green, GOLD = wheat.
+NAVY      = "#2b3720"
+NAVY_2    = "#212c18"
+GOLD      = "#d8a43a"
+GOLD_DIM  = "#a9791c"
+RUST      = "#a85431"
+PRICE_CLR = "#b23a26"
+PAPER     = "#f4efe1"
+BODY_GRAY = "#3f3323"
+MUTED     = "#6f6553"
+LINE      = "#e3d9c0"
 SERIF     = "Georgia,'Times New Roman',serif"
 
 PHOTOS = [
@@ -103,16 +111,18 @@ PHOTOS = [
 ]
 
 DEFAULT_MESSAGE = f"""
-24.75± acres of C-2 zoned commercial land on Highway 1416, {DISTANCE_TO_EAFB} from the
-Ellsworth Air Force Base main gate at Exit 67 — the primary access corridor into the
-Black Hills region's largest employer. The parcel carries approximately 1,200 linear feet
-of highway frontage with all utilities already at the site.
+Two shovel-ready tracts on Highway 1416, {DISTANCE_TO_EAFB} from the Ellsworth Air Force
+Base main gate at Exit 67 — the primary access corridor into the Black Hills region's
+largest employer. Both sites are graded, permit-ready, and served by utilities on site,
+with approximately 1,200 linear feet of highway frontage.
 
-The parcel sits within {DEV_NAME}, a master-planned tract that also includes a 7.57-acre
-light industrial parcel, planned single-family and commercial phases, and a future site
-for Douglas High School directly adjacent — rooftop growth that compounds the case for
-this corridor. Zoning and utility access are already in place: a buyer can move directly
-into site planning without rezoning or annexation contingencies.
+At the center is a 24.76-acre multi-family parcel ($3,750,000) within {DEV_NAME}, alongside
+a 7.30-acre light industrial / commercial parcel ($1,150,000). The master-planned tract also
+carries single-family and commercial phases and a future Douglas High School site directly
+adjacent — rooftop growth that compounds the case for this corridor. Under the Investor
+Flex-Option, the parcels can be acquired individually or as one cohesive tract — and with
+zoning and utilities already in place, a buyer moves straight into site planning without
+rezoning or annexation contingencies.
 """.strip()
 
 BROKER_QUOTE = (
@@ -142,16 +152,20 @@ def build_html(message: str) -> str:
     price_millions = f"{ASKING_PRICE/1_000_000:.2f}".rstrip("0").rstrip(".")
     price_fmt = f"${price_millions}M"
     price_per_acre_fmt = f"${PRICE_PER_ACRE/1000:.0f}K"
+    li_price_fmt = "$" + f"{LI_PRICE/1_000_000:.2f}".rstrip("0").rstrip(".") + "M"
 
     snapshot_rows = [
         ("Development", f"{DEV_NAME}, Box Elder"),
-        ("Acreage", f"{ACRES}± acres"),
+        ("Status", "Shovel-Ready — permits complete"),
+        ("Multi-Family", f"{ACRES}± acres &middot; ${ASKING_PRICE:,}"),
+        ("Light Industrial", f"{LI_ACRES}± acres &middot; ${LI_PRICE:,}"),
         ("Zoning", f"{ZONING} — Commercial"),
+        ("Utilities", "On site"),
         ("Highway Frontage", f"~{FRONTAGE_FT:,} linear feet"),
-        ("Utilities", "Available at site"),
         ("Proximity", f"{DISTANCE_TO_EAFB} from Ellsworth AFB (Exit 67)"),
         ("Access", "Direct frontage on Highway 1416 / I-90 corridor"),
-        ("Adjacent Uses", "Light industrial, single-family, future Douglas H.S. site"),
+        ("Adjacent Uses", "Single-family, commercial, future Douglas H.S. site"),
+        ("Structure", "Investor Flex-Option — parcels or whole tract"),
     ]
     snapshot_html = "".join(
         f"""<tr>
@@ -163,21 +177,21 @@ def build_html(message: str) -> str:
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
-<body style="margin:0;padding:0;background:#eef1f5;font-family:Arial,Helvetica,sans-serif;">
+<body style="margin:0;padding:0;background:#e6ddca;font-family:Arial,Helvetica,sans-serif;">
 
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eef1f5;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#e6ddca;">
 <tr><td align="center" style="padding:24px 12px;">
 
   <!-- Outer card -->
-  <table width="640" cellpadding="0" cellspacing="0" border="0" style="max-width:640px;background:#ffffff;border-radius:4px;overflow:hidden;box-shadow:0 4px 28px rgba(11,28,46,0.12);">
+  <table width="640" cellpadding="0" cellspacing="0" border="0" style="max-width:640px;background:{PAPER};border-radius:4px;overflow:hidden;box-shadow:0 4px 28px rgba(34,25,15,0.14);">
 
     <!-- Top bar -->
     <tr>
       <td style="background:{NAVY};padding:14px 28px;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
           <tr>
-            <td style="font-size:11px;font-weight:bold;letter-spacing:0.14em;text-transform:uppercase;color:#ffffff;">Keller Williams Realty Black Hills</td>
-            <td align="right" style="font-size:10px;font-weight:bold;letter-spacing:0.18em;text-transform:uppercase;color:{GOLD};">Investment Offering</td>
+            <td style="font-size:13px;font-weight:bold;letter-spacing:0.06em;color:#ffffff;font-family:{SERIF};">Freedom Estates<span style="font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:bold;letter-spacing:0.14em;text-transform:uppercase;color:#c8cdb6;">&nbsp;&nbsp;Box Elder, SD</span></td>
+            <td align="right" style="font-size:10px;font-weight:bold;letter-spacing:0.16em;text-transform:uppercase;color:{NAVY};background:{GOLD};padding:5px 12px;border-radius:100px;">&#10003; Shovel-Ready</td>
           </tr>
         </table>
       </td>
@@ -194,9 +208,9 @@ def build_html(message: str) -> str:
     <!-- Title band -->
     <tr>
       <td style="background:{NAVY};padding:24px 28px 22px;">
-        <p style="margin:0 0 8px 0;font-size:10px;font-weight:bold;letter-spacing:0.18em;text-transform:uppercase;color:{GOLD};">Offering Summary &middot; {month}</p>
-        <p style="margin:0;font-family:{SERIF};font-size:26px;font-weight:bold;color:#ffffff;line-height:1.3;">{ACRES}&plusmn; Acres on the Ellsworth AFB Access Corridor</p>
-        <p style="margin:8px 0 0 0;font-size:13px;color:#9FB3C8;">{DEV_NAME} &nbsp;&middot;&nbsp; Highway 1416, Box Elder, SD 57719 &nbsp;&middot;&nbsp; {ZONING} Zoning</p>
+        <p style="margin:0 0 8px 0;font-size:10px;font-weight:bold;letter-spacing:0.18em;text-transform:uppercase;color:{GOLD};">Multi-Family &amp; Commercial Development &middot; {month}</p>
+        <p style="margin:0;font-family:{SERIF};font-size:28px;font-weight:bold;color:#ffffff;line-height:1.25;">Graded, permitted &mdash; <span style="color:{GOLD};font-style:italic;">ready to build.</span></p>
+        <p style="margin:8px 0 0 0;font-size:13px;color:#c8cdb6;">{DEV_NAME} &nbsp;&middot;&nbsp; Highway 1416, Box Elder, SD 57719 &nbsp;&middot;&nbsp; Utilities On Site</p>
       </td>
     </tr>
 
@@ -205,25 +219,25 @@ def build_html(message: str) -> str:
       <td style="background:{NAVY_2};padding:0;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
           <tr>
-            <td width="20%" align="center" style="padding:16px 6px;border-right:1px solid #22405C;">
-              <p style="margin:0;font-family:{SERIF};font-size:26px;font-weight:bold;color:#ffffff;">{ACRES}</p>
-              <p style="margin:4px 0 0 0;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:{GOLD_DIM};">Acres</p>
+            <td width="22%" align="center" style="padding:16px 6px;border-right:1px solid #3a4a2b;">
+              <p style="margin:0;font-family:{SERIF};font-size:24px;font-weight:bold;color:#ffffff;">{ACRES}</p>
+              <p style="margin:4px 0 0 0;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:{GOLD_DIM};">Multi-Family Ac.</p>
             </td>
-            <td width="20%" align="center" style="padding:16px 6px;border-right:1px solid #22405C;">
-              <p style="margin:0;font-family:{SERIF};font-size:26px;font-weight:bold;color:#ffffff;">{price_fmt}</p>
-              <p style="margin:4px 0 0 0;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:{GOLD_DIM};">Asking Price</p>
+            <td width="18%" align="center" style="padding:16px 6px;border-right:1px solid #3a4a2b;">
+              <p style="margin:0;font-family:{SERIF};font-size:24px;font-weight:bold;color:{GOLD};">{price_fmt}</p>
+              <p style="margin:4px 0 0 0;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:{GOLD_DIM};">MF Price</p>
             </td>
-            <td width="20%" align="center" style="padding:16px 6px;border-right:1px solid #22405C;">
-              <p style="margin:0;font-family:{SERIF};font-size:26px;font-weight:bold;color:#ffffff;">{price_per_acre_fmt}</p>
-              <p style="margin:4px 0 0 0;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:{GOLD_DIM};">Per Acre</p>
+            <td width="20%" align="center" style="padding:16px 6px;border-right:1px solid #3a4a2b;">
+              <p style="margin:0;font-family:{SERIF};font-size:24px;font-weight:bold;color:#ffffff;">{LI_ACRES}</p>
+              <p style="margin:4px 0 0 0;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:{GOLD_DIM};">Light Ind. Ac.</p>
             </td>
-            <td width="20%" align="center" style="padding:16px 6px;border-right:1px solid #22405C;">
-              <p style="margin:0;font-family:{SERIF};font-size:26px;font-weight:bold;color:#ffffff;">{FRONTAGE_FT:,}'</p>
-              <p style="margin:4px 0 0 0;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:{GOLD_DIM};">Frontage</p>
+            <td width="18%" align="center" style="padding:16px 6px;border-right:1px solid #3a4a2b;">
+              <p style="margin:0;font-family:{SERIF};font-size:24px;font-weight:bold;color:{GOLD};">{li_price_fmt}</p>
+              <p style="margin:4px 0 0 0;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:{GOLD_DIM};">LI Price</p>
             </td>
-            <td width="20%" align="center" style="padding:16px 6px;">
-              <p style="margin:0;font-family:{SERIF};font-size:26px;font-weight:bold;color:#ffffff;">{ZONING}</p>
-              <p style="margin:4px 0 0 0;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:{GOLD_DIM};">Zoning</p>
+            <td width="22%" align="center" style="padding:16px 6px;">
+              <p style="margin:0;font-family:{SERIF};font-size:24px;font-weight:bold;color:#ffffff;">Exit 67</p>
+              <p style="margin:4px 0 0 0;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:{GOLD_DIM};">I-90 Access</p>
             </td>
           </tr>
         </table>
@@ -262,7 +276,7 @@ def build_html(message: str) -> str:
     <!-- Property Snapshot -->
     <tr>
       <td style="padding:0 28px 28px;">
-        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F8FAFC;border-radius:6px;border:1px solid {LINE};">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ece4d0;border-radius:6px;border:1px solid {LINE};">
           <tr><td style="padding:18px 22px 6px;">
             <p style="margin:0 0 4px 0;font-size:10px;font-weight:bold;letter-spacing:0.14em;text-transform:uppercase;color:{MUTED};">Property Snapshot</p>
             <table width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -276,7 +290,7 @@ def build_html(message: str) -> str:
     <!-- CTA -->
     <tr>
       <td align="center" style="padding:0 28px 12px;">
-        <a href="mailto:arecblackhills@gmail.com?subject=Highway 1416 Offering — Request Package" style="display:inline-block;background:{NAVY};color:#ffffff;font-size:13px;font-weight:bold;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;padding:14px 36px;border-radius:3px;border:1px solid {GOLD};">Request Offering Package</a>
+        <a href="mailto:kandreson@kw.com?subject=Freedom Estates — Request Offering Package" style="display:inline-block;background:{RUST};color:#ffffff;font-size:13px;font-weight:bold;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;padding:14px 36px;border-radius:3px;border:1px solid {GOLD};">Request Offering Package</a>
       </td>
     </tr>
     <tr>
@@ -292,11 +306,11 @@ def build_html(message: str) -> str:
           <tr>
             <td>
               <p style="margin:0;font-family:{SERIF};font-size:14px;font-weight:bold;color:#ffffff;">Kevin Andreson</p>
-              <p style="margin:3px 0 0 0;font-size:11px;color:{GOLD_DIM};letter-spacing:0.04em;">Commercial Real Estate Advisor</p>
-              <p style="margin:6px 0 0 0;font-size:11px;color:#9FB3C8;">Keller Williams Realty Black Hills &nbsp;&middot;&nbsp; <a href="mailto:arecblackhills@gmail.com" style="color:{GOLD};text-decoration:none;">arecblackhills@gmail.com</a></p>
+              <p style="margin:3px 0 0 0;font-size:11px;color:{GOLD_DIM};letter-spacing:0.04em;">Realtor &middot; Keller Williams Black Hills</p>
+              <p style="margin:6px 0 0 0;font-size:11px;color:#c8cdb6;">(605) 646-5409 &nbsp;&middot;&nbsp; <a href="mailto:kandreson@kw.com" style="color:{GOLD};text-decoration:none;">kandreson@kw.com</a></p>
             </td>
             <td align="right" valign="top">
-              <p style="margin:0;font-size:10px;color:#9FB3C8;">Rapid City &amp; Black Hills, SD</p>
+              <p style="margin:0;font-size:10px;color:#c8cdb6;">Rapid City &amp; Black Hills, SD</p>
               <p style="margin:4px 0 0 0;font-size:10px;"><a href="https://christianschmaltz5-blip.github.io/Dashboard/" style="color:#9FB3C8;text-decoration:none;">kwblackhills.com</a></p>
             </td>
           </tr>
