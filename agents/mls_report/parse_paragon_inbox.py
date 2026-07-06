@@ -170,20 +170,36 @@ def get_body_and_links(msg):
 
 # ── IMAP connection ───────────────────────────────────────────────────────────
 def connect():
+    # Primary: the dedicated Paragon inbox. Gmail's IMAP occasionally throws a
+    # transient "Invalid credentials (Failure)" under load, so retry with backoff
+    # before giving up. We deliberately do NOT fall back to the personal sending
+    # account on failure — it has no Paragon mail, so a fallback would silently
+    # find 0 listings and skip the day's update (root cause of the 2026-07 freeze).
     if IMAP_APP_PASSWORD.strip():
-        try:
-            m = imaplib.IMAP4_SSL(IMAP_HOST, IMAP_PORT)
-            m.login(IMAP_EMAIL, IMAP_APP_PASSWORD)
-            print(f"✓ Connected to {IMAP_EMAIL}")
-            return m
-        except imaplib.IMAP4.error as e:
-            print(f"  arecblackhills login failed ({e}) — falling back to {FROM_EMAIL}")
+        attempts = 4
+        for i in range(1, attempts + 1):
+            try:
+                m = imaplib.IMAP4_SSL(IMAP_HOST, IMAP_PORT)
+                m.login(IMAP_EMAIL, IMAP_APP_PASSWORD)
+                print(f"✓ Connected to {IMAP_EMAIL}")
+                return m
+            except (imaplib.IMAP4.error, OSError) as e:
+                if i < attempts:
+                    wait = min(2 ** i, 15)
+                    print(f"  {IMAP_EMAIL} login attempt {i}/{attempts} failed ({e}) — retrying in {wait}s")
+                    time.sleep(wait)
+                else:
+                    print(f"\n✗ {IMAP_EMAIL} login failed after {attempts} attempts ({e}).")
+                    print("  Not falling back to a personal inbox (no Paragon mail there — would skip today's update).")
+                    print("  If this persists, regenerate the Gmail app password for that account and update config.py.")
+                    sys.exit(1)
+    # No dedicated inbox password configured — use the sending account.
     try:
         m = imaplib.IMAP4_SSL(IMAP_HOST, IMAP_PORT)
         m.login(FROM_EMAIL, GMAIL_APP_PASSWORD)
         print(f"✓ Connected to {FROM_EMAIL}")
         return m
-    except imaplib.IMAP4.error as e:
+    except (imaplib.IMAP4.error, OSError) as e:
         print(f"\nIMAP login failed: {e}")
         sys.exit(1)
 
