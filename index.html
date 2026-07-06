@@ -857,6 +857,17 @@ const NODES = [
     body: "Parses LoopNet commercial listing alert emails — filters by property type, price, and SD market. Run weekly after LoopNet email forwarding is configured.",
     icon: `<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>`,
   },
+  {
+    id: 10,
+    title: "Owner Lookup",
+    date: "ON DEMAND",
+    status: "live",
+    energy: 100,
+    relatedIds: [2, 5, 6],
+    page: "pages/owner-lookup.html",
+    body: "Type a Black Hills address or parcel ID → owner of record (the LLC/trust that holds it), mailing address, acreage, and assessed value. Live from Meade & Pennington county assessors. No key needed.",
+    icon: `<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>`,
+  },
 ];
 
 const BADGE_LABEL = { building: "Setting Up", live: "Live", pending: "Pending" };

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Owner Lookup — Kevin Andreson</title>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#000;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.1);--text:#fff;--muted:rgba(255,255,255,0.5);--dim:rgba(255,255,255,0.25);--accent:#60A5FA;}
+body{font-family:'Josefin Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.9);backdrop-filter:blur(12px);}
+.nav-back{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;} .nav-back:hover{color:var(--text);}
+.nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.nav-title{font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+
+main{max-width:760px;margin:0 auto;padding:2.5rem 2rem 5rem;}
+h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
+.subtitle{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:2rem;font-family:'DM Sans',sans-serif;}
+
+.section-label{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--dim);margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+.search-row{display:flex;gap:10px;flex-wrap:wrap;}
+.field-input{flex:1;min-width:240px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:13px 14px;font-size:14px;font-family:'Josefin Sans',sans-serif;color:#fff;outline:none;}
+.field-input:focus{border-color:rgba(96,165,250,0.5);}
+.field-input::placeholder{color:rgba(255,255,255,0.2);}
+.btn-primary{min-width:150px;padding:13px 22px;background:linear-gradient(135deg,#1B3A6B,#2563EB);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:opacity .2s;}
+.btn-primary:hover{opacity:0.9;} .btn-primary:disabled{opacity:0.45;cursor:not-allowed;}
+
+.examples{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.examples-label{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);font-weight:700;}
+.chip{font-size:11px;font-family:'DM Sans',sans-serif;color:rgba(255,255,255,0.55);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:20px;padding:5px 12px;cursor:pointer;transition:all .2s;}
+.chip:hover{background:rgba(96,165,250,0.12);border-color:rgba(96,165,250,0.3);color:#fff;}
+
+.status{font-size:12px;color:var(--muted);text-align:center;margin-top:16px;min-height:18px;font-family:'DM Sans',sans-serif;}
+.status.error{color:#F87171;}
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:7px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+#result{display:none;margin-top:2.25rem;}
+.report-block{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;}
+.report-header{background:rgba(37,99,235,0.1);border-bottom:1px solid rgba(96,165,250,0.15);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.report-owner{font-size:17px;font-weight:700;color:#fff;letter-spacing:0.01em;}
+.report-badge{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:4px 11px;border-radius:12px;white-space:nowrap;}
+.badge-entity{background:rgba(245,158,11,0.15);color:#FBBF24;border:1px solid rgba(251,191,36,0.3);}
+.badge-person{background:rgba(16,185,129,0.15);color:#34D399;border:1px solid rgba(52,211,153,0.25);}
+.report-rows{padding:6px 0;}
+.row{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding:11px 20px;border-bottom:1px solid rgba(255,255,255,0.04);}
+.row:last-child{border-bottom:none;}
+.row-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);flex-shrink:0;padding-top:2px;min-width:110px;}
+.row-value{font-size:13px;color:rgba(255,255,255,0.85);font-family:'DM Sans',sans-serif;text-align:right;line-height:1.5;}
+.row-value.big{font-variant-numeric:tabular-nums;font-weight:600;}
+
+.entity-note{margin-top:14px;padding:14px 18px;background:rgba(245,158,11,0.07);border:1px solid rgba(251,191,36,0.18);border-radius:10px;font-size:12px;color:rgba(255,255,255,0.55);line-height:1.7;font-family:'DM Sans',sans-serif;}
+.entity-note strong{color:#FBBF24;}
+.disclaimer{margin-top:16px;font-size:10px;color:rgba(255,255,255,0.28);line-height:1.8;font-family:'DM Sans',sans-serif;text-align:center;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-back" href="../index.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back to Dashboard</a>
+  <div class="nav-title">FOR KEVIN ANDRESON</div>
+</nav>
+
+<main>
+  <h1>Owner Lookup</h1>
+  <p class="subtitle">Type a Black Hills address (or parcel ID) and get the parcel's owner of record — usually the LLC or trust that holds it — plus mailing address, acreage, and assessed value. Covers Meade &amp; Pennington counties, straight from the county assessors. No key, no login.</p>
+
+  <div class="section-label">Address or Parcel ID</div>
+  <div class="search-row">
+    <input class="field-input" id="q" placeholder="11160 Liberty St, Summerset SD" autocomplete="off"/>
+    <button class="btn-primary" id="go" onclick="run()">Look Up</button>
+  </div>
+  <div class="examples">
+    <span class="examples-label">Try:</span>
+    <span class="chip" onclick="ex('11160 Liberty St, Summerset SD')">11160 Liberty St, Summerset</span>
+    <span class="chip" onclick="ex('0C.51.07.0A')">Parcel 0C.51.07.0A</span>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <div id="result"></div>
+
+  <p class="disclaimer">Public assessor records (Meade County via rcgov.org MPO layer, Pennington County ArcGIS). Ownership reflects the last recorded deed and may lag recent sales. For prospecting use.</p>
+</main>
+
+<script>
+// ── County parcel layers (mirrors agents/skip_trace/parcel_lookup.py) ──────────
+const MEADE = {
+  name: "Meade",
+  url: "https://gis.rcgov.org/server/rest/services/AGOL/MPO/MapServer/0/query",
+  situs: "ADDRESS",
+  f: { parcel_id:"PARCELID", owner:"DEEDHOLD", owner2:"deedaddr1",
+       mail_street:"deedaddr2", mail_citystate:"deedaddr3", mail_zip:"deedzip",
+       situs:"ADDRESS", place:"str", acres:"GrossAcres", legal:"LegalDesc",
+       value:"AssdValue", landuse:null }
+};
+const PENNINGTON = {
+  name: "Pennington",
+  url: "https://services1.arcgis.com/AhXvNWFdL7hH4TjJ/ArcGIS/rest/services/PenningtonParcels/FeatureServer/0/query",
+  situs: null,
+  f: { parcel_id:"PIN", owner:"GranteeLas", owner2:null,
+       mail_street:"GranteeFul", mail_city:"GranteeCit", mail_state:"GranteeSta", mail_zip:"GranteeZip",
+       situs:null, place:"Subdivisio", acres:"Acres", legal:"LegalDescr",
+       value:"ValueTotal", landuse:"LandUse" }
+};
+const COUNTIES = [MEADE, PENNINGTON];
+const MEADE_TOWNS = ["BOX ELDER","SUMMERSET","PIEDMONT","STURGIS","BLACK HAWK",
+  "WHITEWOOD","ELLSWORTH","ENNING","FAITH","HEREFORD"];
+const ENTITY_MARKERS = [" LLC"," L L C"," LLLP"," LLP"," LP"," INC"," CORP"," CO ",
+  " COMPANY"," TRUST"," TR "," HOLDINGS"," PARTNERS"," PROPERTIES"," ENTERPRISES",
+  " GROUP"," INVESTMENTS"," FUND"," ASSOCIATES"," VENTURES"," REALTY"," FARMS"," RANCH"];
+
+// ── ArcGIS helpers ─────────────────────────────────────────────────────────────
+async function arc(url, params) {
+  const qs = new URLSearchParams(params).toString();
+  const r = await fetch(url + "?" + qs);
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  return r.json();
+}
+async function queryWhere(county, where) {
+  const j = await arc(county.url, { where, outFields:"*", returnGeometry:"false", f:"json" });
+  return (j.features || []).map(x => x.attributes);
+}
+async function queryPoint(county, lon, lat) {
+  for (const dist of [0, 60, 200]) {
+    const p = { geometry: lon + "," + lat, geometryType:"esriGeometryPoint", inSR:"4326",
+      spatialRel:"esriSpatialRelIntersects", outFields:"*", returnGeometry:"false", f:"json" };
+    if (dist) { p.distance = dist; p.units = "esriSRUnit_Foot"; }
+    const j = await arc(county.url, p);
+    if (j.features && j.features.length) return j.features.map(x => x.attributes);
+  }
+  return [];
+}
+async function geocode(address) {
+  const j = await arc("https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates",
+    { SingleLine: address, maxLocations: 1, f: "json" });
+  if (j.candidates && j.candidates.length) return [j.candidates[0].location.x, j.candidates[0].location.y];
+  return null;
+}
+
+// ── Normalization ──────────────────────────────────────────────────────────────
+function isEntity(name) {
+  if (!name) return false;
+  const p = " " + name.toUpperCase() + " ";
+  return ENTITY_MARKERS.some(m => p.includes(m));
+}
+function normalize(county, a) {
+  const f = county.f, g = k => (f[k] ? a[f[k]] : null);
+  let mail;
+  if (county === PENNINGTON) {
+    const cityline = [a.GranteeCit, a.GranteeSta, a.GranteeZip].filter(Boolean).join(", ");
+    mail = [g("mail_street"), cityline].filter(Boolean).join(" ");
+  } else {
+    mail = [g("mail_street"), g("mail_citystate"), g("mail_zip")].filter(Boolean).join(" ");
+  }
+  const owner = (g("owner") || "").trim();
+  return {
+    county: county.name,
+    parcel_id: g("parcel_id"),
+    owner,
+    owner_secondary: (g("owner2") || "").trim() || null,
+    owner_is_entity: isEntity(owner),
+    mailing_address: mail.replace(/\s+/g, " ").replace(/^[ ,]+|[ ,]+$/g, "") || null,
+    situs_address: (g("situs") || "").trim() || null,
+    place: (g("place") || "").trim() || null,
+    acres: g("acres"),
+    legal: (g("legal") || "").trim() || null,
+    assessed_value: g("value"),
+    land_use: (g("landuse") || "").trim() || null,
+  };
+}
+
+// ── Lookup (mirrors parcel_lookup.lookup) ───────────────────────────────────────
+function esc(s) { return s.replace(/'/g, "''"); }
+async function lookup(query) {
+  const q = query.trim();
+  const norm = q.replace(/[-\s]/g, "");
+  // Parcel ID: all digits
+  if (/^\d+$/.test(norm) && norm.length >= 6 && norm.length <= 16) {
+    for (const c of COUNTIES) {
+      const rows = await queryWhere(c, `${c.f.parcel_id} = '${norm}'`);
+      if (rows.length) return normalize(c, rows[0]);
+    }
+    return null;
+  }
+  // Meade dotted parcel id (e.g. 0C.51.07.0A)
+  if (/^[0-9A-Za-z.]+$/.test(q) && q.includes(".")) {
+    const rows = await queryWhere(MEADE, `PARCELID = '${esc(q.toUpperCase())}'`);
+    if (rows.length) return normalize(MEADE, rows[0]);
+  }
+  // Address — 1) Meade exact situs (no geocode)
+  const street = esc(q.split(",")[0].trim().toUpperCase());
+  let rows = await queryWhere(MEADE, `UPPER(ADDRESS) LIKE '%${street}%'`);
+  if (rows.length) return normalize(MEADE, rows[0]);
+  // 2) Geocode → containing parcel
+  const pt = await geocode(q);
+  if (!pt) return null;
+  const [lon, lat] = pt;
+  const order = MEADE_TOWNS.some(t => q.toUpperCase().includes(t)) ? [MEADE, PENNINGTON] : [PENNINGTON, MEADE];
+  for (const c of order) {
+    rows = await queryPoint(c, lon, lat);
+    if (rows.length) return normalize(c, rows[0]);
+  }
+  return null;
+}
+
+// ── Render ──────────────────────────────────────────────────────────────────────
+function esch(s){ return String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+function money(v){ return (typeof v === "number" && v) ? "$" + v.toLocaleString() : "—"; }
+function row(label, value){ return value == null || value === "" ? "" :
+  `<div class="row"><div class="row-label">${label}</div><div class="row-value">${esch(value)}</div></div>`; }
+
+function render(rec) {
+  const el = document.getElementById("result");
+  if (!rec) {
+    el.style.display = "none";
+    setStatus("No parcel found. Try the full street address with city, or the parcel ID.", true);
+    return;
+  }
+  const badge = rec.owner_is_entity
+    ? `<span class="report-badge badge-entity">LLC / Trust</span>`
+    : `<span class="report-badge badge-person">Individual</span>`;
+  let owner = esch(rec.owner);
+  if (rec.owner_secondary) owner += `<div style="font-size:12px;color:rgba(255,255,255,0.45);font-weight:400;margin-top:2px;">${esch(rec.owner_secondary)}</div>`;
+  let situs = rec.situs_address || "";
+  if (situs && rec.place) situs += `  ·  ${rec.place}`;
+
+  let html = `<div class="report-block">
+    <div class="report-header"><div class="report-owner">${owner}</div>${badge}</div>
+    <div class="report-rows">
+      ${row("Mailing", rec.mailing_address)}
+      <div class="row"><div class="row-label">Parcel</div><div class="row-value">${esch(rec.parcel_id||"—")} · ${esch(rec.county)} County</div></div>
+      ${row("Situs", situs)}
+      ${rec.acres ? `<div class="row"><div class="row-label">Acres</div><div class="row-value big">${esch(rec.acres)}</div></div>` : ""}
+      <div class="row"><div class="row-label">Assessed</div><div class="row-value big">${money(rec.assessed_value)}</div></div>
+      ${row("Land Use", rec.land_use)}
+      ${row("Legal", rec.legal)}
+    </div>
+  </div>`;
+
+  if (rec.owner_is_entity) {
+    html += `<div class="entity-note"><strong>This owner is an LLC / trust.</strong> County records stop here — the mailing address above is your best direct lead. The individual members behind the entity are held at the SD Secretary of State, not in assessor data.</div>`;
+  }
+  el.innerHTML = html;
+  el.style.display = "block";
+  setStatus("");
+}
+
+// ── UI glue ──────────────────────────────────────────────────────────────────────
+function setStatus(msg, isError){ const s=document.getElementById("status"); s.className="status"+(isError?" error":""); s.innerHTML=msg; }
+function ex(v){ document.getElementById("q").value = v; run(); }
+async function run() {
+  const q = document.getElementById("q").value.trim();
+  if (!q) { setStatus("Enter an address or parcel ID.", true); return; }
+  const btn = document.getElementById("go");
+  document.getElementById("result").style.display = "none";
+  btn.disabled = true;
+  setStatus(`<span class="spinner"></span>Searching county records…`);
+  try {
+    render(await lookup(q));
+  } catch (e) {
+    setStatus("Lookup failed (county GIS unreachable). Try again in a moment. " + esch(e.message), true);
+  } finally {
+    btn.disabled = false;
+  }
+}
+document.getElementById("q").addEventListener("keydown", e => { if (e.key === "Enter") run(); });
+</script>
+</body>
+</html>
