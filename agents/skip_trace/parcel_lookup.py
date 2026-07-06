@@ -92,10 +92,17 @@ COUNTIES = [MEADE, PENNINGTON]
 MEADE_TOWNS = ("BOX ELDER", "SUMMERSET", "PIEDMONT", "STURGIS", "BLACK HAWK",
                "WHITEWOOD", "ELLSWORTH", "ENNING", "FAITH", "HEREFORD")
 
-ENTITY_MARKERS = (" LLC", " L L C", " LLLP", " LLP", " LP", " INC", " CORP",
-                  " CO ", " COMPANY", " TRUST", " TR ", " HOLDINGS", " PARTNERS",
-                  " PROPERTIES", " ENTERPRISES", " GROUP", " INVESTMENTS", " FUND",
-                  " ASSOCIATES", " VENTURES", " REALTY", " FARMS", " RANCH")
+# Name markers used to classify an owner as a trust vs an LLC/company vs a person.
+# Trust is checked first (a "SMITH FAMILY TRUST" is a trust, not a company).
+TRUST_MARKERS = (" TRUST", " TR ", " TRS ", " TTEE", " TRUSTEE", " TRUSTEES",
+                 " REVOCABLE", " IRREVOCABLE", " LIVING TRUST", " FAMILY TRUST",
+                 " REV TR", " LVG TR", " REV LIV")
+COMPANY_MARKERS = (" LLC", " L L C", " LLLP", " LLP", " LP", " INC", " CORP",
+                   " CO ", " COMPANY", " HOLDINGS", " PARTNERS", " PARTNERSHIP",
+                   " PROPERTIES", " ENTERPRISES", " GROUP", " INVESTMENTS", " FUND",
+                   " ASSOCIATES", " VENTURES", " REALTY", " FARMS", " RANCH")
+# Kept for back-compat: anything that isn't a plain person is an "entity".
+ENTITY_MARKERS = TRUST_MARKERS + COMPANY_MARKERS
 
 
 # ── Geocoding (free, no key) ─────────────────────────────────────────────────
@@ -155,11 +162,22 @@ def _query_point(county, lon, lat, buffers=(0, 60, 200)):
 
 
 # ── Normalization ────────────────────────────────────────────────────────────
-def _is_entity(name):
+def classify_owner(name):
+    """Return 'trust', 'llc', or 'person' from the owner name's wording.
+    Heuristic (name markers only) — good for prospecting triage, not a legal
+    determination; a definitive LLC/trust status lives at the SD SoS."""
     if not name:
-        return False
+        return "person"
     padded = f" {name.upper()} "
-    return any(m in padded for m in ENTITY_MARKERS)
+    if any(m in padded for m in TRUST_MARKERS):
+        return "trust"
+    if any(m in padded for m in COMPANY_MARKERS):
+        return "llc"
+    return "person"
+
+
+def _is_entity(name):
+    return classify_owner(name) != "person"
 
 
 def _normalize(county, attrs):
@@ -187,6 +205,7 @@ def _normalize(county, attrs):
         "parcel_id": g("parcel_id"),
         "owner": owner,
         "owner_secondary": (g("owner2") or "").strip() or None,
+        "owner_type": classify_owner(owner),          # 'trust' | 'llc' | 'person'
         "owner_is_entity": _is_entity(owner),
         "mailing_address": re.sub(r"\s+", " ", mail).strip(" ,") or None,
         "situs_address": (g("situs") or "").strip() or None,
@@ -246,7 +265,11 @@ def lookup(query):
 def format_record(rec):
     if not rec:
         return "No parcel found. Try the full street address with city, or the parcel ID."
-    tag = "  ⟵ entity (LLC/trust) — run Phase 2 (SD SoS) for the people" if rec["owner_is_entity"] else ""
+    tag = {
+        "trust": "  ⟵ TRUST — trustee/beneficiaries (often named on the deed)",
+        "llc": "  ⟵ LLC/company — run Phase 2 (SD SoS) for the members",
+        "person": "",
+    }.get(rec.get("owner_type"), "")
     lines = [
         f"OWNER      : {rec['owner']}{tag}",
     ]

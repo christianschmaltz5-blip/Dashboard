@@ -44,6 +44,7 @@ h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
 .report-owner{font-size:17px;font-weight:700;color:#fff;letter-spacing:0.01em;}
 .report-badge{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:4px 11px;border-radius:12px;white-space:nowrap;}
 .badge-entity{background:rgba(245,158,11,0.15);color:#FBBF24;border:1px solid rgba(251,191,36,0.3);}
+.badge-trust{background:rgba(167,139,250,0.15);color:#C4B5FD;border:1px solid rgba(167,139,250,0.3);}
 .badge-person{background:rgba(16,185,129,0.15);color:#34D399;border:1px solid rgba(52,211,153,0.25);}
 .report-rows{padding:6px 0;}
 .row{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding:11px 20px;border-bottom:1px solid rgba(255,255,255,0.04);}
@@ -109,8 +110,11 @@ const PENNINGTON = {
 const COUNTIES = [MEADE, PENNINGTON];
 const MEADE_TOWNS = ["BOX ELDER","SUMMERSET","PIEDMONT","STURGIS","BLACK HAWK",
   "WHITEWOOD","ELLSWORTH","ENNING","FAITH","HEREFORD"];
-const ENTITY_MARKERS = [" LLC"," L L C"," LLLP"," LLP"," LP"," INC"," CORP"," CO ",
-  " COMPANY"," TRUST"," TR "," HOLDINGS"," PARTNERS"," PROPERTIES"," ENTERPRISES",
+// Trust is checked first so "SMITH FAMILY TRUST" reads as a trust, not a company.
+const TRUST_MARKERS = [" TRUST"," TR "," TRS "," TTEE"," TRUSTEE"," TRUSTEES",
+  " REVOCABLE"," IRREVOCABLE"," LIVING TRUST"," FAMILY TRUST"," REV TR"," LVG TR"," REV LIV"];
+const COMPANY_MARKERS = [" LLC"," L L C"," LLLP"," LLP"," LP"," INC"," CORP"," CO ",
+  " COMPANY"," HOLDINGS"," PARTNERS"," PARTNERSHIP"," PROPERTIES"," ENTERPRISES",
   " GROUP"," INVESTMENTS"," FUND"," ASSOCIATES"," VENTURES"," REALTY"," FARMS"," RANCH"];
 
 // ── ArcGIS helpers ─────────────────────────────────────────────────────────────
@@ -142,11 +146,14 @@ async function geocode(address) {
 }
 
 // ── Normalization ──────────────────────────────────────────────────────────────
-function isEntity(name) {
-  if (!name) return false;
+function classifyOwner(name) {  // 'trust' | 'llc' | 'person'
+  if (!name) return "person";
   const p = " " + name.toUpperCase() + " ";
-  return ENTITY_MARKERS.some(m => p.includes(m));
+  if (TRUST_MARKERS.some(m => p.includes(m))) return "trust";
+  if (COMPANY_MARKERS.some(m => p.includes(m))) return "llc";
+  return "person";
 }
+function isEntity(name) { return classifyOwner(name) !== "person"; }
 function normalize(county, a) {
   const f = county.f, g = k => (f[k] ? a[f[k]] : null);
   let mail;
@@ -162,6 +169,7 @@ function normalize(county, a) {
     parcel_id: g("parcel_id"),
     owner,
     owner_secondary: (g("owner2") || "").trim() || null,
+    owner_type: classifyOwner(owner),
     owner_is_entity: isEntity(owner),
     mailing_address: mail.replace(/\s+/g, " ").replace(/^[ ,]+|[ ,]+$/g, "") || null,
     situs_address: (g("situs") || "").trim() || null,
@@ -220,9 +228,12 @@ function render(rec) {
     setStatus("No parcel found. Try the full street address with city, or the parcel ID.", true);
     return;
   }
-  const badge = rec.owner_is_entity
-    ? `<span class="report-badge badge-entity">LLC / Trust</span>`
-    : `<span class="report-badge badge-person">Individual</span>`;
+  const badgeMap = {
+    trust:  `<span class="report-badge badge-trust">Trust</span>`,
+    llc:    `<span class="report-badge badge-entity">LLC / Company</span>`,
+    person: `<span class="report-badge badge-person">Individual</span>`,
+  };
+  const badge = badgeMap[rec.owner_type] || badgeMap.person;
   let owner = esch(rec.owner);
   if (rec.owner_secondary) owner += `<div style="font-size:12px;color:rgba(255,255,255,0.45);font-weight:400;margin-top:2px;">${esch(rec.owner_secondary)}</div>`;
   let situs = rec.situs_address || "";
@@ -241,8 +252,10 @@ function render(rec) {
     </div>
   </div>`;
 
-  if (rec.owner_is_entity) {
-    html += `<div class="entity-note"><strong>This owner is an LLC / trust.</strong> County records stop here — the mailing address above is your best direct lead. The individual members behind the entity are held at the SD Secretary of State, not in assessor data.</div>`;
+  if (rec.owner_type === "llc") {
+    html += `<div class="entity-note"><strong>This owner is an LLC / company.</strong> County records stop at the entity — the mailing address above is your best direct lead. The individual members behind it are held at the SD Secretary of State, not in assessor data.</div>`;
+  } else if (rec.owner_type === "trust") {
+    html += `<div class="entity-note"><strong>This owner is a trust.</strong> County records stop at the entity — the mailing address above is your best direct lead. Trusts aren't in the SD Secretary of State registry; the trustee is often named on the recorded deed.</div>`;
   }
   el.innerHTML = html;
   el.style.display = "block";
