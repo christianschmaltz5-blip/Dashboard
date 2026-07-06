@@ -25,3 +25,6 @@ preview_report.html
 agents/mls_report/photos-cache.json
 agents/skip_trace/lookups.log.jsonl
 agents/skip_trace/__pycache__/
+agents/buyer_match/buyers.json
+agents/buyer_match/alerted.json
+agents/buyer_match/__pycache__/

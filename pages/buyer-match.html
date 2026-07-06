@@ -102,6 +102,7 @@ h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
   <div class="toolbar">
     <button class="pill primary" onclick="runMatch()">↻ Find Matches</button>
     <button class="pill" onclick="openImport()">Import Buyers (CSV)</button>
+    <button class="pill" onclick="exportBuyers()">Export for Automation</button>
     <button class="pill" onclick="loadSamples()">Load Sample Buyers</button>
     <span class="counts" id="counts"></span>
   </div>
@@ -374,6 +375,16 @@ function loadSamples(){
   const buyers=getBuyers().filter(b=>b.addedDate!=='sample');   // replace prior samples
   setBuyers(buyers.concat(samples));
   setStatus('Loaded 3 sample buyers.', 'ok'); runMatch();
+}
+
+// Download the buyer list as buyers.json for the daily automation job.
+// Drop the file in agents/buyer_match/ so the 6:30am job matches these buyers.
+function exportBuyers(){
+  const buyers=getBuyers().filter(b=>b.addedDate!=='sample');
+  if(!buyers.length){ setStatus('No non-sample buyers to export. Add or import real buyers first.', 'error'); return; }
+  const blob=new Blob([JSON.stringify(buyers,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='buyers.json'; a.click();
+  setStatus(`Exported ${buyers.length} buyers → save into agents/buyer_match/ for the daily job.`, 'ok');
 }
 
 function setStatus(msg,type){ const s=document.getElementById('status'); s.className='status'+(type?' '+type:''); s.innerHTML=msg; }

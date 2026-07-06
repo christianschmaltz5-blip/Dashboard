@@ -1,0 +1,5 @@
+[
+  {"firstName":"Dana","lastName":"Reeves","email":"dana.reeves@example.com","city":"Sturgis","type":"Buyer","budget":"$250K–$400K","interest":"Single family home in Sturgis, 3 bed","notes":"Relocating, wants move-in ready"},
+  {"firstName":"Marcus","lastName":"Hale","email":"mhale@example.com","city":"Rapid City","type":"Buyer","budget":"up to $500k","interest":"Residential, open to Rapid City area","notes":""},
+  {"firstName":"Cheyenne","lastName":"Boyd","email":"cboyd@example.com","city":"Hermosa","type":"Buyer","budget":"$350,000","interest":"Home near Hermosa","notes":"First-time buyer"}
+]

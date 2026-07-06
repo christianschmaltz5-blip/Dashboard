@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Install:  cp this file to ~/Library/LaunchAgents/ then:
+       launchctl load ~/Library/LaunchAgents/com.arc.buyer-match.plist
+     Runs daily at 6:30 AM, after com.arc.mls-report (6:00) refreshes listings. -->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.arc.buyer-match</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/christianschmaltz/arc-dashboard/agents/buyer_match/run.sh</string>
+    </array>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>6</integer>
+        <key>Minute</key>
+        <integer>30</integer>
+    </dict>
+    <key>StandardOutPath</key>
+    <string>/tmp/arc-buyer-match.out</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/arc-buyer-match.err</string>
+</dict>
+</plist>
