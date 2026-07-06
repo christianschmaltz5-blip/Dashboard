@@ -29,13 +29,21 @@ All data sources are free public records. No API keys required for Phase 1.
 
 import argparse
 import json
+import os
 import re
 import sys
+from datetime import datetime, timezone
 import requests
 from urllib.parse import urlencode
 
 HEADERS = {"User-Agent": "KW Black Hills Parcel Lookup (Kevin Andreson)"}
 TIMEOUT = 25
+
+# Every lookup is appended here so we can measure how often an owner is an
+# LLC/trust — i.e. how many leads would actually need the Phase-2 entity lookup.
+# That hit-rate is the data Kevin needs to decide whether the SD SoS bulk-data
+# subscription ($1,500 setup) is worth it. See `--stats`.
+LOG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "lookups.log.jsonl")
 
 # ── County parcel layers (verified live 2026-07-06) ──────────────────────────
 MEADE = {
@@ -256,11 +264,73 @@ def format_record(rec):
     return "\n".join(lines)
 
 
+# ── Lookup log / LLC hit-rate stats ──────────────────────────────────────────
+def log_lookup(query, rec):
+    """Append one lookup to the JSONL log. Best-effort — never breaks a lookup."""
+    try:
+        entry = {
+            "ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "query": query,
+            "found": bool(rec),
+            "county": rec.get("county") if rec else None,
+            "owner": rec.get("owner") if rec else None,
+            "owner_is_entity": rec.get("owner_is_entity") if rec else None,
+        }
+        with open(LOG_PATH, "a") as fh:
+            fh.write(json.dumps(entry) + "\n")
+    except Exception:
+        pass
+
+
+def print_stats():
+    """Tally the LLC/trust hit-rate from the lookup log — the Phase-2 buy signal."""
+    if not os.path.exists(LOG_PATH):
+        print("No lookups logged yet. Run some address lookups first, then --stats.")
+        return
+    total = found = entities = 0
+    counties = {}
+    with open(LOG_PATH) as fh:
+        for line in fh:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                e = json.loads(line)
+            except ValueError:
+                continue
+            total += 1
+            if e.get("found"):
+                found += 1
+                c = e.get("county")
+                if c:
+                    counties[c] = counties.get(c, 0) + 1
+                if e.get("owner_is_entity"):
+                    entities += 1
+    print(f"Lookups logged     : {total}")
+    print(f"Parcels found      : {found}")
+    if found:
+        pct = 100 * entities / found
+        print(f"Owner is LLC/trust : {entities} of {found} found  ({pct:.0f}%)  ⟵ these need Phase 2")
+        print(f"Projected          : at 100 leads/mo, ~{round(pct)} would need an entity lookup")
+    if counties:
+        print("By county          : " + ", ".join(f"{k}:{v}" for k, v in sorted(counties.items())))
+    print(f"\nLog: {LOG_PATH}")
+
+
 def main():
     ap = argparse.ArgumentParser(description="Address/parcel -> owner lookup (Meade + Pennington counties)")
-    ap.add_argument("query", nargs="+", help="street address or parcel ID")
+    ap.add_argument("query", nargs="*", help="street address or parcel ID")
     ap.add_argument("--json", action="store_true", help="output raw JSON")
+    ap.add_argument("--stats", action="store_true",
+                    help="show the LLC/trust hit-rate from the lookup log and exit")
+    ap.add_argument("--no-log", action="store_true", help="don't append this lookup to the log")
     args = ap.parse_args()
+
+    if args.stats:
+        print_stats()
+        return
+    if not args.query:
+        ap.error("give a street address or parcel ID (or use --stats)")
     q = " ".join(args.query)
 
     try:
@@ -268,6 +338,9 @@ def main():
     except requests.exceptions.RequestException as e:
         print(f"Lookup failed (network/GIS error): {e}", file=sys.stderr)
         sys.exit(1)
+
+    if not args.no_log:
+        log_lookup(q, rec)
 
     if args.json:
         print(json.dumps(rec, indent=2))

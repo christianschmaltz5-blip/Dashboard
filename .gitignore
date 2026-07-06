@@ -23,3 +23,5 @@ preview_report.html
 .DS_Store
 .env
 agents/mls_report/photos-cache.json
+agents/skip_trace/lookups.log.jsonl
+agents/skip_trace/__pycache__/
