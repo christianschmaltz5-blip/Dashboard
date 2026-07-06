@@ -38,6 +38,18 @@ h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
 .empty{background:rgba(255,255,255,0.03);border:1px dashed rgba(255,255,255,0.12);border-radius:12px;padding:28px 22px;text-align:center;font-family:'DM Sans',sans-serif;color:var(--muted);font-size:13px;line-height:1.7;}
 .empty a{color:#60A5FA;text-decoration:none;} .empty a:hover{text-decoration:underline;}
 
+/* Quick Add Buyer */
+.addbox{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:1.25rem;}
+.addgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.fld{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:9px 12px;font-size:12px;font-family:'Josefin Sans',sans-serif;color:#fff;outline:none;}
+.fld:focus{border-color:rgba(96,165,250,0.5);} .fld::placeholder{color:rgba(255,255,255,0.22);}
+.flabel{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:4px;}
+.buyerchips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1.25rem;}
+.bchip{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-family:'DM Sans',sans-serif;color:rgba(255,255,255,0.7);background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:20px;padding:5px 6px 5px 12px;}
+.bchip b{font-weight:600;color:#fff;}
+.bchip .rm{cursor:pointer;width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,0.08);display:inline-flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);font-size:12px;line-height:1;}
+.bchip .rm:hover{background:rgba(248,113,113,0.2);color:#F87171;}
+
 /* Match card */
 .match{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;margin-bottom:14px;}
 .match-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;background:rgba(37,99,235,0.08);border-bottom:1px solid rgba(96,165,250,0.14);flex-wrap:wrap;}
@@ -100,13 +112,30 @@ h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
   </div>
 
   <div class="toolbar">
-    <button class="pill primary" onclick="runMatch()">↻ Find Matches</button>
+    <button class="pill primary" onclick="toggleAdd()">＋ Add Buyer</button>
+    <button class="pill" onclick="runMatch()">↻ Find Matches</button>
     <button class="pill" onclick="openImport()">Import Buyers (CSV)</button>
     <button class="pill" onclick="exportBuyers()">Export for Automation</button>
-    <button class="pill" onclick="loadSamples()">Load Sample Buyers</button>
+    <button class="pill" onclick="loadSamples()">Load Samples</button>
     <span class="counts" id="counts"></span>
   </div>
 
+  <div class="addbox" id="addbox" style="display:none;">
+    <div class="addgrid">
+      <div><div class="flabel">First name</div><input class="fld" id="a-first" placeholder="John"/></div>
+      <div><div class="flabel">Last name</div><input class="fld" id="a-last" placeholder="Smith"/></div>
+      <div><div class="flabel">Email</div><input class="fld" id="a-email" placeholder="john@email.com"/></div>
+      <div><div class="flabel">City / area</div><input class="fld" id="a-city" placeholder="Rapid City"/></div>
+      <div><div class="flabel">Budget</div><input class="fld" id="a-budget" placeholder="$300K–$450K"/></div>
+      <div><div class="flabel">Property interest</div><input class="fld" id="a-interest" placeholder="3 bed single family, move-in ready"/></div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-draft" onclick="saveBuyer()">Save Buyer</button>
+      <button class="btn-ghost" onclick="toggleAdd()">Close</button>
+    </div>
+  </div>
+
+  <div class="buyerchips" id="buyerlist"></div>
   <div id="results"></div>
   <div class="status" id="status"></div>
 
@@ -146,6 +175,34 @@ function clearKey(){ localStorage.removeItem(KEY); const b=document.getElementBy
 // ── Buyer store ─────────────────────────────────────────────────────────────────
 function getBuyers(){ return JSON.parse(localStorage.getItem(BUYERS_KEY)||'[]'); }
 function setBuyers(a){ localStorage.setItem(BUYERS_KEY, JSON.stringify(a)); }
+
+// ── Quick add / manage buyers ────────────────────────────────────────────────────
+function toggleAdd(){ const b=document.getElementById('addbox');
+  b.style.display = b.style.display==='none' ? 'block' : 'none';
+  if(b.style.display==='block') document.getElementById('a-first').focus(); }
+function saveBuyer(){
+  const g=id=>document.getElementById(id).value.trim();
+  const first=g('a-first'), last=g('a-last');
+  if(!first && !last){ setStatus('Enter at least a name.', 'error'); return; }
+  const buyers=getBuyers();
+  buyers.push({ firstName:first, lastName:last, email:g('a-email'), city:g('a-city'), type:'Buyer',
+    budget:g('a-budget'), interest:g('a-interest'), notes:'', tags:[],
+    addedDate:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) });
+  setBuyers(buyers);
+  ['a-first','a-last','a-email','a-city','a-budget','a-interest'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('a-first').focus();
+  setStatus(`Added ${first} ${last}. Add another, or Close to see matches.`, 'ok');
+  runMatch();
+}
+function removeBuyer(i){ const buyers=getBuyers(); const b=buyers[i];
+  if(!confirm(`Remove ${b.firstName} ${b.lastName}?`)) return;
+  buyers.splice(i,1); setBuyers(buyers); runMatch(); }
+function renderBuyerList(){
+  const el=document.getElementById('buyerlist'), buyers=getBuyers();
+  el.innerHTML = buyers.length ? buyers.map((b,i)=>
+    `<span class="bchip"><b>${esch(b.firstName)} ${esch(b.lastName)}</b> ${esch(b.budget||'')}${b.city?' · '+esch(b.city):''} <span class="rm" title="Remove" onclick="removeBuyer(${i})">×</span></span>`
+  ).join('') : '';
+}
 
 // ── Budget parsing: "$500K–$1M", "$3,750,000", "up to 400k", "300-500k" ─────────
 function parseBudget(str){
@@ -216,13 +273,14 @@ function scoreMatch(buyer, listing){
 // ── Run the match ───────────────────────────────────────────────────────────────
 let MATCHES=[];
 function runMatch(){
+  renderBuyerList();
   const buyers=getBuyers();
   const listings=(window.PARAGON_LISTINGS && window.PARAGON_LISTINGS.listings) || [];
   const res=document.getElementById('results');
   document.getElementById('counts').textContent=`${buyers.length} buyers · ${listings.length} listings`;
 
   if(!buyers.length){
-    res.innerHTML=`<div class="empty">No buyers saved yet. Add them in the <a href="crm-intake.html">CRM Intake</a> tool, <b>Import Buyers (CSV)</b> from KW Command, or <b>Load Sample Buyers</b> to see how matching works.</div>`;
+    res.innerHTML=`<div class="empty">No buyers yet. Hit <b>＋ Add Buyer</b> to plug your active buyers in (name, city, budget, interest — takes seconds), <b>Import</b> a KW Command CSV, or <b>Load Samples</b> to see how matching works.</div>`;
     return;
   }
   // Score every pair, then keep only each buyer's top few so the list stays
