@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Buyer Match — Kevin Andreson</title>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#000;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.1);--text:#fff;--muted:rgba(255,255,255,0.5);--dim:rgba(255,255,255,0.25);--accent:#60A5FA;}
+body{font-family:'Josefin Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.9);backdrop-filter:blur(12px);}
+.nav-back{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;} .nav-back:hover{color:var(--text);}
+.nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.nav-title{font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+
+main{max-width:880px;margin:0 auto;padding:2.5rem 2rem 5rem;}
+h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
+.subtitle{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:1.75rem;font-family:'DM Sans',sans-serif;}
+
+.key-banner{display:flex;align-items:center;gap:12px;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.25);border-radius:10px;padding:12px 16px;margin-bottom:1.25rem;flex-wrap:wrap;}
+.key-banner.ok{background:rgba(16,185,129,0.08);border-color:rgba(52,211,153,0.25);}
+.key-banner-label{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#A78BFA;white-space:nowrap;}
+.key-banner.ok .key-banner-label{color:#34D399;}
+.key-input{flex:1;min-width:180px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:8px 12px;font-size:12px;font-family:monospace;color:#fff;outline:none;} .key-input:focus{border-color:#A78BFA;}
+.key-btn{padding:8px 16px;background:#A78BFA;color:#000;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;border:none;border-radius:6px;cursor:pointer;white-space:nowrap;} .key-btn:hover{background:#c4b5fd;}
+.key-status{font-size:12px;color:#34D399;} .key-clear{font-size:11px;color:rgba(255,255,255,0.3);cursor:pointer;text-decoration:underline;margin-left:8px;} .key-clear:hover{color:rgba(255,255,255,0.6);}
+
+.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:1.25rem;}
+.pill{font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:8px 14px;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.65);}
+.pill:hover{background:rgba(255,255,255,0.08);color:#fff;}
+.pill.primary{background:linear-gradient(135deg,#1B3A6B,#2563EB);color:#fff;border:none;}
+.counts{font-size:12px;color:var(--muted);font-family:'DM Sans',sans-serif;margin-left:auto;}
+
+.section-label{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--dim);margin:1.5rem 0 12px;display:flex;align-items:center;gap:10px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+.empty{background:rgba(255,255,255,0.03);border:1px dashed rgba(255,255,255,0.12);border-radius:12px;padding:28px 22px;text-align:center;font-family:'DM Sans',sans-serif;color:var(--muted);font-size:13px;line-height:1.7;}
+.empty a{color:#60A5FA;text-decoration:none;} .empty a:hover{text-decoration:underline;}
+
+/* Match card */
+.match{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;margin-bottom:14px;}
+.match-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;background:rgba(37,99,235,0.08);border-bottom:1px solid rgba(96,165,250,0.14);flex-wrap:wrap;}
+.match-buyer{font-size:14px;font-weight:700;color:#fff;}
+.match-buyer span{font-size:11px;font-weight:400;color:rgba(255,255,255,0.45);font-family:'DM Sans',sans-serif;margin-left:8px;}
+.match-score{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border-radius:11px;background:rgba(16,185,129,0.15);color:#34D399;border:1px solid rgba(52,211,153,0.25);white-space:nowrap;}
+.match-score.warm{background:rgba(245,158,11,0.13);color:#FBBF24;border-color:rgba(251,191,36,0.25);}
+.match-body{display:flex;gap:16px;padding:16px 18px;}
+.match-photo{width:120px;height:88px;border-radius:8px;object-fit:cover;background:rgba(255,255,255,0.05);flex-shrink:0;}
+.match-info{flex:1;min-width:0;}
+.li-addr{font-size:14px;font-weight:600;color:#fff;margin-bottom:2px;}
+.li-meta{font-size:12px;color:rgba(255,255,255,0.5);font-family:'DM Sans',sans-serif;margin-bottom:8px;}
+.li-price{color:#60A5FA;font-weight:700;}
+.chips{display:flex;gap:6px;flex-wrap:wrap;}
+.chip{font-size:10px;font-weight:600;letter-spacing:0.03em;padding:3px 9px;border-radius:11px;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.6);font-family:'DM Sans',sans-serif;}
+.match-actions{display:flex;gap:8px;padding:0 18px 16px;flex-wrap:wrap;}
+.btn-draft{padding:10px 18px;background:linear-gradient(135deg,#1B3A6B,#2563EB);color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;}
+.btn-draft:hover{opacity:.9;} .btn-draft:disabled{opacity:.4;cursor:not-allowed;}
+.btn-ghost{padding:10px 16px;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.12);border-radius:8px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;}
+.btn-ghost:hover{background:rgba(255,255,255,0.09);}
+
+/* Draft output */
+.draft{margin:0 18px 16px;background:rgba(0,0,0,0.35);border:1px solid rgba(96,165,250,0.18);border-radius:10px;padding:14px 16px;display:none;}
+.draft.show{display:block;}
+.draft-field{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);margin-bottom:4px;}
+.draft-subject{font-size:13px;color:#fff;font-weight:600;margin-bottom:10px;font-family:'DM Sans',sans-serif;}
+.draft-body{font-size:12px;color:rgba(255,255,255,0.8);line-height:1.7;font-family:'DM Sans',sans-serif;white-space:pre-wrap;}
+.draft-tools{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+
+.status{font-size:12px;color:var(--muted);text-align:center;margin-top:14px;min-height:18px;font-family:'DM Sans',sans-serif;}
+.status.error{color:#F87171;} .status.ok{color:#34D399;}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:200;padding:20px;}
+.modal.show{display:flex;}
+.modal-box{background:#0b0b0b;border:1px solid var(--border);border-radius:14px;max-width:560px;width:100%;padding:22px;}
+.modal-box h3{font-size:16px;margin-bottom:6px;}
+.modal-box p{font-size:12px;color:var(--muted);font-family:'DM Sans',sans-serif;margin-bottom:12px;line-height:1.6;}
+.modal-box textarea{width:100%;min-height:150px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:12px;font-family:monospace;color:#fff;outline:none;resize:vertical;}
+.modal-actions{display:flex;gap:8px;margin-top:12px;justify-content:flex-end;}
+.disclaimer{margin-top:18px;font-size:10px;color:rgba(255,255,255,0.28);line-height:1.8;font-family:'DM Sans',sans-serif;text-align:center;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-back" href="../index.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back to Dashboard</a>
+  <div class="nav-title">FOR KEVIN ANDRESON</div>
+</nav>
+
+<main>
+  <h1>Buyer Match</h1>
+  <p class="subtitle">Cross-references your saved buyers against the latest MLS listings and surfaces the ones worth a "thought of you" email — then drafts each one for you to review and send. Buyers come from your CRM; listings from your Paragon feed. Nothing sends automatically.</p>
+
+  <div class="key-banner" id="key-banner">
+    <div class="key-banner-label">Anthropic API Key</div>
+    <input class="key-input" type="password" id="key-input" placeholder="sk-ant-api03-… (same key as your other tools)" autocomplete="off"/>
+    <button class="key-btn" onclick="saveKey()">Save Key</button>
+  </div>
+
+  <div class="toolbar">
+    <button class="pill primary" onclick="runMatch()">↻ Find Matches</button>
+    <button class="pill" onclick="openImport()">Import Buyers (CSV)</button>
+    <button class="pill" onclick="loadSamples()">Load Sample Buyers</button>
+    <span class="counts" id="counts"></span>
+  </div>
+
+  <div id="results"></div>
+  <div class="status" id="status"></div>
+
+  <p class="disclaimer">Matching is a heuristic on budget, area, and property type — always sanity-check before sending. Listings reflect your last Paragon sync. Drafts are generated locally with your API key and never sent without you.</p>
+</main>
+
+<!-- CSV import modal -->
+<div class="modal" id="import-modal">
+  <div class="modal-box">
+    <h3>Import buyers from KW Command</h3>
+    <p>Export your contacts from KW Command as CSV, then paste the contents here. Columns are matched by header (First Name, Last Name, Email, City, Budget, Property Interest, Lead Type…). Buyers are added to this browser and to your CRM list.</p>
+    <textarea id="import-text" placeholder="First Name,Last Name,Email,Phone,City,State,Lead Type,...&#10;John,Smith,john@...,...,Buyer,..."></textarea>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeImport()">Cancel</button>
+      <button class="btn-draft" onclick="doImport()">Import</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/paragon-listings.js"></script>
+<script>
+const KEY = 'kw_anthropic_key';
+const BUYERS_KEY = 'kw_buyers';   // shared with crm-intake.html
+const AGENT = { name:'Kevin Andreson', firm:'Keller Williams Realty Black Hills',
+                phone:'605-646-5409', email:'arecblackhills@gmail.com' };
+
+// ── API key banner (same pattern as the CRM) ────────────────────────────────────
+function loadKey(){ const k=localStorage.getItem(KEY)||''; if(k) showKeySaved(k); }
+function saveKey(){ const v=document.getElementById('key-input').value.trim();
+  if(!v.startsWith('sk-')){ alert("Doesn't look like an Anthropic key."); return; }
+  localStorage.setItem(KEY, v); showKeySaved(v); }
+function showKeySaved(k){ const b=document.getElementById('key-banner'); b.className='key-banner ok';
+  b.innerHTML=`<div class="key-banner-label">API Key</div><div class="key-status">✓ Saved — ${k.slice(0,12)}…${k.slice(-4)}</div><span class="key-clear" onclick="clearKey()">Change</span>`; }
+function clearKey(){ localStorage.removeItem(KEY); const b=document.getElementById('key-banner'); b.className='key-banner';
+  b.innerHTML=`<div class="key-banner-label">Anthropic API Key</div><input class="key-input" type="password" id="key-input" placeholder="sk-ant-api03-…" autocomplete="off"/><button class="key-btn" onclick="saveKey()">Save Key</button>`; }
+
+// ── Buyer store ─────────────────────────────────────────────────────────────────
+function getBuyers(){ return JSON.parse(localStorage.getItem(BUYERS_KEY)||'[]'); }
+function setBuyers(a){ localStorage.setItem(BUYERS_KEY, JSON.stringify(a)); }
+
+// ── Budget parsing: "$500K–$1M", "$3,750,000", "up to 400k", "300-500k" ─────────
+function parseBudget(str){
+  if(!str) return null;
+  const s=String(str).toLowerCase().replace(/,/g,'');
+  const re=/(\d+(?:\.\d+)?)\s*(k|m)?/g; let m; const nums=[];
+  while((m=re.exec(s))){
+    let n=parseFloat(m[1]); const suf=m[2];
+    if(suf==='k') n*=1e3; else if(suf==='m') n*=1e6;
+    else if(n<10000) n*=1e3;               // bare shorthand: 400 → 400k
+    if(n>=1000) nums.push(n);
+  }
+  if(!nums.length) return null;
+  nums.sort((a,b)=>a-b);
+  if(nums.length===1) return { min: nums[0]*0.6, max: nums[0], raw:str };
+  return { min: nums[0], max: nums[nums.length-1], raw:str };
+}
+
+// ── Property-type categories ────────────────────────────────────────────────────
+function catOf(t){ t=(t||'').toLowerCase();
+  if(/(single family|residential|condo|townhouse|duplex|home)/.test(t)) return 'residential';
+  if(/commercial|office|retail|industrial/.test(t)) return 'commercial';
+  if(/(land|lot|acre)/.test(t)) return 'land';
+  return 'other'; }
+function wantedCat(txt){ txt=(txt||'').toLowerCase();
+  if(/commercial|office|retail|industrial/.test(txt)) return 'commercial';
+  if(/\b(land|lot|acre|acreage|farm|ranch)\b/.test(txt)) return 'land';
+  if(/(residential|home|house|single family|family home|bed)/.test(txt)) return 'residential';
+  return null; }
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function cityOf(cs){ return (cs||'').split(',')[0].trim().toLowerCase(); }
+
+// ── Scoring: buyer × listing → {score, reasons} or null ─────────────────────────
+function scoreMatch(buyer, listing){
+  if((buyer.type||'').toLowerCase()==='seller') return null;
+  if((listing.status||'').toLowerCase()==='sold') return null;
+  const reasons=[]; let score=0;
+
+  const bud=parseBudget(buyer.budget), price=listing.price;
+  if(bud && price){
+    if(price>=bud.min && price<=bud.max){ score+=50; reasons.push('In budget'); }
+    else if(price>bud.max && price<=bud.max*1.1){ score+=25; reasons.push('~10% over budget'); }
+    else return null;                       // clearly out of budget
+  }
+
+  const want=wantedCat((buyer.interest||'')+' '+(buyer.notes||''));
+  const cat=catOf(listing.prop_type);
+  if(want){
+    if(want===cat){ score+=25; reasons.push(cap(cat)); }
+    else if(cat!=='other') return null;     // wants commercial, it's residential → skip
+  }
+
+  const bcity=cityOf(buyer.city), lcity=cityOf(listing.city_state);
+  if(bcity && lcity){
+    if(lcity.includes(bcity)){ score+=30; reasons.push('In '+cap(lcity)); }
+    else reasons.push('⚠ outside '+cap(bcity));   // still a fit on budget/type, but flag the area
+  }
+
+  // recency boost (listing seen in last 7 days)
+  if(listing.alert_date){
+    const days=(Date.now()-new Date(listing.alert_date).getTime())/864e5;
+    if(days<=7){ score+=10; reasons.push('New this week'); }
+  }
+  if(score<25) return null;                 // need at least one real signal
+  return { score, reasons };
+}
+
+// ── Run the match ───────────────────────────────────────────────────────────────
+let MATCHES=[];
+function runMatch(){
+  const buyers=getBuyers();
+  const listings=(window.PARAGON_LISTINGS && window.PARAGON_LISTINGS.listings) || [];
+  const res=document.getElementById('results');
+  document.getElementById('counts').textContent=`${buyers.length} buyers · ${listings.length} listings`;
+
+  if(!buyers.length){
+    res.innerHTML=`<div class="empty">No buyers saved yet. Add them in the <a href="crm-intake.html">CRM Intake</a> tool, <b>Import Buyers (CSV)</b> from KW Command, or <b>Load Sample Buyers</b> to see how matching works.</div>`;
+    return;
+  }
+  // Score every pair, then keep only each buyer's top few so the list stays
+  // to the strongest fits (a "thought of you" email should be selective).
+  const TOP_PER_BUYER=6;
+  const byBuyer=new Map();
+  for(const b of buyers){
+    const bkey=(b.firstName||'')+'|'+(b.lastName||'')+'|'+(b.email||'');
+    const hits=[];
+    for(const l of listings){ const s=scoreMatch(b,l); if(s) hits.push({ buyer:b, listing:l, ...s }); }
+    hits.sort((x,y)=>y.score-x.score);
+    if(hits.length) byBuyer.set(bkey, hits.slice(0, TOP_PER_BUYER));
+  }
+  MATCHES=[].concat(...byBuyer.values());
+  MATCHES.sort((a,b)=>b.score-a.score);
+  if(!MATCHES.length){
+    res.innerHTML=`<div class="empty">No matches in the current listing feed. As new listings come in (your 6am Paragon sync), re-run this — or widen a buyer's budget/area in the CRM.</div>`;
+    return;
+  }
+  res.innerHTML=`<div class="section-label">${MATCHES.length} match${MATCHES.length>1?'es':''}</div>` +
+    MATCHES.map((m,i)=>matchCard(m,i)).join('');
+  setStatus('');
+}
+
+function esch(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function matchCard(m,i){
+  const b=m.buyer, l=m.listing;
+  const warm = m.score<50 ? ' warm':'';
+  const label = m.score>=75?'Strong match':m.score>=50?'Good match':'Worth a look';
+  const photo = l.photo_url ? `<img class="match-photo" src="${esch(l.photo_url)}" onerror="this.style.visibility='hidden'"/>` : `<div class="match-photo"></div>`;
+  return `<div class="match">
+    <div class="match-head">
+      <div class="match-buyer">${esch(b.firstName)} ${esch(b.lastName)}<span>${esch(b.budget||'no budget set')}${b.interest?' · '+esch(b.interest):''}</span></div>
+      <div class="match-score${warm}">${label}</div>
+    </div>
+    <div class="match-body">
+      ${photo}
+      <div class="match-info">
+        <div class="li-addr">${esch(l.address||l.full_address||'Listing')}</div>
+        <div class="li-meta"><span class="li-price">${esch(l.price_display||'')}</span> · ${esch(l.city_state||'')} · ${esch(l.prop_type||'')} · MLS ${esch(l.mls_num||'')}</div>
+        <div class="chips">${m.reasons.map(r=>`<span class="chip">${esch(r)}</span>`).join('')}</div>
+      </div>
+    </div>
+    <div class="match-actions">
+      <button class="btn-draft" id="db-${i}" onclick="draft(${i})">✎ Draft "Thought of You" Email</button>
+      ${l.paragon_url?`<a class="btn-ghost" href="${esch(l.paragon_url)}" target="_blank" rel="noopener">View on Paragon ↗</a>`:''}
+    </div>
+    <div class="draft" id="draft-${i}"></div>
+  </div>`;
+}
+
+// ── Draft the email with Claude ─────────────────────────────────────────────────
+async function draft(i){
+  const key=localStorage.getItem(KEY);
+  if(!key){ setStatus('Add your Anthropic API key above to draft emails.', 'error'); return; }
+  const m=MATCHES[i], b=m.buyer, l=m.listing;
+  const btn=document.getElementById('db-'+i); btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Drafting…';
+
+  const prompt=`You are writing a short "thought of you" email for ${AGENT.name}, a real estate agent at ${AGENT.firm} in Rapid City, SD, to a buyer client about a new listing that fits what they're looking for.
+
+BUYER: ${b.firstName} ${b.lastName}
+What they want: ${[b.interest,b.budget?('budget '+b.budget):'',b.city?('area '+b.city):'',b.timeline,b.notes].filter(Boolean).join('; ')||'general home search'}
+
+NEW LISTING:
+${l.full_address||l.address} — ${l.price_display} — ${l.prop_type} (MLS ${l.mls_num})
+
+Write a warm, brief, personal email (2 short paragraphs). Reference specifically why this listing fits what THEY told you they wanted. Not salesy. Offer to send more details or set up a showing. Do not invent property features you weren't given (only address, price, type).
+
+Return JSON only: { "subject": "...", "body": "..." }`;
+
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{ method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:600, messages:[{role:'user',content:prompt}] }) });
+    if(!r.ok){ throw new Error('API '+r.status); }
+    const data=await r.json();
+    const raw=(data.content[0].text||'').trim();
+    const mt=raw.match(/\{[\s\S]*\}/); const d=mt?JSON.parse(mt[0]):null;
+    if(!d) throw new Error('could not parse draft');
+    const body=d.body+`\n\n${AGENT.name}\n${AGENT.firm}\n${AGENT.phone}\n${AGENT.email}`;
+    renderDraft(i, b, l, d.subject, body);
+    setStatus('');
+  }catch(e){ setStatus('Draft failed: '+esch(e.message), 'error'); }
+  finally{ btn.disabled=false; btn.innerHTML='✎ Draft "Thought of You" Email'; }
+}
+
+function renderDraft(i, b, l, subject, body){
+  const el=document.getElementById('draft-'+i);
+  el.dataset.subject=subject; el.dataset.body=body; el.dataset.to=b.email||'';
+  el.className='draft show';
+  el.innerHTML=`<div class="draft-field">Subject</div><div class="draft-subject">${esch(subject)}</div>
+    <div class="draft-field">Body</div><div class="draft-body">${esch(body)}</div>
+    <div class="draft-tools">
+      <button class="btn-ghost" onclick="copyDraft(${i})">Copy</button>
+      ${b.email?`<button class="btn-ghost" onclick="mailtoDraft(${i})">Open in Email ↗</button>`:'<span class="chip">no email on file</span>'}
+      <button class="btn-ghost" onclick="draft(${i})">Regenerate</button>
+    </div>`;
+}
+function copyDraft(i){ const el=document.getElementById('draft-'+i);
+  navigator.clipboard.writeText(`Subject: ${el.dataset.subject}\n\n${el.dataset.body}`).then(()=>setStatus('Draft copied.', 'ok')); }
+function mailtoDraft(i){ const el=document.getElementById('draft-'+i);
+  window.open(`mailto:${el.dataset.to}?subject=${encodeURIComponent(el.dataset.subject)}&body=${encodeURIComponent(el.dataset.body)}`,'_blank'); }
+
+// ── CSV import ──────────────────────────────────────────────────────────────────
+function openImport(){ document.getElementById('import-modal').classList.add('show'); }
+function closeImport(){ document.getElementById('import-modal').classList.remove('show'); }
+function parseCSV(text){
+  const rows=[]; let row=[], cur='', q=false;
+  for(let i=0;i<text.length;i++){ const ch=text[i];
+    if(q){ if(ch==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=ch; }
+    else { if(ch==='"') q=true; else if(ch===','){ row.push(cur); cur=''; }
+      else if(ch==='\n'||ch==='\r'){ if(ch==='\r'&&text[i+1]==='\n')i++; if(cur!==''||row.length){row.push(cur);rows.push(row);row=[];cur='';} }
+      else cur+=ch; } }
+  if(cur!==''||row.length){ row.push(cur); rows.push(row); }
+  return rows;
+}
+function doImport(){
+  const txt=document.getElementById('import-text').value.trim();
+  if(!txt){ closeImport(); return; }
+  const rows=parseCSV(txt); if(rows.length<2){ setStatus('CSV needs a header row + at least one contact.', 'error'); return; }
+  const H=rows[0].map(h=>h.trim().toLowerCase());
+  const col=(...names)=>{ for(const n of names){ const idx=H.indexOf(n); if(idx>=0) return idx; } return -1; };
+  const map={ firstName:col('first name','first'), lastName:col('last name','last'), email:col('email'),
+    phone:col('phone'), city:col('city'), state:col('state'), type:col('lead type','type'),
+    source:col('lead source','source'), stage:col('stage'), timeline:col('timeline'),
+    budget:col('budget','price range','budget / price range'), interest:col('property interest','interest'),
+    notes:col('notes') };
+  const buyers=getBuyers(); let added=0;
+  for(let r=1;r<rows.length;r++){ const row=rows[r]; if(!row.length||!(row[map.firstName]||row[map.lastName])) continue;
+    const g=k=>map[k]>=0?(row[map[k]]||'').trim():'';
+    buyers.push({ firstName:g('firstName'), lastName:g('lastName'), email:g('email'), phone:g('phone'),
+      city:g('city'), state:g('state'), type:g('type')||'Buyer', source:g('source'), stage:g('stage'),
+      timeline:g('timeline'), budget:g('budget'), interest:g('interest'), notes:g('notes'), tags:[],
+      addedDate:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) });
+    added++; }
+  setBuyers(buyers); closeImport(); document.getElementById('import-text').value='';
+  setStatus(`Imported ${added} buyer${added===1?'':'s'}.`, 'ok'); runMatch();
+}
+
+// ── Sample buyers (demo) ────────────────────────────────────────────────────────
+function loadSamples(){
+  const samples=[
+    { firstName:'Dana', lastName:'Reeves', email:'dana.reeves@example.com', city:'Sturgis', type:'Buyer',
+      budget:'$250K–$400K', interest:'Single family home in Sturgis, 3 bed', notes:'Relocating, wants move-in ready', tags:[], addedDate:'sample' },
+    { firstName:'Marcus', lastName:'Hale', email:'mhale@example.com', city:'Rapid City', type:'Buyer',
+      budget:'up to $500k', interest:'Residential, open to Rapid City area', notes:'', tags:[], addedDate:'sample' },
+    { firstName:'Cheyenne', lastName:'Boyd', email:'cboyd@example.com', city:'Hermosa', type:'Buyer',
+      budget:'$350,000', interest:'Home near Hermosa', notes:'First-time buyer', tags:[], addedDate:'sample' },
+  ];
+  const buyers=getBuyers().filter(b=>b.addedDate!=='sample');   // replace prior samples
+  setBuyers(buyers.concat(samples));
+  setStatus('Loaded 3 sample buyers.', 'ok'); runMatch();
+}
+
+function setStatus(msg,type){ const s=document.getElementById('status'); s.className='status'+(type?' '+type:''); s.innerHTML=msg; }
+
+loadKey();
+runMatch();
+</script>
+</body>
+</html>

@@ -288,7 +288,9 @@ h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
 
 <script>
 const STORAGE_KEY = 'kw_anthropic_key';
-let savedContacts = [];
+const BUYERS_KEY = 'kw_buyers';           // shared with the Buyer Match page
+let savedContacts = JSON.parse(localStorage.getItem(BUYERS_KEY) || '[]');
+function persistContacts() { localStorage.setItem(BUYERS_KEY, JSON.stringify(savedContacts)); }
 let currentCSV = '';
 let currentEmail = { to: '', subject: '', body: '' };
 
@@ -447,8 +449,9 @@ async function processContact() {
   document.getElementById('email-subject').textContent = currentEmail.subject;
   document.getElementById('email-body').textContent    = currentEmail.body;
 
-  // Save contact
+  // Save contact (persisted so buyers survive reload + feed the Buyer Match page)
   savedContacts.push({ ...c, emailDraft: currentEmail });
+  persistContacts();
   renderSavedContacts();
 
   document.getElementById('output-section').style.display = 'block';
@@ -511,8 +514,9 @@ function downloadAllCSV() {
 }
 
 function clearSaved() {
-  if (!confirm('Clear all saved contacts this session?')) return;
+  if (!confirm('Clear all saved contacts? This also removes them from Buyer Match.')) return;
   savedContacts = [];
+  persistContacts();
   renderSavedContacts();
 }
 
@@ -573,6 +577,7 @@ function setStatus(msg, type = '') {
 }
 
 loadKey();
+renderSavedContacts();   // show buyers persisted from earlier sessions
 </script>
 </body>
 </html>

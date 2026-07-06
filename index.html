@@ -868,6 +868,17 @@ const NODES = [
     body: "Type a Black Hills address or parcel ID → owner of record (the LLC/trust that holds it), mailing address, acreage, and assessed value. Live from Meade & Pennington county assessors. No key needed.",
     icon: `<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>`,
   },
+  {
+    id: 11,
+    title: "Buyer Match",
+    date: "ON DEMAND",
+    status: "live",
+    energy: 100,
+    relatedIds: [4, 8, 10],
+    page: "pages/buyer-match.html",
+    body: "Cross-references your CRM buyers against the latest Paragon listings and drafts a 'thought of you' email for every fit. Buyers persist from CRM Intake; matching is on budget, area, and property type. Nothing sends automatically.",
+    icon: `<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>`,
+  },
 ];
 
 const BADGE_LABEL = { building: "Setting Up", live: "Live", pending: "Pending" };
