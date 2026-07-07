@@ -1135,34 +1135,6 @@ document.getElementById("nav-date").textContent =
     </tr>`;
   }).join('');
 
-  let mlsDetailHtml = '';
-  if (data.mlsDetail) {
-    const { categories, priceBands, statuses, data: detail } = data.mlsDetail;
-    const statusCols = statuses.map(s => `<th class="m-th">${s}</th>`).join('');
-    const categoryTables = categories.map(cat => {
-      const rows = priceBands.map(band => {
-        const cells = statuses.map(s => {
-          const val = detail && detail[cat] && detail[cat][band] ? detail[cat][band][s] : null;
-          return `<td class="m-td">${val != null ? fi(val) : '—'}</td>`;
-        }).join('');
-        return `<tr><td class="m-td m-td-city">${band}</td>${cells}</tr>`;
-      }).join('');
-      return `
-        <div style="margin-bottom:1.5rem">
-          <div style="font-size:11px;font-weight:600;color:#fff;margin-bottom:10px;letter-spacing:0.06em;">${cat}</div>
-          <table class="m-table">
-            <thead><tr><th class="m-th">Price Band</th>${statusCols}</tr></thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </div>`;
-    }).join('');
-    mlsDetailHtml = `
-    <div class="m-row" style="margin-top:2.75rem">
-      <div class="m-section-label">MLS Detail &nbsp;&middot;&nbsp; Current Week by Price Band</div>
-      ${categoryTables}
-    </div>`;
-  }
-
   const invSub = rc.inventoryChange != null
     ? `<div class="m-metric-sub" style="color:${rc.inventoryChange > 0 ? '#F87171' : '#34D399'}">${rc.inventoryChange > 0 ? '+' : ''}${rc.inventoryChange} MoM</div>`
     : '';
@@ -1254,18 +1226,6 @@ document.getElementById("nav-date").textContent =
           </tr></thead>
           <tbody>${cityRows}</tbody>
         </table>
-      </div>
-    </div>
-
-    ${mlsDetailHtml}
-
-    <div class="m-notice">
-      <div class="m-notice-title">MLS Detail — Setup Required</div>
-      <div class="m-notice-body">
-        Table above shows the live shape (price band &times; status, per property category).
-        Cells read "—" until Paragon saved searches &rarr; weekly export &rarr;
-        <strong style="color:rgba(255,255,255,0.55)">arecblackhills@gmail.com</strong> are configured
-        in both Black Hills MLS and Mount Rushmore MLS.
       </div>
     </div>`;
 })();
