@@ -11,8 +11,13 @@ echo "=== $(date) ===" >> "$LOG"
 cd "$REPO/agents/mls_report"
 $PYTHON parse_paragon_inbox.py >> "$LOG" 2>&1
 
-# 2. Send the weekly market report email
-$PYTHON mls_report.py --send >> "$LOG" 2>&1
+# 2. Send the weekly market report email — Fridays only (date +%u: Mon=1 … Fri=5 … Sun=7).
+#    The listings sync above still runs daily; only the emailed report is weekly.
+if [ "$(date +%u)" = "5" ]; then
+  $PYTHON mls_report.py --send >> "$LOG" 2>&1
+else
+  echo "Not Friday (weekday $(date +%u)) — skipping weekly market report email." >> "$LOG"
+fi
 
 # 3. Bump cache-busting version in paragon-listings.html so browsers always fetch fresh JS
 VER=$(date '+%Y%m%d')
