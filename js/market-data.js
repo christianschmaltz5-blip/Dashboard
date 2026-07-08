@@ -158,12 +158,12 @@ window.MARKET_DATA = {
     "data": {
       "Residential Resale (Single Family)": {
         "$100K\u2013$350K": {
-          "Active": 25,
+          "Active": 22,
           "Under Contract": null,
           "Sold": null
         },
         "$350K\u2013$500K": {
-          "Active": 37,
+          "Active": 31,
           "Under Contract": null,
           "Sold": null
         },
