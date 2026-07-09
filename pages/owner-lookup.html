@@ -56,6 +56,14 @@ h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
 .entity-note{margin-top:14px;padding:14px 18px;background:rgba(245,158,11,0.07);border:1px solid rgba(251,191,36,0.18);border-radius:10px;font-size:12px;color:rgba(255,255,255,0.55);line-height:1.7;font-family:'DM Sans',sans-serif;}
 .entity-note strong{color:#FBBF24;}
 .disclaimer{margin-top:16px;font-size:10px;color:rgba(255,255,255,0.28);line-height:1.8;font-family:'DM Sans',sans-serif;text-align:center;}
+
+.contact-section{margin-top:1.75rem;}
+.skip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(184px,1fr));gap:8px;}
+.skip-btn{display:flex;align-items:center;gap:9px;padding:12px 14px;background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.2);border-radius:8px;color:#cfe0ff;font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;text-decoration:none;transition:all .18s;}
+.skip-btn:hover{background:rgba(96,165,250,0.16);border-color:rgba(96,165,250,0.45);color:#fff;transform:translateY(-1px);}
+.skip-btn svg{width:13px;height:13px;flex-shrink:0;opacity:.65;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.skip-note{margin-top:12px;font-size:11px;color:rgba(255,255,255,0.35);line-height:1.7;font-family:'DM Sans',sans-serif;}
+.skip-note a{color:rgba(96,165,250,0.75);text-decoration:none;} .skip-note a:hover{text-decoration:underline;}
 </style>
 </head>
 <body>
@@ -156,12 +164,18 @@ function classifyOwner(name) {  // 'trust' | 'llc' | 'person'
 function isEntity(name) { return classifyOwner(name) !== "person"; }
 function normalize(county, a) {
   const f = county.f, g = k => (f[k] ? a[f[k]] : null);
-  let mail;
+  let mail, mStreet, mCity, mState, mZip;
   if (county === PENNINGTON) {
-    const cityline = [a.GranteeCit, a.GranteeSta, a.GranteeZip].filter(Boolean).join(", ");
-    mail = [g("mail_street"), cityline].filter(Boolean).join(" ");
+    mStreet = g("mail_street"); mCity = a.GranteeCit; mState = a.GranteeSta; mZip = a.GranteeZip;
+    const cityline = [mCity, mState, mZip].filter(Boolean).join(", ");
+    mail = [mStreet, cityline].filter(Boolean).join(" ");
   } else {
-    mail = [g("mail_street"), g("mail_citystate"), g("mail_zip")].filter(Boolean).join(" ");
+    mStreet = g("mail_street"); mZip = g("mail_zip");
+    const cs = (g("mail_citystate") || "").trim();
+    const parts = cs.split(/\s+/);
+    if (parts.length >= 2) { mState = parts[parts.length - 1]; mCity = parts.slice(0, -1).join(" "); }
+    else { mCity = cs; }
+    mail = [mStreet, cs, mZip].filter(Boolean).join(" ");
   }
   const owner = (g("owner") || "").trim();
   return {
@@ -178,6 +192,10 @@ function normalize(county, a) {
     legal: (g("legal") || "").trim() || null,
     assessed_value: g("value"),
     land_use: (g("landuse") || "").trim() || null,
+    mail_street: (mStreet || "").toString().trim() || null,
+    mail_city: (mCity || "").toString().trim() || null,
+    mail_state: (mState || "").toString().trim() || null,
+    mail_zip: (mZip || "").toString().trim() || null,
   };
 }
 
@@ -221,6 +239,46 @@ function money(v){ return (typeof v === "number" && v) ? "$" + v.toLocaleString(
 function row(label, value){ return value == null || value === "" ? "" :
   `<div class="row"><div class="row-label">${label}</div><div class="row-value">${esch(value)}</div></div>`; }
 
+// ── Skip-trace launchers: pre-fill free people-search sites from the owner card ──
+function slug(s){ return (s||"").toString().toLowerCase().replace(/[.,#'"]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""); }
+function skipLinks(rec){
+  const enc = encodeURIComponent;
+  const owner = (rec.owner || "").trim();
+  const street = (rec.mail_street || "").trim();
+  const city = (rec.mail_city || "").trim();
+  const st = (rec.mail_state || "").trim();
+  const cityState = [city, st].filter(Boolean).join(", ");
+  const links = [];
+  if (owner && cityState)
+    links.push(["TruePeopleSearch · Name", `https://www.truepeoplesearch.com/results?name=${enc(owner)}&citystatezip=${enc(cityState)}`]);
+  if (street && cityState)
+    links.push(["TruePeopleSearch · Address", `https://www.truepeoplesearch.com/resultaddress?streetaddress=${enc(street)}&citystatezip=${enc(cityState)}`]);
+  if (street && city && st)
+    links.push(["FastPeopleSearch", `https://www.fastpeoplesearch.com/address/${slug(street)}_${slug(city)}-${st.toLowerCase()}`]);
+  if (street && city && st)
+    links.push(["ThatsThem", `https://thatsthem.com/address/${slug(street)}/${slug(city)}-${st.toUpperCase()}`]);
+  const gq = [owner, street, cityState, "phone email"].filter(Boolean).join(" ");
+  links.push(["Google", `https://www.google.com/search?q=${enc(gq)}`]);
+  if (rec.owner_is_entity)
+    links.push(["SD Sec. of State", `https://sosenterprise.sd.gov/BusinessServices/Business/FilingSearch.aspx`]);
+  return links;
+}
+function contactSection(rec){
+  const links = skipLinks(rec);
+  if (!links.length) return "";
+  const icon = `<svg viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>`;
+  const btns = links.map(([label, url]) =>
+    `<a class="skip-btn" href="${url}" target="_blank" rel="noopener">${icon}${esch(label)}</a>`).join("");
+  const entityHint = rec.owner_is_entity
+    ? " Owner is an entity — use SD Sec. of State to find the people behind it, then people-search them."
+    : "";
+  return `<div class="contact-section">
+    <div class="section-label">Find Contact — Skip Trace</div>
+    <div class="skip-grid">${btns}</div>
+    <div class="skip-note">Opens free people-search sites pre-filled with this owner. Cross-check 2–3 for a current number.${entityHint} Data can be stale, and you must scrub cell numbers against the <a href="https://www.donotcall.gov" target="_blank" rel="noopener">National DNC registry</a> before calling or texting. Prospecting only — not for tenant screening (FCRA).</div>
+  </div>`;
+}
+
 function render(rec) {
   const el = document.getElementById("result");
   if (!rec) {
@@ -257,6 +315,7 @@ function render(rec) {
   } else if (rec.owner_type === "trust") {
     html += `<div class="entity-note"><strong>This owner is a trust.</strong> County records stop at the entity — the mailing address above is your best direct lead. Trusts aren't in the SD Secretary of State registry; the trustee is often named on the recorded deed.</div>`;
   }
+  html += contactSection(rec);
   el.innerHTML = html;
   el.style.display = "block";
   setStatus("");
