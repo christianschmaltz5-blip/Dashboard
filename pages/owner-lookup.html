@@ -64,6 +64,25 @@ h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
 .skip-btn svg{width:13px;height:13px;flex-shrink:0;opacity:.65;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 .skip-note{margin-top:12px;font-size:11px;color:rgba(255,255,255,0.35);line-height:1.7;font-family:'DM Sans',sans-serif;}
 .skip-note a{color:rgba(96,165,250,0.75);text-decoration:none;} .skip-note a:hover{text-decoration:underline;}
+
+.trace-panel{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;margin-bottom:16px;}
+.trace-key-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.trace-key{flex:1;min-width:200px;padding:10px 12px;font-size:12px;font-family:'DM Sans',sans-serif;}
+.btn-ghost{padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.14);border-radius:8px;color:rgba(255,255,255,0.75);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;font-family:'Josefin Sans',sans-serif;transition:all .18s;}
+.btn-ghost:hover{background:rgba(255,255,255,0.1);color:#fff;}
+.trace-go{min-width:auto;padding:10px 18px;}
+.trace-status{font-size:11px;color:var(--muted);margin-top:10px;min-height:14px;font-family:'DM Sans',sans-serif;}
+.trace-status.error{color:#F87171;}
+.trace-result{margin-top:12px;display:none;}
+.contact-line{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-family:'DM Sans',sans-serif;}
+.contact-line:last-child{border-bottom:none;}
+.contact-val{font-size:14px;color:#fff;font-variant-numeric:tabular-nums;}
+.contact-meta{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);}
+.pill{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:10px;}
+.pill-mobile{background:rgba(16,185,129,0.15);color:#34D399;} .pill-land{background:rgba(148,163,184,0.15);color:#cbd5e1;}
+.pill-dnc{background:rgba(248,113,113,0.15);color:#F87171;border:1px solid rgba(248,113,113,0.3);}
+.trace-raw{margin-top:8px;font-size:10px;color:rgba(255,255,255,0.4);white-space:pre-wrap;word-break:break-all;max-height:200px;overflow:auto;background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:6px;padding:10px;font-family:ui-monospace,Menlo,monospace;}
+.section-sub{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin:4px 0 10px;}
 </style>
 </head>
 <body>
@@ -233,6 +252,76 @@ async function lookup(query) {
   return null;
 }
 
+// ── Tracerfy auto-trace (licensed API; key stored only in this browser) ──────────
+let currentRec = null;
+const TRACERFY_ENDPOINT = "https://tracerfy.com/v1/api/trace/lookup/";
+function tfKey(){ try { return localStorage.getItem("tracerfy_key") || ""; } catch(e){ return ""; } }
+function saveTfKey(){
+  const el = document.getElementById("tf-key"); const v = (el && el.value || "").trim();
+  if (!v) { setTrace("Paste a key first.", true); return; }
+  try { localStorage.setItem("tracerfy_key", v); } catch(e){}
+  setTrace("Key saved to this browser.");
+}
+function setTrace(msg, isError){
+  const s = document.getElementById("tf-status"); if (!s) return;
+  s.className = "trace-status" + (isError ? " error" : ""); s.innerHTML = msg;
+}
+async function traceContacts(){
+  const rec = currentRec;
+  if (!rec) return;
+  const key = tfKey();
+  if (!key) { setTrace("Paste your Tracerfy API key first (then Save Key).", true); return; }
+  if (!(rec.mail_street && rec.mail_city && rec.mail_state)) { setTrace("Not enough address data to trace.", true); return; }
+  const res = document.getElementById("tf-result"); res.style.display = "none";
+  setTrace(`<span class="spinner"></span>Tracing owner…`);
+  try {
+    const r = await fetch(TRACERFY_ENDPOINT, {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json" },
+      body: JSON.stringify({ address: rec.mail_street, city: rec.mail_city, state: rec.mail_state, zip: rec.mail_zip || "" })
+    });
+    if (r.status === 401 || r.status === 403) throw new Error("Auth rejected (check your API key)");
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    renderTrace(await r.json());
+  } catch (e) {
+    const m = /Failed to fetch|NetworkError/i.test(e.message)
+      ? "Browser blocked the call (CORS). Tracerfy's API is server-to-server — we'll need a tiny proxy to call it from the page. Tell me and I'll add one."
+      : e.message;
+    setTrace("Trace failed: " + esch(m), true);
+  }
+}
+function renderTrace(j){
+  const d = j.data || j.result || j || {};
+  const c = d.contact || d.owner || d;
+  const phones = c.phones || c.phone || d.phones || [];
+  const emails = c.emails || c.email || d.emails || [];
+  const res = document.getElementById("tf-result");
+  let html = "";
+  if (Array.isArray(phones) && phones.length){
+    phones.forEach(p => {
+      const num = p.number || p.phone || p;
+      const type = (p.type || "").toLowerCase();
+      const typePill = type.startsWith("mob") ? `<span class="pill pill-mobile">Mobile</span>`
+        : type ? `<span class="pill pill-land">${esch(p.type)}</span>` : "";
+      const dnc = (p.dnc === true || p.dnc === "Y" || (p.dnc && p.dnc.flagged)) ? `<span class="pill pill-dnc">On DNC</span>` : "";
+      html += `<div class="contact-line"><span class="contact-val">${esch(num)}</span>${typePill}${dnc}${p.carrier ? `<span class="contact-meta">${esch(p.carrier)}</span>` : ""}</div>`;
+    });
+  }
+  if (Array.isArray(emails) && emails.length){
+    emails.forEach(e => {
+      const addr = e.email || e.address || e;
+      html += `<div class="contact-line"><span class="contact-val">${esch(addr)}</span><span class="contact-meta">Email</span></div>`;
+    });
+  }
+  if (!html){
+    setTrace("Response received but no phones/emails matched the expected shape — raw below so I can map it:", true);
+    html = `<pre class="trace-raw">${esch(JSON.stringify(j, null, 2))}</pre>`;
+  } else {
+    setTrace("");
+  }
+  res.innerHTML = html; res.style.display = "block";
+}
+
 // ── Render ──────────────────────────────────────────────────────────────────────
 function esch(s){ return String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
 function money(v){ return (typeof v === "number" && v) ? "$" + v.toLocaleString() : "—"; }
@@ -272,10 +361,23 @@ function contactSection(rec){
   const entityHint = rec.owner_is_entity
     ? " Owner is an entity — use SD Sec. of State to find the people behind it, then people-search them."
     : "";
+  const canTrace = rec.mail_street && rec.mail_city && rec.mail_state;
+  const tracePanel = `
+    <div class="trace-panel">
+      <div class="trace-key-row">
+        <input class="field-input trace-key" id="tf-key" type="password" placeholder="Tracerfy API key — stored only in this browser" autocomplete="off"/>
+        <button class="btn-ghost" onclick="saveTfKey()">Save Key</button>
+        <button class="btn-primary trace-go" onclick="traceContacts()"${canTrace ? "" : " disabled"}>Get Phones &amp; Emails</button>
+      </div>
+      <div class="trace-status" id="tf-status">${canTrace ? "" : "Not enough parsed address data on this parcel to auto-trace — use the free search links below."}</div>
+      <div class="trace-result" id="tf-result"></div>
+    </div>`;
   return `<div class="contact-section">
     <div class="section-label">Find Contact — Skip Trace</div>
+    ${tracePanel}
+    <div class="section-sub">Or search free sites manually</div>
     <div class="skip-grid">${btns}</div>
-    <div class="skip-note">Opens free people-search sites pre-filled with this owner. Cross-check 2–3 for a current number.${entityHint} Data can be stale, and you must scrub cell numbers against the <a href="https://www.donotcall.gov" target="_blank" rel="noopener">National DNC registry</a> before calling or texting. Prospecting only — not for tenant screening (FCRA).</div>
+    <div class="skip-note">Auto-trace uses your licensed Tracerfy account (~$0.10/hit, free on miss) and returns DNC flags. The free links open people-search sites pre-filled with this owner — cross-check 2–3.${entityHint} You must honor DNC before calling or texting (<a href="https://www.donotcall.gov" target="_blank" rel="noopener">registry</a>). Prospecting only — not for tenant screening (FCRA).</div>
   </div>`;
 }
 
@@ -318,6 +420,9 @@ function render(rec) {
   html += contactSection(rec);
   el.innerHTML = html;
   el.style.display = "block";
+  currentRec = rec;
+  const keyEl = document.getElementById("tf-key");
+  if (keyEl) keyEl.value = tfKey();
   setStatus("");
 }
 
