@@ -18,6 +18,7 @@ import os
 import re
 import smtplib
 import sys
+import time
 import difflib
 from io import BytesIO
 from email.mime.multipart import MIMEMultipart
@@ -49,13 +50,43 @@ LINK_KEYWORDS = ("agenda", "packet", "minutes", ".pdf")
 # Cloudflare-protected sites (Rapid City, Custer) need more than plain
 # requests — cloudscraper solves basic JS challenges. Used for every source
 # for consistency; it behaves like a normal requests.Session otherwise.
-scraper = cloudscraper.create_scraper()
+CF_TRANSIENT = {403, 429, 503}  # Cloudflare challenge / rate-limit responses
 
 
-def fetch(url):
-    r = scraper.get(url, timeout=25)
-    r.raise_for_status()
-    return r
+def _new_scraper():
+    return cloudscraper.create_scraper()
+
+
+scraper = _new_scraper()
+
+
+def fetch(url, retries=3):
+    """GET with retry on transient Cloudflare failures.
+
+    Custer (and occasionally Rapid City) answer the first hit with a 403/503
+    "Just a moment..." challenge that clears on a fresh cloudscraper session a
+    couple seconds later. Without a retry, one such hit marked the source
+    'could not check' for the whole run (Custer, 2026-07-10). We recreate the
+    scraper and back off between attempts so a single challenge no longer drops
+    a source.
+    """
+    global scraper
+    last = None
+    for attempt in range(retries):
+        try:
+            r = scraper.get(url, timeout=25)
+            if r.status_code in CF_TRANSIENT and attempt < retries - 1:
+                scraper = _new_scraper()
+                time.sleep(2 * (attempt + 1))
+                continue
+            r.raise_for_status()
+            return r
+        except Exception as e:
+            last = e
+            if attempt < retries - 1:
+                scraper = _new_scraper()
+                time.sleep(2 * (attempt + 1))
+    raise last
 
 
 def extract_text_lines(raw_html):
