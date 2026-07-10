@@ -69,7 +69,8 @@ h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
 .qs-field.f-check .fbox{justify-content:center;cursor:pointer;font-weight:700;color:#1e3a8a;background:rgba(96,165,250,0.1);}
 .qs-field .handle{position:absolute;top:-9px;left:-9px;width:16px;height:16px;border-radius:4px;background:#2563EB;cursor:move;display:none;align-items:center;justify-content:center;z-index:3;}
 .qs-field .del{position:absolute;top:-9px;right:-9px;width:16px;height:16px;border-radius:50%;background:#ef4444;color:#fff;font-size:12px;line-height:14px;text-align:center;cursor:pointer;display:none;z-index:3;}
-.qs-field:hover .handle,.qs-field:hover .del{display:flex;}
+.qs-field .resize{position:absolute;bottom:-8px;right:-8px;width:15px;height:15px;border-radius:3px;background:#2563EB;border:2px solid #fff;cursor:nwse-resize;display:none;z-index:3;touch-action:none;}
+.qs-field:hover .handle,.qs-field:hover .del,.qs-field:hover .resize{display:flex;}
 .qs-field .handle svg{width:9px;height:9px;stroke:#fff;fill:none;stroke-width:2.5;}
 .placing{cursor:crosshair !important;}
 
@@ -116,8 +117,10 @@ h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
     <span class="ed-title" id="edTitle"></span>
     <button class="btn" id="addTextBtn">+ Text</button>
     <button class="btn" id="addSigBtn">+ Signature</button>
+    <button class="btn" id="saveTplBtn">Save as template</button>
+    <button class="btn" id="resetTplBtn" style="display:none;">Reset layout</button>
     <button class="btn-accent btn" id="downloadBtn">Download completed PDF</button>
-    <div class="ed-hint"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Click a blue box and type. Green boxes are auto-dated. Click a <b>&nbsp;Sign&nbsp;</b> box to sign. Drag the corner handle to move a box, × to remove it. Use <b>&nbsp;+ Text&nbsp;</b> / <b>&nbsp;+ Signature&nbsp;</b> to add anything that's missing.</div>
+    <div class="ed-hint"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Click a blue box and type. Green boxes are auto-dated. Click a <b>&nbsp;Sign&nbsp;</b> box to sign. Drag the <b>top-left</b> handle to move a box, the <b>bottom-right</b> corner to resize it, × to remove. Use <b>&nbsp;+ Text / + Signature&nbsp;</b> to add one. <b>Save as template</b> keeps your box layout for next time.</div>
   </div>
   <div class="pdf-scroll" id="pdfScroll"></div>
 </section>
@@ -228,12 +231,41 @@ async function openDoc(doc){
     scroll.appendChild(wrap);
     pageSizes[p-1] = {w:vp.width, h:vp.height, overlay};
   }
-  // place detected fields
-  doc.layout.forEach(pg => {
-    (pg.fields||[]).forEach(f => addField(pg.page, f.type, f.x, f.y, f.w, f.h,
-       f.type==='date'? today() : ''));
-  });
+  // place fields from a saved template if present, else the detected layout
+  placementList(doc).forEach(f => addField(f.page, f.type, f.x, f.y, f.w, f.h,
+     f.type==='date' ? today() : ''));
+  document.getElementById('resetTplBtn').style.display = hasTemplate(doc) ? '' : 'none';
+  document.getElementById('saveTplBtn').textContent = hasTemplate(doc) ? 'Update template' : 'Save as template';
 }
+
+/* ---------- templates (saved layouts, per document, in this browser) ---------- */
+function tplKey(doc){ return 'qs_tpl_' + doc.key; }
+function hasTemplate(doc){ try{ return !!localStorage.getItem(tplKey(doc)); }catch(e){ return false; } }
+function placementList(doc){
+  try{ const s = localStorage.getItem(tplKey(doc)); if(s) return JSON.parse(s); }catch(e){}
+  const out = [];
+  (doc.layout||[]).forEach(pg => (pg.fields||[]).forEach(f =>
+    out.push({page:pg.page, type:f.type, x:f.x, y:f.y, w:f.w, h:f.h})));
+  return out;
+}
+function saveTemplate(){
+  if(!current) return;
+  const list = fieldEls.map(r => ({page:r.pageIdx, type:r.type, x:r.x, y:r.y, w:r.w, h:r.h}));
+  try{
+    localStorage.setItem(tplKey(current), JSON.stringify(list));
+    document.getElementById('resetTplBtn').style.display = '';
+    document.getElementById('saveTplBtn').textContent = 'Update template';
+    note('Template saved — this box layout will load automatically next time you open '+current.title+'.');
+  }catch(e){ note('Could not save (browser storage is full or blocked).'); }
+}
+function clearTemplate(){
+  if(!current) return;
+  localStorage.removeItem(tplKey(current));
+  note('Layout reset to the original.');
+  openDoc(current);
+}
+document.getElementById('saveTplBtn').onclick = saveTemplate;
+document.getElementById('resetTplBtn').onclick = clearTemplate;
 
 /* ---------- fields ---------- */
 function addField(pageIdx, type, x, y, w, h, value){
@@ -243,8 +275,7 @@ function addField(pageIdx, type, x, y, w, h, value){
   el.className = 'qs-field f-'+kind;
   el.style.left=(x*ps.w)+'px'; el.style.top=(y*ps.h)+'px';
   el.style.width=(w*ps.w)+'px'; el.style.height=(h*ps.h)+'px';
-  const fh = h*ps.h;
-  const rec = {el, pageIdx, kind, x, y, w, h, value:value||'', sigImg:null};
+  const rec = {el, pageIdx, kind, type, x, y, w, h, value:value||'', sigImg:null};
 
   if(kind==='sig'){
     const box=document.createElement('div'); box.className='fbox';
@@ -257,23 +288,36 @@ function addField(pageIdx, type, x, y, w, h, value){
     el.appendChild(box); rec.box=box;
   } else {
     const box=document.createElement('div'); box.className='fbox'; box.contentEditable='true';
-    const tall = fh > 34;
-    box.style.fontSize=(tall ? 12 : Math.max(10, Math.min(15, fh*0.62)))+'px';
-    if(tall){ box.style.whiteSpace='normal'; box.style.alignItems='flex-start'; box.style.lineHeight='1.35'; box.style.padding='3px 4px'; }
     box.textContent=value||'';
     box.oninput=()=>{ rec.value=box.textContent; };
     box.onclick=(e)=>e.stopPropagation();
     el.appendChild(box); rec.box=box;
+    restyleText(rec);
   }
   const handle=document.createElement('div'); handle.className='handle';
   handle.innerHTML='<svg viewBox="0 0 24 24"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>';
   const del=document.createElement('div'); del.className='del'; del.textContent='×';
   del.onclick=(e)=>{ e.stopPropagation(); el.remove(); fieldEls=fieldEls.filter(r=>r!==rec); };
-  el.appendChild(handle); el.appendChild(del);
+  const resize=document.createElement('div'); resize.className='resize';
+  el.appendChild(handle); el.appendChild(del); el.appendChild(resize);
   enableDrag(el, handle, rec);
+  enableResize(el, resize, rec);
   ps.overlay.appendChild(el);
   fieldEls.push(rec);
   return rec;
+}
+
+/* size text/wrapping to the box's current pixel height */
+function restyleText(rec){
+  if(rec.kind!=='text') return;
+  const fh = rec.h * pageSizes[rec.pageIdx].h;
+  const tall = fh > 34;
+  const b = rec.box;
+  b.style.fontSize = (tall ? 12 : Math.max(10, Math.min(15, fh*0.62)))+'px';
+  b.style.whiteSpace = tall ? 'normal' : 'nowrap';
+  b.style.alignItems = tall ? 'flex-start' : 'center';
+  b.style.lineHeight = tall ? '1.35' : '1';
+  b.style.padding = tall ? '3px 4px' : '0 3px';
 }
 
 function enableDrag(el, handle, rec){
@@ -293,6 +337,23 @@ function enableDrag(el, handle, rec){
     const ps=pageSizes[rec.pageIdx];
     rec.x=parseFloat(el.style.left)/ps.w; rec.y=parseFloat(el.style.top)/ps.h;
   });
+}
+
+function enableResize(el, grip, rec){
+  let sx,sy,ow,oh,res=false;
+  grip.addEventListener('pointerdown', e=>{
+    e.preventDefault(); e.stopPropagation(); res=true; el.classList.add('dragging');
+    sx=e.clientX; sy=e.clientY; ow=parseFloat(el.style.width); oh=parseFloat(el.style.height);
+    grip.setPointerCapture(e.pointerId);
+  });
+  grip.addEventListener('pointermove', e=>{
+    if(!res)return;
+    const nw=Math.max(14, ow+(e.clientX-sx)), nh=Math.max(12, oh+(e.clientY-sy));
+    el.style.width=nw+'px'; el.style.height=nh+'px';
+    const ps=pageSizes[rec.pageIdx]; rec.w=nw/ps.w; rec.h=nh/ps.h;
+    restyleText(rec);
+  });
+  grip.addEventListener('pointerup', e=>{ if(!res)return; res=false; setTimeout(()=>el.classList.remove('dragging'),50); });
 }
 
 /* add-field mode */
