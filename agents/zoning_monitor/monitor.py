@@ -5,7 +5,7 @@ agenda items (rezonings, variances, conditional use permits, subdivision
 plats). Diffs each source's listing page against the last run, fetches the
 text of any newly-appeared linked PDF/agenda-item page, and has Claude write
 a plain-English development-intelligence digest per source with new activity.
-Runs Tue/Fri via run.sh.
+Runs Friday at 7:00 AM via run.sh (launchd: com.arc.zoning-monitor).
 
 Run:  python3 monitor.py            <- checks sources, emails digest if anything notable
       python3 monitor.py --no-email <- checks sources, prints result, no email
