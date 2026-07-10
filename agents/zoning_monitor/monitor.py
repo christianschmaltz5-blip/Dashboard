@@ -191,20 +191,75 @@ def _digest_subject(digests):
     return f"{headline} · {datetime.now().strftime('%b %d')}"
 
 
+_MD_BOLD = re.compile(r"\*\*(.+?)\*\*")
+_MD_ITAL = re.compile(r"(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)")
+_MD_RULE = re.compile(r"^(?:-{3,}|\*{3,}|_{3,})$")
+_MD_HEAD = re.compile(r"^(#{1,6})\s+(.*)$")
+
+
+def _md_inline(s):
+    s = _MD_BOLD.sub(r"<strong>\1</strong>", s)
+    s = _MD_ITAL.sub(r"<em>\1</em>", s)
+    return s
+
+
+def render_markdown(text):
+    """Lightweight Markdown -> email-safe HTML.
+
+    The summarizer sometimes returns Markdown (##/### headings, **bold**, ---
+    rules). The template used to drop that into a pre-wrap div, so the raw
+    markers showed literally. This renders the subset Claude actually emits;
+    anything unrecognized falls through as a plain paragraph.
+    """
+    text = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    parts, para = [], []
+
+    def flush():
+        if para:
+            parts.append(
+                '<p style="margin:0 0 12px;">'
+                + "<br>".join(_md_inline(l) for l in para)
+                + "</p>"
+            )
+            para.clear()
+
+    for raw in text.split("\n"):
+        line = raw.strip()
+        if not line:
+            flush()
+            continue
+        if _MD_RULE.match(line):
+            flush()
+            parts.append('<hr style="border:none;border-top:1px solid #e2e8f0;margin:14px 0;">')
+            continue
+        h = _MD_HEAD.match(line)
+        if h:
+            flush()
+            size = {1: 17, 2: 15, 3: 14}.get(len(h.group(1)), 13)
+            parts.append(
+                f'<div style="font-size:{size}px;font-weight:700;color:#0f2942;'
+                f'margin:14px 0 8px;">{_md_inline(h.group(2))}</div>'
+            )
+            continue
+        para.append(line)
+    flush()
+    return "\n".join(parts)
+
+
 def send_email(digests, unreachable):
     msg = MIMEMultipart("alternative")
     msg["Subject"] = _digest_subject(digests)
     msg["From"] = FROM_EMAIL
     msg["To"]   = TO_EMAIL
 
-    row = "font-size:13px;color:#1a202c;line-height:1.7;font-family:Arial,sans-serif;white-space:pre-wrap;"
+    row = "font-size:13px;color:#1a202c;line-height:1.7;font-family:Arial,sans-serif;"
 
     blocks = ""
     for name, text in digests:
         blocks += f"""
         <div style="margin-bottom:20px;border:1px solid #e2e8f0;border-radius:10px;padding:20px 22px;">
           <div style="font-size:14px;font-weight:700;color:#0f2942;font-family:Arial,sans-serif;margin-bottom:10px;">{name}</div>
-          <div style="{row}">{text}</div>
+          <div style="{row}">{render_markdown(text)}</div>
         </div>"""
 
     if unreachable:
