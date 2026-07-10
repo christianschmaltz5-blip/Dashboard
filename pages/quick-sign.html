@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Quick Sign — Kevin Andreson</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&family=Dancing+Script:wght@600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="quick-sign/manifests.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#000;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.1);--text:#fff;--muted:rgba(255,255,255,0.5);--dim:rgba(255,255,255,0.25);--accent:#60A5FA;--accent2:#34D399;}
+body{font-family:'Josefin Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.9);backdrop-filter:blur(12px);}
+.nav-back{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;cursor:pointer;} .nav-back:hover{color:var(--text);}
+.nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.nav-title{font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+.nav-actions{display:flex;gap:10px;align-items:center;}
+
+button{font-family:'Josefin Sans',sans-serif;cursor:pointer;}
+.btn{padding:9px 16px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:var(--text);transition:all .18s;}
+.btn:hover{background:rgba(255,255,255,0.1);}
+.btn-primary{background:linear-gradient(135deg,#1B3A6B,#2563EB);border:none;color:#fff;}
+.btn-primary:hover{opacity:.9;}
+.btn-accent{background:rgba(52,211,153,0.12);border-color:rgba(52,211,153,0.35);color:var(--accent2);}
+.btn.on{background:rgba(96,165,250,0.18);border-color:rgba(96,165,250,0.5);color:var(--accent);}
+
+/* ---- picker ---- */
+main{max-width:1000px;margin:0 auto;padding:2.5rem 2rem 5rem;}
+h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
+.subtitle{font-size:13.5px;color:var(--muted);line-height:1.7;margin-bottom:2rem;max-width:640px;}
+.subtitle b{color:var(--text);font-weight:600;}
+.doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.doc-card{position:relative;text-align:left;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 18px 16px;transition:all .18s;overflow:hidden;}
+.doc-card:hover{border-color:rgba(96,165,250,0.4);background:rgba(96,165,250,0.05);transform:translateY(-2px);}
+.doc-ico{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(96,165,250,0.12);margin-bottom:12px;}
+.doc-ico svg{width:18px;height:18px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.doc-title{font-size:15px;font-weight:600;margin-bottom:5px;line-height:1.3;}
+.doc-sub{font-size:12px;color:var(--muted);line-height:1.5;min-height:34px;}
+.doc-foot{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);}
+.pill{padding:3px 8px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:0.08em;}
+.pill-ready{background:rgba(52,211,153,0.14);color:var(--accent2);}
+.pill-beta{background:rgba(251,191,36,0.14);color:#FBBF24;}
+
+/* ---- editor ---- */
+#editor{display:none;}
+#editor.active{display:block;}
+.picker.hidden{display:none;}
+.ed-bar{position:sticky;top:56px;z-index:150;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 2rem;border-bottom:1px solid var(--border);background:rgba(10,10,12,0.92);backdrop-filter:blur(12px);}
+.ed-title{font-size:14px;font-weight:600;margin-right:auto;}
+.ed-hint{font-size:11px;color:var(--muted);width:100%;order:5;display:flex;align-items:center;gap:6px;}
+.ed-hint svg{width:13px;height:13px;stroke:var(--accent2);fill:none;stroke-width:2;}
+
+.pdf-scroll{max-width:900px;margin:1.5rem auto;padding:0 1rem 5rem;}
+.page-wrap{position:relative;margin:0 auto 22px;box-shadow:0 8px 30px rgba(0,0,0,0.5);background:#fff;line-height:0;}
+.page-wrap canvas{display:block;width:100%;height:auto;}
+.overlay{position:absolute;inset:0;}
+
+.qs-field{position:absolute;box-sizing:border-box;}
+.qs-field .fbox{width:100%;height:100%;border:1.5px solid rgba(37,99,235,0.55);background:rgba(96,165,250,0.12);border-radius:3px;color:#0b2a4a;font-family:'Josefin Sans',sans-serif;font-weight:500;padding:0 3px;outline:none;overflow:hidden;white-space:nowrap;display:flex;align-items:center;}
+.qs-field .fbox:focus{border-color:#2563EB;background:rgba(191,219,254,0.55);}
+.qs-field.f-date .fbox{background:rgba(52,211,153,0.16);border-color:rgba(16,185,129,0.6);}
+.qs-field.f-sig .fbox{cursor:pointer;justify-content:center;color:#1e3a8a;font-weight:600;font-size:11px;letter-spacing:0.05em;}
+.qs-field.f-sig .sigimg{max-width:100%;max-height:100%;}
+.qs-field.f-sig .sigtext{font-family:'Dancing Script',cursive;font-size:20px;color:#0b1e3a;line-height:1;white-space:nowrap;}
+.qs-field.f-check .fbox{justify-content:center;cursor:pointer;font-weight:700;color:#1e3a8a;background:rgba(96,165,250,0.1);}
+.qs-field .handle{position:absolute;top:-9px;left:-9px;width:16px;height:16px;border-radius:4px;background:#2563EB;cursor:move;display:none;align-items:center;justify-content:center;z-index:3;}
+.qs-field .del{position:absolute;top:-9px;right:-9px;width:16px;height:16px;border-radius:50%;background:#ef4444;color:#fff;font-size:12px;line-height:14px;text-align:center;cursor:pointer;display:none;z-index:3;}
+.qs-field:hover .handle,.qs-field:hover .del{display:flex;}
+.qs-field .handle svg{width:9px;height:9px;stroke:#fff;fill:none;stroke-width:2.5;}
+.placing{cursor:crosshair !important;}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:500;display:none;align-items:center;justify-content:center;padding:1rem;}
+.modal-bg.show{display:flex;}
+.modal{background:#0e0e12;border:1px solid var(--border);border-radius:16px;padding:26px;width:100%;max-width:440px;}
+.modal h3{font-size:17px;margin-bottom:4px;}
+.modal p{font-size:12px;color:var(--muted);margin-bottom:16px;}
+.tabs{display:flex;gap:6px;margin-bottom:14px;}
+.tab{flex:1;padding:9px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);}
+.tab.on{background:rgba(96,165,250,0.16);border-color:rgba(96,165,250,0.5);color:var(--accent);}
+.sig-input{width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:12px;color:#fff;font-size:15px;outline:none;margin-bottom:8px;}
+#sigTypePrev{height:70px;display:flex;align-items:center;justify-content:center;font-family:'Dancing Script',cursive;font-size:34px;color:#fff;background:rgba(255,255,255,0.04);border-radius:8px;margin-bottom:14px;}
+#sigPad{width:100%;height:150px;background:#fff;border-radius:8px;touch-action:none;cursor:crosshair;margin-bottom:6px;}
+.sig-clear{font-size:11px;color:var(--muted);background:none;border:none;text-decoration:underline;margin-bottom:12px;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+#qrBox{display:flex;flex-direction:column;align-items:center;gap:14px;}
+#qrCanvas{background:#fff;padding:14px;border-radius:12px;}
+.qr-url{font-size:11px;color:var(--muted);word-break:break-all;text-align:center;}
+
+.overlay-note{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:rgba(37,99,235,0.95);color:#fff;padding:8px 16px;border-radius:20px;font-size:12px;z-index:400;display:none;}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-back" id="navBack" href="../index.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg> Back</a>
+  <span class="nav-title">Quick Sign</span>
+  <div class="nav-actions">
+    <button class="btn" id="qrBtn">Share / QR</button>
+  </div>
+</nav>
+
+<!-- PICKER -->
+<main class="picker" id="picker">
+  <h1>Quick Sign</h1>
+  <p class="subtitle">Pick a document below and it opens <b>ready to fill</b> — the fields are already boxed on the blanks, <b>today's date is filled in for you</b>, and you can <b>sign right on screen</b>. When you're done, tap <b>Download</b> to get the finished PDF. No app, no printing, no boxes of paper.</p>
+  <div class="doc-grid" id="docGrid"></div>
+</main>
+
+<!-- EDITOR -->
+<section id="editor">
+  <div class="ed-bar">
+    <span class="ed-title" id="edTitle"></span>
+    <button class="btn" id="addTextBtn">+ Text</button>
+    <button class="btn" id="addSigBtn">+ Signature</button>
+    <button class="btn-accent btn" id="downloadBtn">Download completed PDF</button>
+    <div class="ed-hint"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Click a blue box and type. Green boxes are auto-dated. Click a <b>&nbsp;Sign&nbsp;</b> box to sign. Drag the corner handle to move a box, × to remove it. Use <b>&nbsp;+ Text&nbsp;</b> / <b>&nbsp;+ Signature&nbsp;</b> to add anything that's missing.</div>
+  </div>
+  <div class="pdf-scroll" id="pdfScroll"></div>
+</section>
+
+<!-- SIGNATURE MODAL -->
+<div class="modal-bg" id="sigModal">
+  <div class="modal">
+    <h3>Add your signature</h3>
+    <p>Type it or draw it with your finger / mouse.</p>
+    <div class="tabs">
+      <button class="tab on" data-sig="type">Type</button>
+      <button class="tab" data-sig="draw">Draw</button>
+    </div>
+    <div id="sigTypePane">
+      <input class="sig-input" id="sigTypeInput" placeholder="Type your full name" autocomplete="off"/>
+      <div id="sigTypePrev"></div>
+    </div>
+    <div id="sigDrawPane" style="display:none;">
+      <canvas id="sigPad" width="380" height="150"></canvas>
+      <button class="sig-clear" id="sigClear">Clear</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="sigCancel">Cancel</button>
+      <button class="btn btn-primary" id="sigApply">Apply signature</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR MODAL -->
+<div class="modal-bg" id="qrModal">
+  <div class="modal">
+    <h3>Scan to open on a phone</h3>
+    <p>Point a phone camera at this code to open this signing page. Great for handing a client the QR instead of paper.</p>
+    <div id="qrBox"><div id="qrCanvas"></div><div class="qr-url" id="qrUrl"></div></div>
+    <div class="modal-actions" style="margin-top:16px;"><button class="btn" id="qrClose">Close</button></div>
+  </div>
+</div>
+
+<div class="overlay-note" id="note"></div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+const DOC_BASE = "quick-sign/";
+const DOCS = window.QS_DOCS || [];
+const ICON = `<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/>`;
+const today = () => { const d=new Date(); return String(d.getMonth()+1).padStart(2,'0')+"/"+String(d.getDate()).padStart(2,'0')+"/"+d.getFullYear(); };
+
+/* ---------- picker ---------- */
+const grid = document.getElementById('docGrid');
+DOCS.forEach(doc => {
+  const c = document.createElement('button');
+  c.className = 'doc-card';
+  c.innerHTML = `
+    <div class="doc-ico"><svg viewBox="0 0 24 24">${ICON}</svg></div>
+    <div class="doc-title">${doc.title}</div>
+    <div class="doc-sub">${doc.subtitle}</div>
+    <div class="doc-foot">
+      <span>${doc.pages} page${doc.pages>1?'s':''}</span>
+      <span class="pill ${doc.verified?'pill-ready':'pill-beta'}">${doc.verified?'Ready':'Beta — check boxes'}</span>
+    </div>`;
+  c.onclick = () => openDoc(doc);
+  grid.appendChild(c);
+});
+
+/* ---------- state ---------- */
+let current = null;         // current doc
+let pageSizes = [];         // rendered px sizes per page
+let fieldEls = [];          // {el, page, type, get value}
+let placingType = null;     // 'text' | 'signature' when in add mode
+let activeSigField = null;  // field being signed
+
+const note = (msg) => { const n=document.getElementById('note'); n.textContent=msg; n.style.display='block'; clearTimeout(n._t); n._t=setTimeout(()=>n.style.display='none',2600); };
+
+/* ---------- open + render ---------- */
+async function openDoc(doc){
+  current = doc; fieldEls = []; pageSizes = [];
+  document.getElementById('picker').classList.add('hidden');
+  document.getElementById('editor').classList.add('active');
+  document.getElementById('edTitle').textContent = doc.title;
+  const scroll = document.getElementById('pdfScroll');
+  scroll.innerHTML = '<p style="color:var(--muted);text-align:center;padding:3rem;">Loading document…</p>';
+  window.scrollTo(0,0);
+
+  const bytes = await fetch(DOC_BASE+doc.file).then(r=>r.arrayBuffer());
+  current._bytes = bytes.slice(0);
+  const pdf = await pdfjsLib.getDocument({data: bytes}).promise;
+  scroll.innerHTML = '';
+  const targetW = Math.min(880, scroll.clientWidth);
+
+  for(let p=1;p<=pdf.numPages;p++){
+    const page = await pdf.getPage(p);
+    const vp1 = page.getViewport({scale:1});
+    const scale = targetW / vp1.width;
+    const vp = page.getViewport({scale});
+    const wrap = document.createElement('div');
+    wrap.className='page-wrap';
+    wrap.style.width = vp.width+'px'; wrap.style.height = vp.height+'px';
+    const canvas = document.createElement('canvas');
+    canvas.width = vp.width * (window.devicePixelRatio||1);
+    canvas.height = vp.height * (window.devicePixelRatio||1);
+    const ctx = canvas.getContext('2d');
+    ctx.scale(window.devicePixelRatio||1, window.devicePixelRatio||1);
+    await page.render({canvasContext:ctx, viewport:vp}).promise;
+    const overlay = document.createElement('div'); overlay.className='overlay';
+    overlay.dataset.page = p-1;
+    overlay.addEventListener('click', overlayClick);
+    wrap.appendChild(canvas); wrap.appendChild(overlay);
+    scroll.appendChild(wrap);
+    pageSizes[p-1] = {w:vp.width, h:vp.height, overlay};
+  }
+  // place detected fields
+  doc.layout.forEach(pg => {
+    (pg.fields||[]).forEach(f => addField(pg.page, f.type, f.x, f.y, f.w, f.h,
+       f.type==='date'? today() : ''));
+  });
+}
+
+/* ---------- fields ---------- */
+function addField(pageIdx, type, x, y, w, h, value){
+  const ps = pageSizes[pageIdx]; if(!ps) return;
+  const kind = (type==='date')?'date':(type==='signature')?'sig':(type==='checkbox')?'check':'text';
+  const el = document.createElement('div');
+  el.className = 'qs-field f-'+kind;
+  el.style.left=(x*ps.w)+'px'; el.style.top=(y*ps.h)+'px';
+  el.style.width=(w*ps.w)+'px'; el.style.height=(h*ps.h)+'px';
+  const fh = h*ps.h;
+  const rec = {el, pageIdx, kind, x, y, w, h, value:value||'', sigImg:null};
+
+  if(kind==='sig'){
+    const box=document.createElement('div'); box.className='fbox';
+    box.innerHTML='<span style="opacity:.7">✎ Sign</span>';
+    box.onclick=(e)=>{ if(el.classList.contains('dragging'))return; e.stopPropagation(); openSig(rec); };
+    el.appendChild(box); rec.box=box;
+  } else if(kind==='check'){
+    const box=document.createElement('div'); box.className='fbox';
+    box.onclick=(e)=>{ e.stopPropagation(); rec.value = rec.value?'':'X'; box.textContent=rec.value?'✕':''; };
+    el.appendChild(box); rec.box=box;
+  } else {
+    const box=document.createElement('div'); box.className='fbox'; box.contentEditable='true';
+    box.style.fontSize=Math.max(10, Math.min(15, fh*0.62))+'px';
+    box.textContent=value||'';
+    box.oninput=()=>{ rec.value=box.textContent; };
+    box.onclick=(e)=>e.stopPropagation();
+    el.appendChild(box); rec.box=box;
+  }
+  const handle=document.createElement('div'); handle.className='handle';
+  handle.innerHTML='<svg viewBox="0 0 24 24"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>';
+  const del=document.createElement('div'); del.className='del'; del.textContent='×';
+  del.onclick=(e)=>{ e.stopPropagation(); el.remove(); fieldEls=fieldEls.filter(r=>r!==rec); };
+  el.appendChild(handle); el.appendChild(del);
+  enableDrag(el, handle, rec);
+  ps.overlay.appendChild(el);
+  fieldEls.push(rec);
+  return rec;
+}
+
+function enableDrag(el, handle, rec){
+  let sx,sy,ox,oy,drag=false;
+  handle.addEventListener('pointerdown', e=>{
+    e.preventDefault(); e.stopPropagation(); drag=true; el.classList.add('dragging');
+    sx=e.clientX; sy=e.clientY; ox=parseFloat(el.style.left); oy=parseFloat(el.style.top);
+    handle.setPointerCapture(e.pointerId);
+  });
+  handle.addEventListener('pointermove', e=>{
+    if(!drag)return;
+    const nx=ox+(e.clientX-sx), ny=oy+(e.clientY-sy);
+    el.style.left=nx+'px'; el.style.top=ny+'px';
+  });
+  handle.addEventListener('pointerup', e=>{
+    if(!drag)return; drag=false; setTimeout(()=>el.classList.remove('dragging'),50);
+    const ps=pageSizes[rec.pageIdx];
+    rec.x=parseFloat(el.style.left)/ps.w; rec.y=parseFloat(el.style.top)/ps.h;
+  });
+}
+
+/* add-field mode */
+document.getElementById('addTextBtn').onclick=()=>togglePlace('text');
+document.getElementById('addSigBtn').onclick=()=>togglePlace('signature');
+function togglePlace(t){
+  placingType = (placingType===t)?null:t;
+  document.getElementById('addTextBtn').classList.toggle('on', placingType==='text');
+  document.getElementById('addSigBtn').classList.toggle('on', placingType==='signature');
+  document.getElementById('editor').classList.toggle('placing', !!placingType);
+  if(placingType) note('Click on the document where you want to add '+(t==='signature'?'a signature':'a text box')+'.');
+}
+function overlayClick(e){
+  if(!placingType) return;
+  const ps = pageSizes[+e.currentTarget.dataset.page];
+  const r = e.currentTarget.getBoundingClientRect();
+  const x=(e.clientX-r.left)/ps.w, y=(e.clientY-r.top)/ps.h;
+  const w = placingType==='signature'?0.22:0.20, h = placingType==='signature'?0.035:0.022;
+  const rec = addField(+e.currentTarget.dataset.page, placingType, x, y, w, h, '');
+  if(placingType==='text') rec.box.focus();
+  togglePlace(placingType);
+}
+
+/* ---------- signature modal ---------- */
+const sigModal=document.getElementById('sigModal');
+let sigMode='type', padCtx, padDrawing=false, padHasInk=false;
+function openSig(rec){ activeSigField=rec; sigModal.classList.add('show'); switchSig('type');
+  document.getElementById('sigTypeInput').value=''; document.getElementById('sigTypePrev').textContent=''; clearPad(); }
+document.querySelectorAll('[data-sig]').forEach(b=>b.onclick=()=>switchSig(b.dataset.sig));
+function switchSig(m){ sigMode=m;
+  document.querySelectorAll('[data-sig]').forEach(b=>b.classList.toggle('on',b.dataset.sig===m));
+  document.getElementById('sigTypePane').style.display = m==='type'?'block':'none';
+  document.getElementById('sigDrawPane').style.display = m==='draw'?'block':'none';
+}
+document.getElementById('sigTypeInput').oninput=e=>document.getElementById('sigTypePrev').textContent=e.target.value;
+// draw pad
+const pad=document.getElementById('sigPad'); padCtx=pad.getContext('2d');
+padCtx.lineWidth=2.4; padCtx.lineCap='round'; padCtx.strokeStyle='#0b1e3a';
+function padPos(e){ const r=pad.getBoundingClientRect(); return {x:(e.clientX-r.left)*(pad.width/r.width), y:(e.clientY-r.top)*(pad.height/r.height)}; }
+pad.addEventListener('pointerdown',e=>{padDrawing=true;padHasInk=true;const p=padPos(e);padCtx.beginPath();padCtx.moveTo(p.x,p.y);pad.setPointerCapture(e.pointerId);});
+pad.addEventListener('pointermove',e=>{if(!padDrawing)return;const p=padPos(e);padCtx.lineTo(p.x,p.y);padCtx.stroke();});
+pad.addEventListener('pointerup',()=>padDrawing=false);
+function clearPad(){ padCtx.clearRect(0,0,pad.width,pad.height); padHasInk=false; }
+document.getElementById('sigClear').onclick=clearPad;
+document.getElementById('sigCancel').onclick=()=>sigModal.classList.remove('show');
+document.getElementById('sigApply').onclick=()=>{
+  const rec=activeSigField; if(!rec)return;
+  if(sigMode==='type'){
+    const v=document.getElementById('sigTypeInput').value.trim();
+    if(!v){ note('Type your name first.'); return; }
+    rec.value=v; rec.sigImg=null;
+    rec.box.innerHTML='<span class="sigtext">'+v.replace(/</g,'&lt;')+'</span>';
+  } else {
+    if(!padHasInk){ note('Draw your signature first.'); return; }
+    const url=pad.toDataURL('image/png'); rec.sigImg=url; rec.value='';
+    rec.box.innerHTML='<img class="sigimg" src="'+url+'"/>';
+  }
+  sigModal.classList.remove('show');
+};
+
+/* ---------- export via pdf-lib ---------- */
+document.getElementById('downloadBtn').onclick=async()=>{
+  try{
+    note('Building your PDF…');
+    const {PDFDocument, StandardFonts, rgb} = PDFLib;
+    const pdfDoc = await PDFDocument.load(current._bytes.slice(0));
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const sigFont = await pdfDoc.embedFont(StandardFonts.HelveticaBoldOblique);
+    const pages = pdfDoc.getPages();
+    for(const rec of fieldEls){
+      const page = pages[rec.pageIdx]; if(!page) continue;
+      const {width:W, height:H} = page.getSize();
+      const x = rec.x*W, boxH = rec.h*H, boxW = rec.w*W;
+      const yTop = rec.y*H;
+      const yBottom = H - yTop - boxH;      // pdf origin bottom-left
+      if(rec.kind==='sig' && rec.sigImg){
+        const png = await pdfDoc.embedPng(rec.sigImg);
+        const ar = png.width/png.height;
+        let dw=boxW, dh=dw/ar; if(dh>boxH){ dh=boxH; dw=dh*ar; }
+        page.drawImage(png,{x:x, y:yBottom+(boxH-dh)/2, width:dw, height:dh});
+      } else if(rec.kind==='sig' && rec.value){
+        const size=Math.min(boxH*0.9, 18);
+        page.drawText(rec.value,{x:x+2, y:yBottom+(boxH-size)/2+size*0.15, size, font:sigFont, color:rgb(0.04,0.1,0.25)});
+      } else if(rec.kind==='check'){
+        if(rec.value){ const size=Math.min(boxH,boxW)*0.9;
+          page.drawText('X',{x:x+(boxW-size*0.6)/2, y:yBottom+(boxH-size)/2+size*0.1, size, font, color:rgb(0.05,0.1,0.3)}); }
+      } else if(rec.value){
+        const size=Math.max(8, Math.min(13, boxH*0.6));
+        page.drawText(rec.value,{x:x+2, y:yBottom+(boxH-size)/2+size*0.12, size, font, color:rgb(0.05,0.1,0.3)});
+      }
+    }
+    const out = await pdfDoc.save();
+    const blob = new Blob([out], {type:'application/pdf'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download = current.title.replace(/[^\w]+/g,'-')+' — completed.pdf';
+    a.click();
+    note('Downloaded ✓');
+  }catch(err){ console.error(err); note('Export error — see console.'); }
+};
+
+/* ---------- nav / QR ---------- */
+document.getElementById('navBack').addEventListener('click', e=>{
+  if(document.getElementById('editor').classList.contains('active')){
+    e.preventDefault();
+    document.getElementById('editor').classList.remove('active');
+    document.getElementById('picker').classList.remove('hidden');
+  }
+});
+const qrModal=document.getElementById('qrModal');
+document.getElementById('qrBtn').onclick=()=>{
+  const box=document.getElementById('qrCanvas'); box.innerHTML='';
+  const url = window.location.href.split('#')[0];
+  new QRCode(box,{text:url,width:200,height:200,correctLevel:QRCode.CorrectLevel.M});
+  document.getElementById('qrUrl').textContent=url;
+  qrModal.classList.add('show');
+};
+document.getElementById('qrClose').onclick=()=>qrModal.classList.remove('show');
+[sigModal,qrModal].forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show');}));
+
+if(!DOCS.length){ document.getElementById('docGrid').innerHTML='<p style="color:var(--muted)">Could not load documents (manifests.js missing).</p>'; }
+</script>
+</body>
+</html>
