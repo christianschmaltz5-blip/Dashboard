@@ -130,6 +130,41 @@ Output as a clean digest, one paragraph per item, sorted by urgency.
 If nothing in the supplied text has development significance, respond with exactly: NONE"""
 
 
+# A newly-detected change is only worth sending to Claude if it carries real
+# agenda text. A bare listing-count tick ("2026 - PL Agenda Items (151 items)")
+# or a stray nav-label change is not — feeding it to the model produced a
+# conversational "I don't see any content, please paste it" reply that got
+# emailed verbatim (2026-07-10). We skip anything below this many characters of
+# actual body text (link-header lines we add ourselves don't count).
+MIN_CONTENT_CHARS = 200
+
+# If thin content ever slips through, Claude tends to answer with a meta / non-
+# answer ("I don't see any text...", "please paste the agenda...") instead of
+# the required "NONE". Catch those so they can never reach the email.
+NON_ANSWER = re.compile(
+    r"i (don't|do not|cannot|can't|am unable to) (see|find|have|access|read)|"
+    r"please (paste|provide|share|send)|"
+    r"no (actual |real |visible )?(text |agenda |page )?content|"
+    r"(text|content|message|input) (is empty|contains no|doesn't contain|does not contain)|"
+    r"there (is|are) no (agenda |item |actual )?(text|content|details|items)|"
+    r"didn't (include|provide|contain)|only the label",
+    re.I,
+)
+
+
+def meaningful_content(text):
+    """Body text of a change chunk, minus the '[url]' link headers we prepend."""
+    body = "\n".join(
+        ln for ln in text.splitlines()
+        if not (ln.startswith("[") and ln.endswith("]"))
+    )
+    return body.strip()
+
+
+def is_non_answer(summary):
+    return bool(NON_ANSWER.search(summary[:500]))
+
+
 def summarize(client, source_name, new_text):
     msg = client.messages.create(
         model=CLAUDE_MODEL,
@@ -268,14 +303,24 @@ def main():
 
         if new_content_chunks:
             combined = "\n\n---\n\n".join(new_content_chunks)
-            try:
-                summary = summarize(client, name, combined)
-            except Exception as e:
-                print(f"  Claude summarization failed: {e}")
+            if len(meaningful_content(combined)) < MIN_CONTENT_CHARS:
+                # e.g. a listing count ticked but no real agenda text came with
+                # it — don't ask Claude to summarize nothing (it won't reply
+                # NONE, it'll reply "please paste the content" and we'd email it).
+                print("  Change too thin to summarize (count/label tick, no item text) — skipping.")
                 summary = None
-            if summary and summary.strip() != "NONE":
+            else:
+                try:
+                    summary = summarize(client, name, combined)
+                except Exception as e:
+                    print(f"  Claude summarization failed: {e}")
+                    summary = None
+            if summary and summary.strip().rstrip(".").upper() != "NONE" \
+                    and not is_non_answer(summary):
                 print("  Development-significant activity found.")
                 digests.append((name, summary))
+            elif summary and is_non_answer(summary):
+                print("  Claude returned a non-answer on thin content — suppressed.")
             else:
                 print("  Changed, but nothing development-significant.")
         else:
