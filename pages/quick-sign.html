@@ -257,7 +257,9 @@ function addField(pageIdx, type, x, y, w, h, value){
     el.appendChild(box); rec.box=box;
   } else {
     const box=document.createElement('div'); box.className='fbox'; box.contentEditable='true';
-    box.style.fontSize=Math.max(10, Math.min(15, fh*0.62))+'px';
+    const tall = fh > 34;
+    box.style.fontSize=(tall ? 12 : Math.max(10, Math.min(15, fh*0.62)))+'px';
+    if(tall){ box.style.whiteSpace='normal'; box.style.alignItems='flex-start'; box.style.lineHeight='1.35'; box.style.padding='3px 4px'; }
     box.textContent=value||'';
     box.oninput=()=>{ rec.value=box.textContent; };
     box.onclick=(e)=>e.stopPropagation();
@@ -378,8 +380,19 @@ document.getElementById('downloadBtn').onclick=async()=>{
         if(rec.value){ const size=Math.min(boxH,boxW)*0.9;
           page.drawText('X',{x:x+(boxW-size*0.6)/2, y:yBottom+(boxH-size)/2+size*0.1, size, font, color:rgb(0.05,0.1,0.3)}); }
       } else if(rec.value){
-        const size=Math.max(8, Math.min(13, boxH*0.6));
-        page.drawText(rec.value,{x:x+2, y:yBottom+(boxH-size)/2+size*0.12, size, font, color:rgb(0.05,0.1,0.3)});
+        const tall = boxH > 26;
+        if(tall){
+          const size = 11, col = rgb(0.05,0.1,0.3);
+          const words = String(rec.value).split(/\s+/); let lines=[], cur='';
+          for(const w of words){ const t = cur ? cur+' '+w : w;
+            if(font.widthOfTextAtSize(t,size) > boxW-6 && cur){ lines.push(cur); cur=w; } else cur=t; }
+          if(cur) lines.push(cur);
+          let ty = yBottom + boxH - size - 2;
+          for(const ln of lines){ page.drawText(ln,{x:x+3, y:ty, size, font, color:col}); ty -= size*1.35; if(ty < yBottom+2) break; }
+        } else {
+          const size=Math.max(8, Math.min(13, boxH*0.6));
+          page.drawText(rec.value,{x:x+2, y:yBottom+(boxH-size)/2+size*0.12, size, font, color:rgb(0.05,0.1,0.3)});
+        }
       }
     }
     const out = await pdfDoc.save();
