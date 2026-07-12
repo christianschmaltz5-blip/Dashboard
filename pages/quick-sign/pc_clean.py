@@ -64,19 +64,63 @@ def clean_page(page):
             continue
         out_checks.append(nf)
 
-    # ---- comment / text boxes: drop tall phantoms, dedupe overlaps (keep larger) ----
-    texts = [f for f in others if f["type"] in ("text",)]
-    rest = [f for f in others if f["type"] not in ("text",)]
-    # drop tall phantoms and stray fields in the leftmost row-number column
-    texts = [f for f in texts if f["h"]*H <= 95 and (f["x"]+f["w"]/2)*W > 62]
-    texts.sort(key=area, reverse=True)
+    # ---- comment boxes: one clean box per checkbox row, filling the comments cell ----
+    hlines, comR = grid_info(ink, pix.width, pix.height, W, H)
+    rest = [f for f in others if f["type"] != "text"]
+    texts = [f for f in others if f["type"] == "text"]
+
+    comment_boxes = []
+    table_top = table_bot = None
+    if out_checks and comR:
+        # group checkboxes into rows by y-center
+        rowc = clusters(sorted((c["y"]+c["h"]/2)*H for c in out_checks), 8)
+        rowys = [c for c, n in rowc if n >= 2]
+        if rowys:
+            table_top, table_bot = min(rowys)-14, max(rowys)+14
+            left_col = min((c["x"]+c["w"]/2)*W for c in out_checks)
+            for ry in rowys:
+                row_cx = [(c["x"]+c["w"]/2)*W for c in out_checks if abs((c["y"]+c["h"]/2)*H-ry) < 8]
+                comL = max(row_cx)+15
+                if comR-comL < 40:
+                    continue
+                ta = max([h for h in hlines if h < ry-2], default=ry-11)
+                tb = min([h for h in hlines if h > ry+2], default=ry+11)
+                ta = max(ta, ry-34); tb = min(tb, ry+34)   # guard against bridging gaps
+                comment_boxes.append({"type": "text", "kind": "box", "label": "",
+                                      "x": round((comL+2)/W, 5), "y": round((ta+1.5)/H, 5),
+                                      "w": round((comR-comL-4)/W, 5), "h": round((tb-ta-3)/H, 5)})
+
+    # keep text fields that are NOT in the table's checkbox/comments band
     kept = []
     for f in texts:
-        if any(overlap_frac(f, g) > 0.45 for g in kept):
+        cx = (f["x"]+f["w"]/2)*W; cy = (f["y"]+f["h"]/2)*H
+        if f["h"]*H > 95 or cx < 62:
             continue
+        if table_top is not None and table_top <= cy <= table_bot and cx > left_col-40:
+            continue  # replaced by clean comment boxes
         kept.append(f)
+    kept.sort(key=area, reverse=True)
+    dedup = []
+    for f in kept:
+        if any(overlap_frac(f, g) > 0.45 for g in dedup):
+            continue
+        dedup.append(f)
 
-    return {"page": None, "w": W, "h": H, "fields": rest + kept + out_checks}
+    return {"page": None, "w": W, "h": H, "fields": rest + dedup + comment_boxes + out_checks}
+
+
+def grid_info(ink, PW, PH, W, H):
+    S = rd.S
+    hk = cv2.getStructuringElement(cv2.MORPH_RECT, (150, 1))
+    Hh = cv2.morphologyEx(ink, cv2.MORPH_OPEN, hk)
+    hy = np.where(Hh.sum(axis=1) > 150*255)[0]
+    hlines = [c/S for c, n in clusters(list(hy), 6)] if len(hy) else []
+    vk = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 110))
+    V = cv2.morphologyEx(ink, cv2.MORPH_OPEN, vk)
+    vx = np.where(V.sum(axis=0) > 55*255)[0]
+    vlines = [c/S for c, n in clusters(list(vx), 8)] if len(vx) else []
+    comR = max(vlines) if vlines else W-14
+    return hlines, comR
 
 
 def process(path):
