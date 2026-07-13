@@ -66,7 +66,8 @@ h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
 .qs-field.f-sig .fbox{cursor:pointer;justify-content:center;color:#1e3a8a;font-weight:600;font-size:11px;letter-spacing:0.05em;}
 .qs-field.f-sig .sigimg{max-width:100%;max-height:100%;}
 .qs-field.f-sig .sigtext{font-family:'Dancing Script',cursive;font-size:20px;color:#0b1e3a;line-height:1;white-space:nowrap;}
-.qs-field.f-check .fbox{justify-content:center;cursor:pointer;font-weight:700;color:#1e3a8a;background:rgba(96,165,250,0.1);}
+.qs-field.f-check .fbox{justify-content:center;cursor:pointer;font-weight:700;color:#1e3a8a;background:rgba(96,165,250,0.1);border-width:1px;padding:0;}
+.snap-guide{position:absolute;background:#f59e0b;z-index:5;pointer-events:none;box-shadow:0 0 2px rgba(245,158,11,0.8);}
 .qs-field .handle{position:absolute;top:-9px;left:-9px;width:16px;height:16px;border-radius:4px;background:#2563EB;cursor:move;display:none;align-items:center;justify-content:center;z-index:3;}
 .qs-field .del{position:absolute;top:-9px;right:-9px;width:16px;height:16px;border-radius:50%;background:#ef4444;color:#fff;font-size:12px;line-height:14px;text-align:center;cursor:pointer;display:none;z-index:3;}
 .qs-field .resize{position:absolute;bottom:-8px;right:-8px;width:15px;height:15px;border-radius:3px;background:#2563EB;border:2px solid #fff;cursor:nwse-resize;display:none;z-index:3;touch-action:none;}
@@ -117,11 +118,12 @@ h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
     <span class="ed-title" id="edTitle"></span>
     <button class="btn" id="addTextBtn">+ Text</button>
     <button class="btn" id="addCheckBtn">+ Checkbox</button>
+    <button class="btn" id="addDateBtn">+ Date</button>
     <button class="btn" id="addSigBtn">+ Signature</button>
     <button class="btn" id="saveTplBtn">Save as template</button>
     <button class="btn" id="resetTplBtn" style="display:none;">Reset layout</button>
     <button class="btn-accent btn" id="downloadBtn">Download completed PDF</button>
-    <div class="ed-hint"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Click a blue box and type. Green boxes are auto-dated. Click a <b>&nbsp;Sign&nbsp;</b> box to sign. Drag the <b>top-left</b> handle to move a box, the <b>bottom-right</b> corner to resize it, × to remove. Use <b>&nbsp;+ Text / + Checkbox / + Signature&nbsp;</b> to drop boxes — the tool stays on so you can add several in a row (Esc to stop). <b>Save as template</b> keeps your box layout for next time.</div>
+    <div class="ed-hint"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Click a blue box and type. Green boxes are auto-dated. Click a <b>&nbsp;Sign&nbsp;</b> box to sign. Drag the <b>top-left</b> handle to move a box, the <b>bottom-right</b> corner to resize it, × to remove. Use <b>&nbsp;+ Text / + Checkbox / + Date / + Signature&nbsp;</b> to drop boxes — the tool stays on so you can add several in a row (Esc to stop), and boxes <b>snap to line up</b> with ones you’ve already placed (amber guide shows the match). <b>Save as template</b> keeps your box layout for next time.</div>
   </div>
   <div class="pdf-scroll" id="pdfScroll"></div>
 </section>
@@ -331,10 +333,16 @@ function enableDrag(el, handle, rec){
   handle.addEventListener('pointermove', e=>{
     if(!drag)return;
     const nx=ox+(e.clientX-sx), ny=oy+(e.clientY-sy);
-    el.style.left=nx+'px'; el.style.top=ny+'px';
+    const bw=parseFloat(el.style.width), bh=parseFloat(el.style.height);
+    const s=snapXY(rec.pageIdx, nx, ny, bw, bh, rec);
+    clearGuides();
+    if(s.gx!=null) drawGuide(rec.pageIdx, true,  s.gx);
+    if(s.gy!=null) drawGuide(rec.pageIdx, false, s.gy);
+    el.style.left=s.x+'px'; el.style.top=s.y+'px';
   });
   handle.addEventListener('pointerup', e=>{
     if(!drag)return; drag=false; setTimeout(()=>el.classList.remove('dragging'),50);
+    clearGuides();
     const ps=pageSizes[rec.pageIdx];
     rec.x=parseFloat(el.style.left)/ps.w; rec.y=parseFloat(el.style.top)/ps.h;
   });
@@ -358,32 +366,66 @@ function enableResize(el, grip, rec){
 }
 
 /* add-field mode (sticky: stays on so you can drop many in a row) */
+// checkbox default = 10pt square on a letter-size page (the form's printed boxes
+// measure 11pt; 10pt sits cleanly just inside them). Values are page-relative.
+const CHECK_W = 10/612, CHECK_H = 10/792;
 document.getElementById('addTextBtn').onclick=()=>togglePlace('text');
 document.getElementById('addCheckBtn').onclick=()=>togglePlace('checkbox');
+document.getElementById('addDateBtn').onclick=()=>togglePlace('date');
 document.getElementById('addSigBtn').onclick=()=>togglePlace('signature');
-const PLACE_LABEL={text:'text box',checkbox:'checkbox',signature:'signature'};
+const PLACE_LABEL={text:'text box',checkbox:'checkbox',date:'date',signature:'signature'};
 function togglePlace(t){
   placingType = (placingType===t)?null:t;
   document.getElementById('addTextBtn').classList.toggle('on', placingType==='text');
   document.getElementById('addCheckBtn').classList.toggle('on', placingType==='checkbox');
+  document.getElementById('addDateBtn').classList.toggle('on', placingType==='date');
   document.getElementById('addSigBtn').classList.toggle('on', placingType==='signature');
   document.getElementById('editor').classList.toggle('placing', !!placingType);
-  if(placingType) note('Placing '+PLACE_LABEL[placingType]+'s — click anywhere to drop one. Keep clicking to add more. Press Esc (or the button again) to stop.');
+  if(placingType) note('Placing '+PLACE_LABEL[placingType]+'s — click anywhere to drop one. Keep clicking to add more; they snap to line up with boxes you’ve already placed. Press Esc (or the button again) to stop.');
 }
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && placingType) togglePlace(placingType); });
 function overlayClick(e){
   if(!placingType) return;
-  const ps = pageSizes[+e.currentTarget.dataset.page];
+  const pageIdx = +e.currentTarget.dataset.page;
+  const ps = pageSizes[pageIdx];
   const r = e.currentTarget.getBoundingClientRect();
-  // default box size per type; checkbox is a true square in page pixels
-  let w, h;
+  // default box size + auto-value per type
+  let w, h, val='';
   if(placingType==='signature'){ w=0.22; h=0.035; }
-  else if(placingType==='checkbox'){ const side=15; w=side/ps.w; h=side/ps.h; }
+  else if(placingType==='checkbox'){ w=CHECK_W; h=CHECK_H; }
+  else if(placingType==='date'){ w=0.14; h=0.022; val=today(); }
   else { w=0.20; h=0.022; }
-  // center the box on the cursor so it drops where you point
-  const x=(e.clientX-r.left)/ps.w - w/2, y=(e.clientY-r.top)/ps.h - h/2;
-  const rec = addField(+e.currentTarget.dataset.page, placingType, Math.max(0,x), Math.max(0,y), w, h, '');
+  // center the box on the cursor, then snap it to line up with existing boxes
+  const xpx=(e.clientX-r.left)-w*ps.w/2, ypx=(e.clientY-r.top)-h*ps.h/2;
+  const s=snapXY(pageIdx, xpx, ypx, w*ps.w, h*ps.h, null);
+  const rec = addField(pageIdx, placingType, Math.max(0,s.x)/ps.w, Math.max(0,s.y)/ps.h, w, h, val);
+  if(placingType==='text') rec.box.focus();
   // stay in place mode (sticky) so many boxes can be dropped quickly
+}
+
+/* ---------- alignment snapping + guide lines ---------- */
+let _guides=[];
+function clearGuides(){ _guides.forEach(g=>g.remove()); _guides=[]; }
+function drawGuide(pageIdx, vertical, pos){
+  const ps=pageSizes[pageIdx]; if(!ps) return;
+  const g=document.createElement('div'); g.className='snap-guide';
+  if(vertical){ g.style.left=pos+'px'; g.style.top='0'; g.style.width='1px'; g.style.height=ps.h+'px'; }
+  else       { g.style.top=pos+'px'; g.style.left='0'; g.style.height='1px'; g.style.width=ps.w+'px'; }
+  ps.overlay.appendChild(g); _guides.push(g);
+}
+// snap a box (in overlay px) to the left/center/right & top/middle/bottom of any other box on the page
+function snapXY(pageIdx, xpx, ypx, wpx, hpx, exclude){
+  const ps=pageSizes[pageIdx]; if(!ps) return {x:xpx,y:ypx,gx:null,gy:null};
+  const SNAP=7; let nx=xpx, ny=ypx, gx=null, gy=null, bdx=SNAP, bdy=SNAP;
+  fieldEls.forEach(o=>{
+    if(o===exclude || o.pageIdx!==pageIdx) return;
+    const ol=o.x*ps.w, ow=o.w*ps.w, ot=o.y*ps.h, oh=o.h*ps.h;
+    const oxs=[ol, ol+ow/2, ol+ow], mxs=[xpx, xpx+wpx/2, xpx+wpx];
+    for(let k=0;k<3;k++){ const d=Math.abs(mxs[k]-oxs[k]); if(d<bdx){ bdx=d; nx=xpx+(oxs[k]-mxs[k]); gx=oxs[k]; } }
+    const oys=[ot, ot+oh/2, ot+oh], mys=[ypx, ypx+hpx/2, ypx+hpx];
+    for(let k=0;k<3;k++){ const d=Math.abs(mys[k]-oys[k]); if(d<bdy){ bdy=d; ny=ypx+(oys[k]-mys[k]); gy=oys[k]; } }
+  });
+  return {x:nx, y:ny, gx, gy};
 }
 
 /* ---------- signature modal ---------- */
