@@ -116,11 +116,12 @@ h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
   <div class="ed-bar">
     <span class="ed-title" id="edTitle"></span>
     <button class="btn" id="addTextBtn">+ Text</button>
+    <button class="btn" id="addCheckBtn">+ Checkbox</button>
     <button class="btn" id="addSigBtn">+ Signature</button>
     <button class="btn" id="saveTplBtn">Save as template</button>
     <button class="btn" id="resetTplBtn" style="display:none;">Reset layout</button>
     <button class="btn-accent btn" id="downloadBtn">Download completed PDF</button>
-    <div class="ed-hint"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Click a blue box and type. Green boxes are auto-dated. Click a <b>&nbsp;Sign&nbsp;</b> box to sign. Drag the <b>top-left</b> handle to move a box, the <b>bottom-right</b> corner to resize it, × to remove. Use <b>&nbsp;+ Text / + Signature&nbsp;</b> to add one. <b>Save as template</b> keeps your box layout for next time.</div>
+    <div class="ed-hint"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Click a blue box and type. Green boxes are auto-dated. Click a <b>&nbsp;Sign&nbsp;</b> box to sign. Drag the <b>top-left</b> handle to move a box, the <b>bottom-right</b> corner to resize it, × to remove. Use <b>&nbsp;+ Text / + Checkbox / + Signature&nbsp;</b> to drop boxes — the tool stays on so you can add several in a row (Esc to stop). <b>Save as template</b> keeps your box layout for next time.</div>
   </div>
   <div class="pdf-scroll" id="pdfScroll"></div>
 </section>
@@ -356,25 +357,33 @@ function enableResize(el, grip, rec){
   grip.addEventListener('pointerup', e=>{ if(!res)return; res=false; setTimeout(()=>el.classList.remove('dragging'),50); });
 }
 
-/* add-field mode */
+/* add-field mode (sticky: stays on so you can drop many in a row) */
 document.getElementById('addTextBtn').onclick=()=>togglePlace('text');
+document.getElementById('addCheckBtn').onclick=()=>togglePlace('checkbox');
 document.getElementById('addSigBtn').onclick=()=>togglePlace('signature');
+const PLACE_LABEL={text:'text box',checkbox:'checkbox',signature:'signature'};
 function togglePlace(t){
   placingType = (placingType===t)?null:t;
   document.getElementById('addTextBtn').classList.toggle('on', placingType==='text');
+  document.getElementById('addCheckBtn').classList.toggle('on', placingType==='checkbox');
   document.getElementById('addSigBtn').classList.toggle('on', placingType==='signature');
   document.getElementById('editor').classList.toggle('placing', !!placingType);
-  if(placingType) note('Click on the document where you want to add '+(t==='signature'?'a signature':'a text box')+'.');
+  if(placingType) note('Placing '+PLACE_LABEL[placingType]+'s — click anywhere to drop one. Keep clicking to add more. Press Esc (or the button again) to stop.');
 }
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && placingType) togglePlace(placingType); });
 function overlayClick(e){
   if(!placingType) return;
   const ps = pageSizes[+e.currentTarget.dataset.page];
   const r = e.currentTarget.getBoundingClientRect();
-  const x=(e.clientX-r.left)/ps.w, y=(e.clientY-r.top)/ps.h;
-  const w = placingType==='signature'?0.22:0.20, h = placingType==='signature'?0.035:0.022;
-  const rec = addField(+e.currentTarget.dataset.page, placingType, x, y, w, h, '');
-  if(placingType==='text') rec.box.focus();
-  togglePlace(placingType);
+  // default box size per type; checkbox is a true square in page pixels
+  let w, h;
+  if(placingType==='signature'){ w=0.22; h=0.035; }
+  else if(placingType==='checkbox'){ const side=15; w=side/ps.w; h=side/ps.h; }
+  else { w=0.20; h=0.022; }
+  // center the box on the cursor so it drops where you point
+  const x=(e.clientX-r.left)/ps.w - w/2, y=(e.clientY-r.top)/ps.h - h/2;
+  const rec = addField(+e.currentTarget.dataset.page, placingType, Math.max(0,x), Math.max(0,y), w, h, '');
+  // stay in place mode (sticky) so many boxes can be dropped quickly
 }
 
 /* ---------- signature modal ---------- */
