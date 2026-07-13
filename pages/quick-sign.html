@@ -342,7 +342,7 @@ function enableDrag(el, handle, rec){
   });
   handle.addEventListener('pointerup', e=>{
     if(!drag)return; drag=false; setTimeout(()=>el.classList.remove('dragging'),50);
-    clearGuides();
+    clearGuides(); suppressPlace();
     const ps=pageSizes[rec.pageIdx];
     rec.x=parseFloat(el.style.left)/ps.w; rec.y=parseFloat(el.style.top)/ps.h;
   });
@@ -362,7 +362,7 @@ function enableResize(el, grip, rec){
     const ps=pageSizes[rec.pageIdx]; rec.w=nw/ps.w; rec.h=nh/ps.h;
     restyleText(rec);
   });
-  grip.addEventListener('pointerup', e=>{ if(!res)return; res=false; setTimeout(()=>el.classList.remove('dragging'),50); });
+  grip.addEventListener('pointerup', e=>{ if(!res)return; res=false; setTimeout(()=>el.classList.remove('dragging'),50); suppressPlace(); });
 }
 
 /* add-field mode (sticky: stays on so you can drop many in a row) */
@@ -384,8 +384,17 @@ function togglePlace(t){
   if(placingType) note('Placing '+PLACE_LABEL[placingType]+'s — click anywhere to drop one. Keep clicking to add more; they snap to line up with boxes you’ve already placed. Press Esc (or the button again) to stop.');
 }
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && placingType) togglePlace(placingType); });
+// After a drag/resize the browser fires a click; this flag swallows that one
+// click so moving or reshaping a box never spawns a duplicate.
+let _suppressPlace=false, _sp_t=null;
+function suppressPlace(){ _suppressPlace=true; clearTimeout(_sp_t); _sp_t=setTimeout(()=>_suppressPlace=false,300); }
 function overlayClick(e){
   if(!placingType) return;
+  // Only drop a new box when the empty page is clicked. If the click landed on an
+  // existing field (its move handle, resize grip, or body), or is the click that
+  // fires right after dragging/resizing, do nothing so we never spawn a duplicate.
+  if(_suppressPlace){ _suppressPlace=false; return; }
+  if(e.target !== e.currentTarget) return;
   const pageIdx = +e.currentTarget.dataset.page;
   const ps = pageSizes[pageIdx];
   const r = e.currentTarget.getBoundingClientRect();
