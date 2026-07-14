@@ -82,8 +82,9 @@ h1{font-size:2rem;font-weight:600;letter-spacing:-0.01em;}
   if(!DOCS.length){ if(loading) loading.textContent='Could not load documents (manifests.js missing).'; return; }
   if(loading) loading.remove();
 
-  // absolute deep-link to the signing page for a given doc key — resolves correctly on any host
-  function linkFor(key){ return new URL('quick-sign.html?doc='+encodeURIComponent(key), location.href).href; }
+  // absolute deep-link to the signing page for a given doc key — resolves correctly on any host.
+  // &fill=1 opens it in tenant fill-only mode: they can fill & sign, but not move/add/delete boxes.
+  function linkFor(key){ return new URL('quick-sign.html?doc='+encodeURIComponent(key)+'&fill=1', location.href).href; }
   function isLease(d){ return /^lease-/.test(d.key); }
   function isOld(d){ return /older|supersed/i.test(d.subtitle||'') || /-(v1|2025)$/.test(d.key); }
 
