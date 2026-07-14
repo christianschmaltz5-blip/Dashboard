@@ -885,10 +885,21 @@ const NODES = [
     date: "ON DEMAND",
     status: "live",
     energy: 100,
-    relatedIds: [3, 4],
+    relatedIds: [3, 4, 13],
     page: "pages/quick-sign.html",
     body: "Client picks a document (or scans a QR) and it opens ready to fill — fields boxed on the blanks, today's date filled in, sign on screen with finger or mouse, then download the finished PDF. Covers all 7 KWBH/BHAR/State forms. No printing, no boxes of paper.",
     icon: `<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>`,
+  },
+  {
+    id: 13,
+    title: "QR Codes",
+    date: "ON DEMAND",
+    status: "live",
+    energy: 100,
+    relatedIds: [12],
+    page: "pages/qr-codes.html",
+    body: "One QR code per document. Download a labeled code to text or email a tenant, copy a direct link, or print a one-page sheet — each scan opens that exact document in Quick Sign, ready to fill and sign. Auto-synced to the document list.",
+    icon: `<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><line x1="14" y1="14" x2="17" y2="14"/><line x1="21" y1="14" x2="21" y2="17"/><line x1="17" y1="17" x2="17" y2="21"/><line x1="21" y1="21" x2="21" y2="21"/><line x1="14" y1="21" x2="14" y2="21"/>`,
   },
 ];
 
