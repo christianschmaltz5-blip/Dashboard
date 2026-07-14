@@ -102,6 +102,9 @@ body.fill-only #navQr,
 body.fill-only #navBack,
 body.fill-only #adminHint{display:none !important;}
 body.fill-only #fillHint{display:flex !important;}
+/* tenant view: Submit is the primary action; Download becomes a quiet "keep a copy" */
+body.fill-only #submitBtn{display:inline-flex !important;}
+body.fill-only #downloadBtn{background:rgba(255,255,255,0.05);border-color:var(--border);color:var(--text);}
 /* lock every field's move/resize/delete handles even on hover/tap */
 body.fill-only .qs-field .handle,
 body.fill-only .qs-field .del,
@@ -159,6 +162,7 @@ body.fill-only .qs-field .resize{display:none !important;}
     <button class="btn" id="addSigBtn">+ Signature</button>
     <button class="btn" id="saveTplBtn">Save as template</button>
     <button class="btn" id="resetTplBtn" style="display:none;">Reset layout</button>
+    <button class="btn btn-accent" id="submitBtn" style="display:none;">✓ Submit to office</button>
     <button class="btn-accent btn" id="downloadBtn">Download completed PDF</button>
     <div class="ed-hint" id="adminHint"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Click a blue box and type. Green boxes are auto-dated. Click a <b>&nbsp;Sign&nbsp;</b> box to sign. Drag the <b>top-left</b> handle to move a box, the <b>bottom-right</b> corner to resize it, × to remove. Use <b>&nbsp;+ Text / + Checkbox / + Date / + Signature&nbsp;</b> to drop boxes — the tool stays on so you can add several in a row (Esc to stop), and boxes <b>snap to line up</b> with ones you’ve already placed (amber guide shows the match). <b>Save as template</b> keeps your box layout for next time.</div>
     <div class="ed-hint" id="fillHint" style="display:none;"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Tap a <b>&nbsp;blue box&nbsp;</b> and type to fill it in. Dates are filled in for you. Tap a <b>&nbsp;Sign&nbsp;</b> box to add your signature. When you're finished, tap <b>&nbsp;Download completed PDF&nbsp;</b> and send it back.</div>
@@ -517,16 +521,15 @@ document.getElementById('sigApply').onclick=()=>{
   sigModal.classList.remove('show');
 };
 
-/* ---------- export via pdf-lib ---------- */
-document.getElementById('downloadBtn').onclick=async()=>{
-  try{
-    note('Building your PDF…');
-    const {PDFDocument, StandardFonts, rgb} = PDFLib;
-    const pdfDoc = await PDFDocument.load(current._bytes.slice(0));
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const sigFont = await pdfDoc.embedFont(StandardFonts.HelveticaBoldOblique);
-    const pages = pdfDoc.getPages();
-    for(const rec of fieldEls){
+/* ---------- build the completed PDF (shared by Download + Submit) ---------- */
+function pdfFileName(){ return (current&&current.title?current.title:'document').replace(/[^\w]+/g,'-')+' — completed.pdf'; }
+async function buildCompletedPdf(){
+  const {PDFDocument, StandardFonts, rgb} = PDFLib;
+  const pdfDoc = await PDFDocument.load(current._bytes.slice(0));
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const sigFont = await pdfDoc.embedFont(StandardFonts.HelveticaBoldOblique);
+  const pages = pdfDoc.getPages();
+  for(const rec of fieldEls){
       const page = pages[rec.pageIdx]; if(!page) continue;
       const {width:W, height:H} = page.getSize();
       const x = rec.x*W, boxH = rec.h*H, boxW = rec.w*W;
@@ -559,14 +562,50 @@ document.getElementById('downloadBtn').onclick=async()=>{
         }
       }
     }
-    const out = await pdfDoc.save();
+  return await pdfDoc.save();
+}
+
+document.getElementById('downloadBtn').onclick=async()=>{
+  try{
+    note('Building your PDF…');
+    const out = await buildCompletedPdf();
     const blob = new Blob([out], {type:'application/pdf'});
     const a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
-    a.download = current.title.replace(/[^\w]+/g,'-')+' — completed.pdf';
+    a.download = pdfFileName();
     a.click();
     note('Downloaded ✓');
   }catch(err){ console.error(err); note('Export error — see console.'); }
+};
+
+/* ---------- submit to office (tenant fill-only) via FormSubmit ---------- */
+const OFFICE_EMAIL = 'arecblackhills@gmail.com';
+const submitBtnEl = document.getElementById('submitBtn');
+if(submitBtnEl) submitBtnEl.onclick = async () => {
+  try{
+    if(!current){ return; }
+    const sigFields = fieldEls.filter(r=>r.kind==='sig');
+    if(sigFields.length && !sigFields.some(r=>r.value||r.sigImg)){ note('Please add your signature before you submit.'); return; }
+    note('Preparing your document…');
+    const out = await buildCompletedPdf();
+    const file = new File([new Blob([out],{type:'application/pdf'})], pdfFileName(), {type:'application/pdf'});
+    // FormSubmit requires a real multipart POST (not AJAX) to carry an attachment.
+    const form = document.createElement('form');
+    form.method='POST'; form.action='https://formsubmit.co/'+OFFICE_EMAIL;
+    form.enctype='multipart/form-data'; form.style.display='none';
+    const add=(n,v)=>{ const i=document.createElement('input'); i.type='hidden'; i.name=n; i.value=v; form.appendChild(i); };
+    add('_subject','Signed document: '+current.title);
+    add('Document', current.title);
+    add('Submitted', new Date().toLocaleString());
+    add('_captcha','false');
+    add('_template','table');
+    add('_next', location.origin+location.pathname+'?doc='+encodeURIComponent(current.key)+'&fill=1&sent=1');
+    const fi=document.createElement('input'); fi.type='file'; fi.name='attachment';
+    const dt=new DataTransfer(); dt.items.add(file); fi.files=dt.files;
+    form.appendChild(fi); document.body.appendChild(form);
+    note('Sending to the office…');
+    form.submit();
+  }catch(err){ console.error(err); note('Could not submit — please tap “Download a copy” and email it to the office.'); }
 };
 
 /* ---------- nav / QR ---------- */
@@ -595,7 +634,16 @@ if(!DOCS.length){ document.getElementById('docGrid').innerHTML='<p style="color:
    ?fill=1 opens it in tenant "fill-only" mode — fill & sign, no moving/adding/deleting boxes. */
 (function(){ try{
   const p = new URLSearchParams(location.search);
-  if(p.get('fill')==='1' || p.get('fill')==='true') document.body.classList.add('fill-only');
+  if(p.get('fill')==='1' || p.get('fill')==='true'){
+    document.body.classList.add('fill-only');
+    const db=document.getElementById('downloadBtn'); if(db) db.textContent='Download a copy';
+  }
+  if(p.get('sent')==='1'){
+    const bar=document.createElement('div');
+    bar.textContent="✓ Sent to the office — you're all done. You can close this page.";
+    bar.style.cssText="position:fixed;left:0;right:0;bottom:0;z-index:600;background:#0f5132;color:#fff;padding:14px 16px;text-align:center;font-weight:600;font-family:'Josefin Sans',sans-serif;font-size:14px;";
+    document.body.appendChild(bar);
+  }
   const k = p.get('doc');
   if(k){ const d = DOCS.find(x=>x.key===k); if(d) openDoc(d); }
 }catch(e){} })();
