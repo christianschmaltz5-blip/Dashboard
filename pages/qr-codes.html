@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Quick Sign — QR Codes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>document.write('<scr'+'ipt src="quick-sign/manifests.js?v='+Date.now()+'"></scr'+'ipt>');</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#000;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.1);--text:#fff;--muted:rgba(255,255,255,0.5);--dim:rgba(255,255,255,0.25);--accent:#60A5FA;--accent2:#34D399;}
+body{font-family:'Josefin Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.9);backdrop-filter:blur(12px);}
+.nav-back{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;cursor:pointer;} .nav-back:hover{color:var(--text);}
+.nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.nav-title{font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+.nav-actions{display:flex;gap:10px;align-items:center;}
+button{font-family:'Josefin Sans',sans-serif;cursor:pointer;}
+.btn{padding:9px 16px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:var(--text);transition:all .18s;}
+.btn:hover{background:rgba(255,255,255,0.1);}
+.btn-accent{background:rgba(52,211,153,0.12);border-color:rgba(52,211,153,0.35);color:var(--accent2);}
+
+.wrap{max-width:1140px;margin:0 auto;padding:2.4rem 2rem 4rem;}
+h1{font-size:2rem;font-weight:600;letter-spacing:-0.01em;}
+.lede{color:var(--muted);font-size:0.95rem;margin-top:0.5rem;max-width:64ch;line-height:1.55;font-family:'DM Sans',sans-serif;}
+.group-h{display:flex;align-items:baseline;gap:12px;margin:2.4rem 0 1rem;padding-bottom:.6rem;border-bottom:1px solid var(--border);}
+.group-h h2{font-size:1.15rem;font-weight:600;}
+.group-h span{font-size:12px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase;}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;}
+.card.old{opacity:.62;}
+.qrbox{background:#fff;border-radius:12px;padding:14px;line-height:0;}
+.qrbox canvas,.qrbox img{width:168px;height:168px;display:block;}
+.c-title{font-size:0.98rem;font-weight:600;line-height:1.25;}
+.c-sub{font-size:0.78rem;color:var(--muted);font-family:'DM Sans',sans-serif;line-height:1.4;min-height:2.3em;}
+.badge{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:20px;}
+.b-lease{background:rgba(52,211,153,0.14);color:var(--accent2);}
+.b-form{background:rgba(96,165,250,0.14);color:var(--accent);}
+.b-old{background:rgba(255,255,255,0.08);color:var(--muted);}
+.c-actions{display:flex;gap:8px;width:100%;margin-top:2px;}
+.c-actions .btn{flex:1;padding:8px 6px;font-size:10px;}
+.linkline{font-size:10px;color:var(--dim);font-family:'DM Sans',sans-serif;word-break:break-all;line-height:1.35;}
+.empty{color:var(--muted);padding:3rem;text-align:center;}
+
+@media print{
+  nav{display:none;} body{background:#fff;color:#000;}
+  .wrap{padding:0;max-width:none;} .lede,.group-h span{color:#444;}
+  .card{border:1px solid #ccc;background:#fff;break-inside:avoid;} .card.old{display:none;}
+  .c-actions{display:none;} .linkline{color:#666;} .badge{border:1px solid #ccc;}
+  .group-h{border-color:#ccc;}
+}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-back" id="navBack" href="../index.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg> Back</a>
+  <span class="nav-title">Quick Sign · QR Codes</span>
+  <div class="nav-actions">
+    <button class="btn btn-accent" id="dlAll">⬇ Download all</button>
+    <button class="btn" id="printBtn">Print sheet</button>
+  </div>
+</nav>
+
+<div class="wrap">
+  <h1>Document QR codes</h1>
+  <p class="lede">One QR code per document. Scanning it opens that exact document in Quick&nbsp;Sign, ready to fill and sign on a phone — no paper, no hunting through a list. <b>Download</b> a code to text or email it, or <b>Print sheet</b> for a one-page handout. Codes update automatically whenever the document list changes.</p>
+
+  <div id="groups"><p class="empty" id="loadingMsg">Loading documents…</p></div>
+</div>
+
+<!-- hidden staging area for generating QR canvases -->
+<div id="stage" style="position:absolute;left:-9999px;top:-9999px;"></div>
+
+<script>
+(function(){
+  var DOCS = window.QS_DOCS || [];
+  var groupsEl = document.getElementById('groups');
+  var stage = document.getElementById('stage');
+  var loading = document.getElementById('loadingMsg');
+  if(!DOCS.length){ if(loading) loading.textContent='Could not load documents (manifests.js missing).'; return; }
+  if(loading) loading.remove();
+
+  // absolute deep-link to the signing page for a given doc key — resolves correctly on any host
+  function linkFor(key){ return new URL('quick-sign.html?doc='+encodeURIComponent(key), location.href).href; }
+  function isLease(d){ return /^lease-/.test(d.key); }
+  function isOld(d){ return /older|supersed/i.test(d.subtitle||'') || /-(v1|2025)$/.test(d.key); }
+
+  // build a QR <canvas> at high resolution for a URL
+  function makeQR(url){
+    var holder = document.createElement('div');
+    stage.appendChild(holder);
+    new QRCode(holder, {text:url, width:512, height:512, correctLevel:QRCode.CorrectLevel.M});
+    // qrcodejs renders a <canvas>; fall back to its <img> if needed
+    return holder.querySelector('canvas') || holder.querySelector('img');
+  }
+
+  // compose a labeled PNG (QR + document title) and download it
+  function downloadLabeled(srcCanvas, title){
+    var pad=48, qs=512, textH=90, W=qs+pad*2, H=qs+pad+textH;
+    var cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+    var ctx=cv.getContext('2d');
+    ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
+    ctx.drawImage(srcCanvas, pad, pad, qs, qs);
+    ctx.fillStyle='#000'; ctx.textAlign='center';
+    ctx.font='600 30px "Josefin Sans", Arial, sans-serif';
+    // wrap the title to fit
+    var words=title.split(' '), line='', y=qs+pad+38, lines=[];
+    for(var i=0;i<words.length;i++){ var t=line?line+' '+words[i]:words[i];
+      if(ctx.measureText(t).width>W-40 && line){ lines.push(line); line=words[i]; } else line=t; }
+    if(line) lines.push(line);
+    lines=lines.slice(0,2);
+    for(var j=0;j<lines.length;j++) ctx.fillText(lines[j], W/2, y + j*36);
+    var a=document.createElement('a');
+    a.href=cv.toDataURL('image/png');
+    a.download='qr-'+title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'.png';
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  function card(doc){
+    var el=document.createElement('div'); el.className='card'+(isOld(doc)?' old':'');
+    var url=linkFor(doc.key);
+    var badge = isOld(doc) ? '<span class="badge b-old">Older version</span>'
+              : isLease(doc) ? '<span class="badge b-lease">Lease</span>'
+              : '<span class="badge b-form">Form</span>';
+    el.innerHTML =
+      '<div class="qrbox"></div>'+
+      badge+
+      '<div class="c-title">'+doc.title+'</div>'+
+      '<div class="c-sub">'+(doc.subtitle||'')+'</div>'+
+      '<div class="c-actions">'+
+        '<button class="btn dl">⬇ PNG</button>'+
+        '<button class="btn cp">Copy link</button>'+
+      '</div>'+
+      '<div class="linkline">'+url+'</div>';
+    var qr=makeQR(url);
+    el.querySelector('.qrbox').appendChild(qr);
+    el.querySelector('.dl').onclick=function(){ downloadLabeled(qr, doc.title); };
+    el.querySelector('.cp').onclick=function(){
+      var b=this; navigator.clipboard.writeText(url).then(function(){ var o=b.textContent; b.textContent='Copied ✓'; setTimeout(function(){b.textContent=o;},1400); });
+    };
+    return {el:el, qr:qr, title:doc.title, old:isOld(doc)};
+  }
+
+  var leases=DOCS.filter(isLease), forms=DOCS.filter(function(d){return !isLease(d);});
+  var built=[];
+  function renderGroup(title, hint, list){
+    if(!list.length) return;
+    var h=document.createElement('div'); h.className='group-h';
+    h.innerHTML='<h2>'+title+'</h2><span>'+hint+'</span>';
+    var g=document.createElement('div'); g.className='grid';
+    groupsEl.appendChild(h); groupsEl.appendChild(g);
+    list.forEach(function(d){ var c=card(d); g.appendChild(c.el); built.push(c); });
+  }
+  renderGroup('Tenant leases', leases.length+' documents', leases);
+  renderGroup('Transaction forms', forms.length+' documents', forms);
+
+  // download every current (non-older) code, staggered so the browser doesn't block them
+  document.getElementById('dlAll').onclick=function(){
+    var live=built.filter(function(c){return !c.old;});
+    live.forEach(function(c,i){ setTimeout(function(){ downloadLabeled(c.qr, c.title); }, i*350); });
+  };
+  document.getElementById('printBtn').onclick=function(){ window.print(); };
+})();
+</script>
+</body>
+</html>

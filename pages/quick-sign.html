@@ -101,6 +101,7 @@ h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
   <a class="nav-back" id="navBack" href="../index.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg> Back</a>
   <span class="nav-title">Quick Sign</span>
   <div class="nav-actions">
+    <a class="btn" href="qr-codes.html" style="text-decoration:none;display:inline-flex;align-items:center;">All QR codes</a>
     <button class="btn" id="qrBtn">Share / QR</button>
   </div>
 </nav>
@@ -203,6 +204,8 @@ async function openDoc(doc){
   document.getElementById('picker').classList.add('hidden');
   document.getElementById('editor').classList.add('active');
   document.getElementById('edTitle').textContent = doc.title;
+  // reflect the open doc in the URL so links / the Share·QR button deep-link to it
+  try{ history.replaceState(null,'', location.pathname+'?doc='+encodeURIComponent(doc.key)); }catch(e){}
   const scroll = document.getElementById('pdfScroll');
   scroll.innerHTML = '<p style="color:var(--muted);text-align:center;padding:3rem;">Loading document…</p>';
   window.scrollTo(0,0);
@@ -532,6 +535,7 @@ document.getElementById('navBack').addEventListener('click', e=>{
     e.preventDefault();
     document.getElementById('editor').classList.remove('active');
     document.getElementById('picker').classList.remove('hidden');
+    try{ history.replaceState(null,'', location.pathname); }catch(e){}
   }
 });
 const qrModal=document.getElementById('qrModal');
@@ -546,6 +550,9 @@ document.getElementById('qrClose').onclick=()=>qrModal.classList.remove('show');
 [sigModal,qrModal].forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show');}));
 
 if(!DOCS.length){ document.getElementById('docGrid').innerHTML='<p style="color:var(--muted)">Could not load documents (manifests.js missing).</p>'; }
+
+/* deep-link: open a specific document from ?doc=KEY (used by the per-document QR codes) */
+(function(){ try{ const k=new URLSearchParams(location.search).get('doc'); if(k){ const d=DOCS.find(x=>x.key===k); if(d) openDoc(d); } }catch(e){} })();
 </script>
 </body>
 </html>
