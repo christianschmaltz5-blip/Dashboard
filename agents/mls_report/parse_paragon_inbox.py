@@ -207,7 +207,10 @@ def connect():
 def fetch_paragon_emails(mail, days=14):
     since = (datetime.now() - timedelta(days=days)).strftime("%d-%b-%Y")
     results = []
-    for folder in ('"[Gmail]/All Mail"', "INBOX"):
+    # All Mail covers INBOX + archived; add Spam + Trash because Paragon alerts
+    # have been getting auto-filtered/deleted there (2026-07 freeze root cause —
+    # the alerts stopped landing in the inbox and a Gmail rule trashed the rest).
+    for folder in ('"[Gmail]/All Mail"', "INBOX", '"[Gmail]/Spam"', '"[Gmail]/Trash"'):
         try:
             rv, _ = mail.select(folder, readonly=True)
             if rv != "OK":
@@ -724,7 +727,7 @@ def enrich_with_photos(listings, skip_photos=False):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--check",       action="store_true", help="Show emails, no write")
-    ap.add_argument("--days",        type=int, default=14, help="Days back (default: 14)")
+    ap.add_argument("--days",        type=int, default=30, help="Days back (default: 30 — wide enough to keep the page populated when alerts are sparse)")
     ap.add_argument("--no-photos",   action="store_true", help="Skip Paragon photo fetching")
     args = ap.parse_args()
 

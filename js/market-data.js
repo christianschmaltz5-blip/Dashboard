@@ -158,27 +158,27 @@ window.MARKET_DATA = {
     "data": {
       "Residential Resale (Single Family)": {
         "$100K\u2013$350K": {
-          "Active": 5,
+          "Active": 22,
           "Under Contract": null,
           "Sold": null
         },
         "$350K\u2013$500K": {
-          "Active": 6,
+          "Active": 31,
           "Under Contract": null,
           "Sold": null
         },
         "$500K\u2013$800K": {
-          "Active": null,
+          "Active": 6,
           "Under Contract": null,
           "Sold": null
         },
         "$800K\u2013$1.0M": {
-          "Active": null,
+          "Active": 3,
           "Under Contract": null,
           "Sold": null
         },
         "$1.0M+": {
-          "Active": 1,
+          "Active": 3,
           "Under Contract": null,
           "Sold": null
         }
@@ -259,7 +259,7 @@ window.MARKET_DATA = {
           "Sold": null
         },
         "$1.0M+": {
-          "Active": null,
+          "Active": 2,
           "Under Contract": null,
           "Sold": null
         }
