@@ -1,0 +1,941 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hwy 1416 Commercial — I-90 Exit 67 Flex Campus</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="A cinematic build-out of a commercial flex / contractor-garage campus on the 7.5-acre corner at Liberty Blvd &amp; Hwy 1416 — I-90 Exit 67, Box Elder, South Dakota.">
+
+<style>
+  /* ============================================================
+     HWY 1416 COMMERCIAL — "The Corner Gets Built"
+     Cinematic build-out reel. A single self-contained page; the
+     only external assets are ./assets/aerial.jpg (the drone base,
+     painted onto the canvas each frame under a shared camera) and
+     ./assets/masterplan.jpg (a locator in the closing section).
+     No libraries, no network requests. Vanilla JS + Canvas 2D.
+
+     The aerial is drawn ONTO the canvas each frame under the same
+     camera projection used for the 2.5D massings, so the buildings
+     that rise out of the field stay locked to the photo through
+     every pan and zoom.
+     ============================================================ */
+
+  :root{
+    --green-900:#132a1e;
+    --green-800:#1d3b2b;
+    --green-700:#2f5d43;
+    --bone:#f6f1e7;
+    --bone-dim:#e7e0d0;
+    --brass:#b08637;
+    --wheat:#d9b869;
+    --ink:#0c160f;
+
+    --serif:"Iowan Old Style","Palatino Linotype","Palatino","Book Antiqua",Georgia,"Times New Roman",serif;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","Menlo","Consolas",monospace;
+
+    --maxw:1100px;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--green-900);
+    color:var(--bone);
+    font-family:var(--sans);
+    line-height:1.5;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  img{max-width:100%;display:block}
+  a{color:inherit}
+
+  /* ---------------- Cinematic stage ---------------- */
+  .stage{
+    position:relative;
+    width:100%;
+    height:100svh;
+    min-height:560px;
+    overflow:hidden;
+    background:#07100b;
+    isolation:isolate;
+  }
+  #scene{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    display:block;
+    z-index:1;
+  }
+  /* hidden source images — decoded, then painted into the canvas */
+  #aerialsrc{ position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; left:-9999px; }
+
+  /* Deep cinematic letterbox bars */
+  .bar{
+    position:absolute; left:0; right:0;
+    height:clamp(24px,5.5vh,72px);
+    background:#000;
+    z-index:9; pointer-events:none;
+    transition:height .9s ease;
+  }
+  .bar.top{ top:0; box-shadow:inset 0 -1px 0 rgba(217,184,105,.10); }
+  .bar.bottom{ bottom:0; box-shadow:inset 0 1px 0 rgba(217,184,105,.10); }
+  .stage.finale .bar{ height:clamp(32px,8vh,104px); }
+
+  /* Film grain (self-contained SVG turbulence, no network) */
+  .grain{
+    position:absolute; inset:-50%;
+    width:200%; height:200%;
+    z-index:8; pointer-events:none;
+    opacity:.05;
+    mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    animation:grainshift 1.1s steps(3) infinite;
+  }
+  @keyframes grainshift{
+    0%{transform:translate(0,0)} 33%{transform:translate(-3%,2%)}
+    66%{transform:translate(2%,-2%)} 100%{transform:translate(0,0)}
+  }
+
+  /* Vignette + brass frame */
+  .stage::after{
+    content:"";
+    position:absolute; inset:0;
+    pointer-events:none; z-index:7;
+    box-shadow:inset 0 0 150px rgba(0,0,0,.55), inset 0 0 0 1px rgba(217,184,105,.10);
+    background:radial-gradient(125% 85% at 50% 44%, transparent 54%, rgba(0,0,0,.40) 100%);
+  }
+
+  /* ---------------- Caption overlay ---------------- */
+  .caption{
+    position:absolute; left:0; right:0;
+    top:max(env(safe-area-inset-top), clamp(42px,10vh,104px));
+    padding:0 22px;
+    z-index:10; pointer-events:none; text-align:center;
+  }
+  .eyebrow{
+    font-family:var(--sans); font-size:12px;
+    letter-spacing:.30em; text-transform:uppercase;
+    color:var(--wheat); margin:0 0 12px;
+    text-shadow:0 1px 10px rgba(0,0,0,.7); opacity:.92;
+  }
+  .cap-line{ position:relative; min-height:3.2em; }
+  .cap{
+    position:absolute; left:0; right:0; top:0;
+    margin:0 auto; max-width:18ch;
+    font-family:var(--serif); font-weight:600;
+    font-size:clamp(24px,6.6vw,46px); line-height:1.1;
+    color:var(--bone); text-shadow:0 2px 26px rgba(0,0,0,.85);
+    opacity:0; transform:translateY(14px) scale(.985);
+    transition:opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1);
+    letter-spacing:-.01em;
+  }
+  .cap.on{ opacity:1; transform:none; }
+  .cap .sub{
+    display:block; margin-top:12px;
+    font-family:var(--sans); font-weight:500;
+    font-size:clamp(13px,3.5vw,17px); letter-spacing:.01em;
+    color:var(--bone-dim); max-width:34ch; margin-inline:auto;
+    opacity:0; transform:translateY(8px);
+    transition:opacity .8s ease .18s, transform .8s ease .18s;
+  }
+  .cap.on .sub{ opacity:1; transform:none; }
+
+  /* Floating stat tag */
+  .tag{
+    position:absolute; z-index:10;
+    left:50%; top:max(30%, 280px); transform:translate(-50%,-50%);
+    font-family:var(--mono); font-size:12px; letter-spacing:.05em;
+    color:var(--bone); background:rgba(12,22,15,.6);
+    border:1px solid rgba(217,184,105,.35);
+    backdrop-filter:blur(3px);
+    padding:6px 12px; border-radius:999px; white-space:nowrap;
+    opacity:0; transition:opacity .7s ease; pointer-events:none;
+  }
+  .tag b{ color:var(--wheat); font-weight:700; }
+  .tag.on{ opacity:1; }
+
+  /* ---------------- Controls ---------------- */
+  .controls{
+    position:absolute; left:0; right:0;
+    bottom:max(env(safe-area-inset-bottom), clamp(28px,6.5vh,84px));
+    z-index:11; display:flex; flex-direction:column;
+    align-items:center; gap:14px; padding:0 16px;
+  }
+  .dots{ display:flex; gap:6px; align-items:center; flex-wrap:wrap; justify-content:center; }
+  .dot{
+    appearance:none; -webkit-appearance:none;
+    border:0; background:transparent; padding:11px 5px; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:7px;
+  }
+  .dot i{
+    display:block; width:9px; height:9px; border-radius:50%;
+    background:rgba(246,241,231,.28);
+    box-shadow:0 0 0 1px rgba(0,0,0,.3);
+    transition:background .3s, transform .3s, box-shadow .3s;
+  }
+  .dot span{
+    font-size:9px; letter-spacing:.12em; text-transform:uppercase;
+    color:rgba(246,241,231,.42); font-family:var(--sans);
+    transition:color .3s; white-space:nowrap;
+  }
+  .dot[aria-current="true"] i{ background:var(--wheat); transform:scale(1.4); box-shadow:0 0 14px rgba(217,184,105,.75); }
+  .dot[aria-current="true"] span{ color:var(--wheat); }
+  .dot:hover i{ background:var(--bone); }
+
+  .btn-row{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  .btn{
+    appearance:none; -webkit-appearance:none;
+    font-family:var(--sans); font-size:13px; font-weight:600; letter-spacing:.03em;
+    min-height:44px; padding:0 18px; border-radius:999px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px solid rgba(217,184,105,.45);
+    background:rgba(12,22,15,.55); color:var(--bone);
+    backdrop-filter:blur(4px);
+    transition:background .2s, border-color .2s, transform .1s;
+  }
+  .btn:hover{ background:rgba(35,70,52,.7); border-color:var(--wheat); }
+  .btn:active{ transform:translateY(1px); }
+  .btn.primary{
+    background:linear-gradient(180deg,var(--wheat),var(--brass));
+    color:#241804; border-color:transparent;
+    box-shadow:0 6px 22px rgba(176,134,55,.4);
+  }
+  .btn.primary:hover{ filter:brightness(1.05); }
+
+  .dot:focus-visible,.btn:focus-visible,a:focus-visible{
+    outline:3px solid var(--wheat); outline-offset:3px; border-radius:12px;
+  }
+
+  /* ---------------- THE ASK overlay (in stage) ---------------- */
+  .cta{
+    position:absolute; inset:0; z-index:10;
+    display:flex; flex-direction:column; justify-content:center; align-items:center;
+    text-align:center; padding:clamp(20px,5vw,48px); gap:clamp(13px,3vw,22px);
+    background:linear-gradient(180deg, rgba(8,16,28,.68) 0%, rgba(7,13,22,.9) 100%);
+    opacity:0; visibility:hidden;
+    transition:opacity 1s ease, visibility 1s; overflow-y:auto;
+  }
+  .cta.on{ opacity:1; visibility:visible; }
+  .cta > *{ max-width:100%; }
+  .cta .kicker{ font-size:12px; letter-spacing:.30em; text-transform:uppercase; color:var(--wheat); }
+  .cta h2{
+    font-family:var(--serif); font-weight:600;
+    font-size:clamp(25px,6.4vw,50px); line-height:1.06; margin:0;
+    max-width:min(17ch,100%); overflow-wrap:break-word;
+  }
+  .numbers{ display:flex; flex-wrap:wrap; gap:clamp(14px,4vw,44px); justify-content:center; align-items:flex-end; margin:2px 0; }
+  .num{ display:flex; flex-direction:column; align-items:center; }
+  .num b{ font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:clamp(22px,6.4vw,38px); font-weight:700; color:var(--wheat); line-height:1; }
+  .num small{ font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--bone-dim); margin-top:8px; }
+  .facts{ display:flex; flex-wrap:wrap; gap:8px 10px; justify-content:center; max-width:min(680px,100%); }
+  .facts .chip{
+    max-width:100%; font-size:12.5px; letter-spacing:.01em;
+    padding:6px 12px; border-radius:999px;
+    background:rgba(246,241,231,.08); border:1px solid rgba(246,241,231,.16); color:var(--bone);
+  }
+  .facts .chip b{ color:var(--wheat); font-weight:700; }
+  .agent{ margin-top:6px; display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .agent .name{ font-family:var(--serif); font-size:clamp(18px,4.5vw,22px); }
+  .agent .org{ font-size:13px; color:var(--bone-dim); letter-spacing:.02em; }
+  .agent .links{ display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; justify-content:center; }
+
+  /* ---------------- Closing section (scrollable, print-safe) ---------------- */
+  .closing{
+    background:radial-gradient(120% 90% at 50% -10%, #1c3928 0%, var(--green-900) 60%);
+    padding:clamp(40px,8vw,80px) 20px clamp(56px,10vw,90px);
+  }
+  .wrap{ max-width:var(--maxw); margin:0 auto; }
+  .closing .lede{ text-align:center; margin:0 auto clamp(24px,5vw,40px); max-width:62ch; }
+  .closing .lede .eyebrow{ margin-bottom:14px; }
+  .closing h3{ font-family:var(--serif); font-weight:600; font-size:clamp(24px,5.5vw,38px); margin:0 0 12px; }
+  .closing .lede p{ color:var(--bone-dim); font-size:clamp(15px,2.4vw,17px); margin:0; }
+
+  .photo{
+    position:relative; border-radius:16px; overflow:hidden;
+    border:1px solid rgba(217,184,105,.22);
+    box-shadow:0 24px 60px rgba(0,0,0,.4);
+    background:linear-gradient(#2f5d43,#1d3b2b);
+  }
+  .photo img{ width:100%; height:auto; }
+  .photo .plabel{
+    position:absolute; left:14px; bottom:14px;
+    font-family:var(--mono); font-size:12px; letter-spacing:.04em;
+    background:rgba(10,18,13,.74); border:1px solid rgba(217,184,105,.4);
+    color:var(--bone); padding:6px 11px; border-radius:999px; backdrop-filter:blur(3px);
+  }
+  .photo .plabel b{ color:var(--wheat); }
+
+  .detail-row{ display:grid; grid-template-columns:1fr; gap:22px; margin-top:clamp(24px,5vw,40px); align-items:start; }
+  .card{ background:rgba(255,255,255,.03); border:1px solid rgba(246,241,231,.12); border-radius:16px; padding:22px; }
+  .card h4{ font-family:var(--sans); font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:var(--wheat); margin:0 0 14px; }
+  .spec{ margin:0; }
+  .spec div{ display:flex; justify-content:space-between; gap:16px; padding:9px 0; border-bottom:1px solid rgba(246,241,231,.10); font-size:14.5px; }
+  .spec div:last-child{ border-bottom:0; }
+  .spec dt{ color:var(--bone-dim); }
+  .spec dd{ margin:0; font-family:var(--mono); font-variant-numeric:tabular-nums; color:var(--bone); text-align:right; }
+
+  .contact-card{ display:flex; flex-direction:column; gap:14px; }
+  .contact-card .who .name{ font-family:var(--serif); font-size:22px; }
+  .contact-card .who .org{ font-size:13.5px; color:var(--bone-dim); }
+  .contact-actions{ display:flex; flex-direction:column; gap:10px; }
+  .contact-actions .btn{ justify-content:center; width:100%; }
+
+  .fineprint{ margin-top:clamp(30px,6vw,48px); text-align:center; font-size:12px; color:rgba(246,241,231,.5); letter-spacing:.01em; line-height:1.6; max-width:72ch; margin-inline:auto; }
+
+  @media (max-width:430px){
+    .eyebrow{ font-size:10.5px; letter-spacing:.16em; }
+    .num b{ font-size:clamp(20px,6vw,38px); }
+    .facts .chip{ font-size:11.5px; padding:6px 10px; }
+    .dots{ gap:2px; flex-wrap:nowrap; }
+    .dot{ padding:11px 3px; }
+    .dot span{ font-size:7.5px; letter-spacing:.06em; }
+  }
+  @media (min-width:760px){
+    .detail-row{ grid-template-columns:1.4fr 1fr; gap:30px; }
+  }
+  @media (prefers-color-scheme:light){
+    body{ background:var(--green-900); color:var(--bone); }
+  }
+  @media (prefers-reduced-motion:reduce){
+    .cap,.cap .sub{ transition:none; }
+    .grain{ animation:none; }
+    *{ scroll-behavior:auto !important; }
+  }
+  .visually-hidden{ position:absolute!important; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+</style>
+</head>
+<body>
+
+<!-- ============================ STAGE ============================ -->
+<section class="stage" id="stage" aria-label="Hwy 1416 commercial flex campus vision">
+
+  <!-- The aerial is decoded here, then painted into the canvas each frame -->
+  <img id="aerialsrc" src="assets/aerial.jpg"
+       alt="Drone aerial looking north over the open field at Liberty Boulevard and Highway 1416, with the Interstate 90 Exit 67 interchange in the distance.">
+
+  <canvas id="scene" aria-hidden="true"></canvas>
+
+  <div class="grain" aria-hidden="true"></div>
+  <div class="bar top" aria-hidden="true"></div>
+  <div class="bar bottom" aria-hidden="true"></div>
+
+  <!-- Live caption -->
+  <div class="caption" aria-live="polite">
+    <p class="eyebrow">Hwy 1416 Commercial &middot; Box Elder, South Dakota</p>
+    <div class="cap-line" id="capLine"><!-- captions injected --></div>
+  </div>
+
+  <!-- Floating stat tag -->
+  <div class="tag" id="statTag"><b>34,600+</b> vehicles / day on I-90</div>
+
+  <!-- THE ASK overlay -->
+  <div class="cta" id="cta" aria-hidden="true">
+    <p class="kicker">The corner is ready</p>
+    <h2>Picture your flex campus on Exit&nbsp;67.</h2>
+    <div class="numbers">
+      <div class="num"><b>7.57</b><small>Acres</small></div>
+      <div class="num"><b>Light Ind.</b><small>Zoning &middot; Commercial</small></div>
+      <div class="num"><b>Exit 67</b><small>I-90 interchange</small></div>
+    </div>
+    <div class="facts">
+      <span class="chip"><b>Liberty Blvd &amp; Hwy 1416</b> &middot; interchange corner</span>
+      <span class="chip"><b>34,600+</b> vehicles / day</span>
+      <span class="chip"><b>1.8 mi</b> from Ellsworth AFB</span>
+      <span class="chip">Future home of the <b>B-21 Raider</b></span>
+    </div>
+    <div class="agent">
+      <span class="name">Kevin Andreson, Realtor</span>
+      <span class="org">Andreson Real Estate Co. &middot; Keller Williams Realty Black Hills</span>
+      <div class="links">
+        <a class="btn primary" href="tel:+16056465409">Call (605) 646-5409</a>
+        <a class="btn" href="mailto:kandreson@kw.com?subject=Hwy%201416%20Commercial%20—%20I-90%20Exit%2067">Email Kevin</a>
+      </div>
+    </div>
+    <button class="btn" type="button" id="ctaReplay" style="margin-top:6px">&#8635; Replay the build</button>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <nav class="dots" id="dots" aria-label="Jump to phase"></nav>
+    <div class="btn-row">
+      <button class="btn" type="button" id="replayBtn" aria-label="Replay the construction sequence">&#8635; Replay</button>
+      <button class="btn primary" type="button" id="numbersBtn">See the numbers &rarr;</button>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= CLOSING ========================= -->
+<section class="closing" aria-label="The parcel and how to reach Kevin">
+  <div class="wrap">
+    <div class="lede">
+      <p class="eyebrow">This exact corner</p>
+      <h3>Hwy 1416 Commercial — I-90 Exit 67</h3>
+      <p>A 7.57-acre light-industrial / commercial tract on the Liberty Boulevard &amp; Highway&nbsp;1416 interchange in Box Elder — the gateway parcel of the Freedom Estates master plan, and 1.8 miles from the gates of Ellsworth Air Force Base, the future home of the B-21 Raider. Built for contractor shops, storage condos and lease-ready flex space where 34,600+ vehicles pass every day.</p>
+    </div>
+
+    <div class="photo">
+      <img src="assets/masterplan.jpg"
+           alt="Freedom Estates master plan showing the 7.57-acre light industrial / commercial parcel at the Liberty Boulevard and Highway 1416 interchange, with multi-family, single-family and future Douglas High School zones.">
+      <span class="plabel">Master plan &middot; <b>Light Industrial · 7.57 ac</b></span>
+    </div>
+
+    <div class="detail-row">
+      <div class="card">
+        <h4>The tract</h4>
+        <dl class="spec">
+          <div><dt>Size</dt><dd>7.57 acres</dd></div>
+          <div><dt>Zoning</dt><dd>Light Ind. / Comm.</dd></div>
+          <div><dt>Frontage</dt><dd>Liberty Blvd &amp; Hwy 1416</dd></div>
+          <div><dt>Access</dt><dd>I-90 Exit 67</dd></div>
+          <div><dt>Program</dt><dd>Flex / contractor garages</dd></div>
+          <div><dt>Traffic</dt><dd>34,600+ / day</dd></div>
+          <div><dt>Ellsworth AFB</dt><dd>1.8 miles</dd></div>
+          <div><dt>Master plan</dt><dd>Freedom Estates</dd></div>
+        </dl>
+      </div>
+
+      <div class="card contact-card">
+        <h4>Talk to the listing agent</h4>
+        <div class="who">
+          <div class="name">Kevin Andreson</div>
+          <div class="org">Andreson Real Estate Co. &middot; Keller Williams Realty Black Hills</div>
+        </div>
+        <div class="contact-actions">
+          <a class="btn primary" href="tel:+16056465409">Call (605) 646-5409</a>
+          <a class="btn" href="mailto:kandreson@kw.com?subject=Hwy%201416%20Commercial%20—%20I-90%20Exit%2067">kandreson@kw.com</a>
+        </div>
+      </div>
+    </div>
+
+    <p class="fineprint">
+      Concept visualization — not an approved site plan. Building sizes, layout and program are conceptual and subject to change. Information deemed reliable but not guaranteed.
+    </p>
+  </div>
+</section>
+
+<script>
+(() => {
+  "use strict";
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ======================================================================
+     PHASE TIMELINE — single source of truth for timing & captions.
+     Six beats: five timed, then THE ASK. ~47s total.
+     ====================================================================== */
+  const PHASES = [
+    { key:"land",     label:"The Land",      short:"Land",  dur:8500,
+      caption:{ t:"7.5 commercial acres on the interchange.", s:"Liberty Blvd &amp; Hwy 1416 at I-90 Exit 67 — 34,600 cars a day." } },
+    { key:"sitework", label:"Sitework",      short:"Site",  dur:8500,
+      caption:{ t:"Pads, gravel and access.", s:"Aggregate pads and drives, tied into the Exit 67 interchange." } },
+    { key:"steel",    label:"Steel Goes Up", short:"Steel", dur:10500,
+      caption:{ t:"Two contractor shops rise.", s:"Pre-engineered steel with tall roll-up contractor bays." } },
+    { key:"flex",     label:"Flex Rows",     short:"Flex",  dur:9500,
+      caption:{ t:"Storage &amp; flex income behind.", s:"Storage-condo bays — lease-ready, low-maintenance income." } },
+    { key:"dusk",     label:"Dusk",          short:"Dusk",  dur:10000,
+      caption:{ t:"Lit up on the corridor.", s:"1.8 miles from Ellsworth AFB — future home of the B-21 Raider." } },
+    { key:"ask",      label:"The Ask",       short:"Ask",   dur:0,
+      caption:{ t:"", s:"" } },
+  ];
+
+  const BOUND = [];
+  PHASES.reduce((acc,p,i)=>{ BOUND[i]=acc; return acc+p.dur; }, 0);
+  const T_END = BOUND[BOUND.length-1];
+  const ASK_INDEX = PHASES.length-1;
+  const FINALE_INDEX = ASK_INDEX-1;      // "dusk" beat
+
+  const B = {
+    site:BOUND[1], steel:BOUND[2], flex:BOUND[3], dusk:BOUND[4], ask:BOUND[5],
+  };
+  const DUSK_START = B.dusk + 1200;
+  const DUSK_END   = T_END - 500;
+
+  /* ---------------------- math / easing ---------------------- */
+  const clamp = (v,a=0,b=1)=> v<a?a : v>b?b : v;
+  const lerp  = (a,b,t)=> a+(b-a)*t;
+  const easeOut   = t=> 1-Math.pow(1-t,3);
+  const easeInOut = t=> t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+  const win = (t,s,e)=> clamp((t-s)/Math.max(1,e-s));
+
+  /* ---------------------- colour helpers ---------------------- */
+  const hx = h=>{ h=h.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; };
+  const mix = (a,b,t)=>{ a=hx(a); b=hx(b); return `rgb(${Math.round(lerp(a[0],b[0],t))},${Math.round(lerp(a[1],b[1],t))},${Math.round(lerp(a[2],b[2],t))})`; };
+  const rgba = (h,al)=>{ const c=hx(h); return `rgba(${c[0]},${c[1]},${c[2]},${al})`; };
+
+  /* seeded RNG so any jitter is stable within a session */
+  function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+  const rnd = mulberry32(0x1416);
+
+  /* ======================================================================
+     CAMERA — image-space (u,v in 0..1) projected to screen, with a
+     Ken Burns move driven by keyframes. The aerial is drawn onto the
+     canvas using the same projector, so massings stay locked to it.
+     ====================================================================== */
+  const canvas = document.getElementById("scene");
+  const ctx = canvas.getContext("2d");
+  const aerialImg = document.getElementById("aerialsrc");
+  const IMG_ASPECT = 1800/1199;
+  let imgReady=false, imgBroken=false;
+  let W=0,H=0,DPR=1, dw=0,dh=0, cam={cu:.5,cv:.5,z:1}, dwz=1,dhz=1, portrait=false;
+
+  function resize(){
+    const r = canvas.getBoundingClientRect();
+    DPR = Math.min(window.devicePixelRatio||1, 2);
+    W = Math.max(1,Math.round(r.width));
+    H = Math.max(1,Math.round(r.height));
+    canvas.width  = Math.round(W*DPR);
+    canvas.height = Math.round(H*DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    // object-fit: cover dimensions of the aerial in screen px
+    if(W/H > IMG_ASPECT){ dw=W; dh=W/IMG_ASPECT; } else { dh=H; dw=H*IMG_ASPECT; }
+    // Tall/narrow viewports cover-fit the wide aerial by HEIGHT, which
+    // magnifies horizontally — so keyframe zooms that look right on desktop
+    // become giant cropped slabs on a phone. Flag it so camAt() compresses z.
+    portrait = (W/H) < IMG_ASPECT;
+  }
+
+  function setCam(c){ cam=c; dwz=dw*cam.z; dhz=dh*cam.z; }
+  // project image-space (u,v) → screen px under the current camera
+  const PX = u=> W/2 + (u-cam.cu)*dwz;
+  const PY = v=> H/2 + (v-cam.cv)*dhz;
+
+  /* ---- camera keyframes (ms, focal uv, zoom) ----
+     Each beat's camera ARRIVES ~1.6s into its own phase and HOLDS until
+     that phase ends (the freedom-estates timing pattern). A continuous
+     drift is layered on in camAt() so motion never fully stops. */
+  const KF = [
+    { t:0,             cu:.430, cv:.500, z:1.12 },  // Land: wide over the field, interchange in view
+    { t:B.site,        cu:.430, cv:.500, z:1.12 },
+    { t:B.site+1600,   cu:.420, cv:.585, z:1.32 },  // Sitework: settle onto the build area
+    { t:B.steel,       cu:.420, cv:.585, z:1.32 },
+    { t:B.steel+1600,  cu:.415, cv:.615, z:1.42 },  // Steel: frame the two contractor shops (front)
+    { t:B.flex,        cu:.415, cv:.615, z:1.42 },
+    { t:B.flex+1600,   cu:.425, cv:.548, z:1.34 },  // Flex: lift to take in the rows behind
+    { t:B.dusk,        cu:.425, cv:.548, z:1.34 },
+    { t:B.dusk+1600,   cu:.445, cv:.525, z:1.18 },  // Dusk: ease out for the money shot
+    { t:B.ask,         cu:.445, cv:.525, z:1.18 },
+    { t:T_END,         cu:.450, cv:.530, z:1.12 },
+  ];
+  function camAt(t){
+    if(t<=KF[0].t) var c={cu:KF[0].cu,cv:KF[0].cv,z:KF[0].z};
+    else{
+      let i=0; while(i<KF.length-1 && t>KF[i+1].t) i++;
+      const a=KF[i], b=KF[Math.min(i+1,KF.length-1)];
+      const e = a.t===b.t?1:easeInOut(win(t,a.t,b.t));
+      var c = { cu:lerp(a.cu,b.cu,e), cv:lerp(a.cv,b.cv,e), z:lerp(a.z,b.z,e) };
+    }
+    // continuous slow drift — the camera never fully stops
+    if(!reduceMotion){
+      const r=t/1000;
+      c.cu += Math.sin(r*0.28)*0.0022;
+      c.cv += Math.cos(r*0.22)*0.0018;
+      c.z  += Math.sin(r*0.19)*0.006;
+    }
+    // On portrait, compress the desktop zoom range [~1.12..1.42] into a tight
+    // [1.02..1.06] band: z must stay >=1 to cover the viewport, and anything
+    // higher crops the campus into slabs. Pan (cu/cv) + drift carry the motion.
+    if(portrait){
+      c.z = clamp(1.02 + (c.z-1.12)*0.14, 1.015, 1.065);
+    }
+    return c;
+  }
+
+  /* ======================================================================
+     SITE GEOMETRY — everything in image-space uv, locked to the field
+     between Liberty Blvd (left) and the creek bend (right).
+     ====================================================================== */
+  // gravel yard / aggregate pad (slightly trapezoidal to follow perspective)
+  const PAD = [[.312,.470],[.560,.470],[.575,.700],[.288,.700]];
+  // gravel drive/apron connecting the campus to Liberty Blvd (lower-left)
+  const DRIVE = [[.318,.658],[.372,.658],[.300,.792],[.238,.792]];
+  // pole lights around the yard
+  const POLES = [[.305,.690],[.505,.672],[.330,.492],[.510,.500],[.560,.605]];
+  // I-90 in the mid-distance (a faint line of traffic at dusk)
+  const I90_V = .352, I90_U0 = .360, I90_U1 = .900;
+
+  /* ---- moving traffic on I-90 (headlights blaze at dusk) ---- */
+  const cars=[];
+  for(let i=0;i<12;i++){ cars.push({ x: rnd(), lane: rnd()<.5?0:1, v:.05+rnd()*.04 }); }
+  function updateCars(dt){
+    for(const c of cars){
+      const dir=c.lane?1:-1;
+      c.x += dir*c.v*dt;
+      if(c.x>1.04) c.x=-.04;
+      if(c.x<-.04) c.x=1.04;
+    }
+  }
+
+  /* ======================================================================
+     BUILDINGS — pseudo-3D steel massings that assemble slab → frame → skin.
+     Each: centre (u,v), half-size (w,h) in uv, height ht (uv units),
+     bay count, and assembly windows (ms).
+     ====================================================================== */
+  const BUILDINGS = [];
+  function addBuilding(o){ BUILDINGS.push(o); }
+
+  // -- Two big contractor shops at the front (toward Liberty Blvd) --
+  addBuilding({ kind:"shop", u:.372, v:.632, w:.052, h:.026, ht:.070, bays:5,
+    slab:B.steel+300,  frameA:B.steel+800,  frameB:B.steel+3000, skinA:B.steel+3200, skinB:B.steel+5500 });
+  addBuilding({ kind:"shop", u:.476, v:.646, w:.052, h:.026, ht:.070, bays:6,
+    slab:B.steel+1300, frameA:B.steel+1800, frameB:B.steel+4000, skinA:B.steel+4200, skinB:B.steel+6600 });
+
+  // -- Three long, lower storage / flex rows behind them (parallel, receding) --
+  addBuilding({ kind:"flex", u:.410, v:.498, w:.080, h:.009, ht:.017, bays:13,
+    slab:B.flex+300,  frameA:B.flex+700,  frameB:B.flex+2200, skinA:B.flex+2400, skinB:B.flex+4200 });
+  addBuilding({ kind:"flex", u:.410, v:.532, w:.080, h:.009, ht:.017, bays:13,
+    slab:B.flex+1100, frameA:B.flex+1500, frameB:B.flex+3000, skinA:B.flex+3200, skinB:B.flex+5000 });
+  addBuilding({ kind:"flex", u:.410, v:.566, w:.080, h:.009, ht:.017, bays:13,
+    slab:B.flex+1900, frameA:B.flex+2300, frameB:B.flex+3800, skinA:B.flex+4000, skinB:B.flex+5800 });
+
+  // depth-sort so nearer (larger v) massings paint last / on top
+  BUILDINGS.sort((a,b)=> a.v-b.v);
+
+  /* filled/stroked polygon from [[x,y],...] */
+  function poly(pts, fill, stroke, lw, alpha){
+    if(alpha!==undefined) ctx.globalAlpha=alpha;
+    ctx.beginPath();
+    for(let i=0;i<pts.length;i++){ const p=pts[i]; i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]); }
+    ctx.closePath();
+    if(fill){ ctx.fillStyle=fill; ctx.fill(); }
+    if(stroke){ ctx.lineJoin="round"; ctx.strokeStyle=stroke; ctx.lineWidth=lw||1; ctx.stroke(); }
+    if(alpha!==undefined) ctx.globalAlpha=1;
+  }
+  // uv polygon → screen
+  function uvPoly(pts, fill, stroke, lw, alpha){
+    poly(pts.map(p=>[PX(p[0]),PY(p[1])]), fill, stroke, lw, alpha);
+  }
+
+  /* ---- draw one steel building at time t ---- */
+  function drawBuilding(b,t,dusk){
+    const slab  = easeOut(win(t, b.slab, b.slab+900));
+    if(slab<=0) return;
+    const frame = win(t, b.frameA, b.frameB);
+    const skin  = win(t, b.skinA,  b.skinB);
+
+    const u0=b.u-b.w, u1=b.u+b.w, v0=b.v-b.h, v1=b.v+b.h;
+    const nwx=PX(u0), nex=PX(u1), ny=PY(v0), sy=PY(v1);
+
+    // concrete building slab
+    const slabCol = mix("#c3bca9","#232c3a",dusk);
+    poly([[nwx,ny],[nex,ny],[nex,sy],[nwx,sy]], slabCol, rgba("#5a5545",.35), 1, 0.55*slab);
+
+    if(frame<=0) return;
+
+    // full pop height once skinning; frame stage rises the steel
+    const rise = skin>0.02 ? 1 : easeOut(frame);
+    const Hpx = b.ht*dhz*rise;
+
+    // -------- ground shadow (sun upper-left → shadow lower-right) --------
+    if(rise>0.15){
+      const sh = Hpx*0.34;
+      poly([[nwx,sy],[nex,sy],[nex+sh,sy+sh*0.42],[nwx+sh,sy+sh*0.42]],
+           rgba("#0a0e08", 0.22), null, 0, clamp(rise));
+    }
+
+    // -------- steel frame only (before skin) --------
+    if(skin<0.03){
+      const steel = mix("#565c63","#2a3444",dusk);
+      ctx.strokeStyle=steel; ctx.lineWidth=2.2; ctx.lineJoin="round";
+      const corners=[[nwx,ny],[nex,ny],[nex,sy],[nwx,sy]];
+      // vertical posts
+      corners.forEach(c=>{ ctx.beginPath(); ctx.moveTo(c[0],c[1]); ctx.lineTo(c[0],c[1]-Hpx); ctx.stroke(); });
+      // a couple of intermediate posts along the long (front) edge
+      for(let i=1;i<b.bays;i+=2){
+        const gx=lerp(nwx,nex,i/b.bays);
+        ctx.beginPath(); ctx.moveTo(gx,sy); ctx.lineTo(gx,sy-Hpx); ctx.stroke();
+      }
+      // top ring / rafters once posts are up
+      if(frame>0.45){
+        const rr=win(frame,0.45,1);
+        ctx.globalAlpha=rr;
+        const ring=[[nwx,ny-Hpx],[nex,ny-Hpx],[nex,sy-Hpx],[nwx,sy-Hpx]];
+        ctx.beginPath(); ring.forEach((p,i)=> i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.closePath(); ctx.stroke();
+        // a ridge line down the middle
+        ctx.beginPath(); ctx.moveTo((nwx+nex)/2, ny-Hpx); ctx.lineTo((nwx+nex)/2, sy-Hpx); ctx.stroke();
+        ctx.globalAlpha=1;
+      }
+      return;
+    }
+
+    // -------- skinned steel building --------
+    const a = clamp(win(t, b.skinA, b.skinA+700));   // walls fade in
+    const front = mix("#dadde0","#2a3552",dusk);      // south face (toward viewer, lit sky)
+    const west  = mix("#c7cacd","#20293f",dusk);      // left face (sun)
+    const east  = mix("#a7acb1","#171e31",dusk);      // right face (shade)
+    const roof  = mix("#8f969c","#141b2b",dusk);      // low-pitch metal roof (darker)
+    const line  = rgba("#1a1f28",.42);
+
+    // west wall
+    poly([[nwx,ny],[nwx,sy],[nwx,sy-Hpx],[nwx,ny-Hpx]], west, line, 1, a);
+    // east wall
+    poly([[nex,ny],[nex,sy],[nex,sy-Hpx],[nex,ny-Hpx]], east, line, 1, a);
+    // front (south) wall
+    poly([[nwx,sy],[nex,sy],[nex,sy-Hpx],[nwx,sy-Hpx]], front, line, 1, a);
+
+    // corrugated striations on the front wall
+    if(a>0.6){
+      ctx.save(); ctx.globalAlpha=(a-0.6)/0.4*0.5;
+      ctx.strokeStyle=rgba("#ffffff",.10); ctx.lineWidth=1;
+      const n=Math.round((nex-nwx)/6);
+      for(let i=1;i<n;i++){ const gx=lerp(nwx,nex,i/n); ctx.beginPath(); ctx.moveTo(gx,sy); ctx.lineTo(gx,sy-Hpx*0.98); ctx.stroke(); }
+      ctx.restore();
+    }
+
+    // roof + eave line
+    poly([[nwx,ny-Hpx],[nex,ny-Hpx],[nex,sy-Hpx],[nwx,sy-Hpx]], roof, line, 1, a);
+    poly([[nwx,sy-Hpx],[nex,sy-Hpx]], null, null); // (noop guard)
+    ctx.save(); ctx.globalAlpha=a;
+    ctx.strokeStyle=mix("#b5bbc0","#20283a",dusk); ctx.lineWidth=1.6;
+    ctx.beginPath(); ctx.moveTo(nwx,sy-Hpx); ctx.lineTo(nex,sy-Hpx); ctx.stroke();     // eave
+    // ridge highlight down the roof
+    ctx.strokeStyle=mix("#a4aab0","#1b2333",dusk); ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.moveTo((nwx+nex)/2, ny-Hpx); ctx.lineTo((nwx+nex)/2, sy-Hpx); ctx.stroke();
+    ctx.restore();
+
+    // -------- tall roll-up glass bay doors on the front face --------
+    if(skin>0.5){
+      const da=clamp((skin-0.5)/0.4);
+      const n=b.bays;
+      const doorTop = b.kind==="shop" ? 0.72 : 0.62;
+      const glass = dusk>0.12 ? mix("#8296a3","#ffce80",dusk) : "#aec1cc";
+      for(let i=0;i<n;i++){
+        const cx=lerp(nwx,nex,(i+0.5)/n);
+        const bw=(nex-nwx)/n*0.62;
+        const x0=cx-bw/2, x1=cx+bw/2;
+        const yb=sy, yt=sy-Hpx*doorTop;
+        ctx.save();
+        if(dusk>0.2){ ctx.shadowColor=rgba("#ffcf87",.9); ctx.shadowBlur=10*dusk; }
+        poly([[x0,yb],[x1,yb],[x1,yt],[x0,yt]], glass, rgba("#0b141c",.42), 1, da);
+        ctx.restore();
+        // roll-up slats + header
+        ctx.save(); ctx.globalAlpha=da*0.6;
+        ctx.strokeStyle=rgba(dusk>0.3?"#7a5a2a":"#3a4650",.55); ctx.lineWidth=1;
+        for(let s=1;s<=3;s++){ const yy=lerp(yb,yt,s/4); ctx.beginPath(); ctx.moveTo(x0,yy); ctx.lineTo(x1,yy); ctx.stroke(); }
+        ctx.restore();
+      }
+      // warm interior spill on the apron at dusk
+      if(dusk>0.3){
+        const p=[ (nwx+nex)/2, sy+Hpx*0.05 ];
+        const g=ctx.createRadialGradient(p[0],p[1],0,p[0],p[1],Math.max(40,(nex-nwx)*0.9));
+        g.addColorStop(0,rgba("#ffcf87",0.22*dusk)); g.addColorStop(1,rgba("#ffcf87",0));
+        ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+      }
+    }
+  }
+
+  /* ---- pole lights (appear as they switch on at dusk) ---- */
+  function drawPoles(t,dusk){
+    const vis = easeOut(clamp(dusk/0.35));       // fade in with the dusk grade
+    if(vis<=0.02) return;
+    for(const p of POLES){
+      const x=PX(p[0]), y=PY(p[1]);
+      const ph = Math.max(10, dhz*0.030)*vis;    // short yard-light pole
+      ctx.save(); ctx.globalAlpha=vis;
+      ctx.strokeStyle=mix("#5f646b","#2b3340",dusk); ctx.lineWidth=Math.max(1.3,dwz*0.0013);
+      ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y-ph); ctx.stroke();
+      // glowing lamp head
+      ctx.fillStyle="#ffe6a8";
+      ctx.shadowColor=rgba("#ffe6a8",.95); ctx.shadowBlur=14*dusk;
+      ctx.beginPath(); ctx.arc(x,y-ph,Math.max(2.0,dwz*0.0018),0,7); ctx.fill();
+      ctx.restore();
+      // pooled light on the ground below
+      const g=ctx.createRadialGradient(x,y,0,x,y,ph*1.1);
+      g.addColorStop(0,rgba("#ffe6a8",0.18*dusk)); g.addColorStop(1,rgba("#ffe6a8",0));
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,ph*1.1,0,7); ctx.fill();
+    }
+  }
+
+  /* ======================================================================
+     MAIN DRAW
+     ====================================================================== */
+  let nowT=0;
+  function draw(t){
+    nowT=t;
+    setCam(camAt(t));
+    const dusk = easeInOut(win(t, DUSK_START, DUSK_END));
+
+    ctx.clearRect(0,0,W,H);
+
+    /* ---- base aerial (or fallback) painted under the camera ---- */
+    const x0=PX(0), y0=PY(0), x1=PX(1), y1=PY(1);
+    if(imgReady && !imgBroken){
+      ctx.imageSmoothingQuality="high";
+      try{ ctx.drawImage(aerialImg, x0,y0, x1-x0, y1-y0); }catch(e){ imgBroken=true; }
+    }
+    if(imgBroken || !imgReady){
+      const gr=ctx.createLinearGradient(0,y0,0,y1);
+      gr.addColorStop(0,"#8fb0c9"); gr.addColorStop(.55,"#cfd9c6"); gr.addColorStop(1,"#b9c39a");
+      ctx.fillStyle=gr; ctx.fillRect(x0,y0,x1-x0,y1-y0);
+    }
+
+    /* ---- dusk grade over the whole photo ---- */
+    if(dusk>0.001){
+      const g=ctx.createLinearGradient(0,0,0,H);
+      g.addColorStop(0,   rgba("#0a1836", 0.60*dusk));
+      g.addColorStop(0.44,rgba("#142149", 0.48*dusk));
+      g.addColorStop(0.60,rgba("#c9702e", 0.26*dusk));   // warm horizon band
+      g.addColorStop(1,   rgba("#0b0f22", 0.52*dusk));
+      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    }
+
+    /* ---- I-90 traffic streaks in the distance (subtle; blaze at dusk) ---- */
+    if(dusk>0.06){
+      for(const c of cars){
+        const u=I90_U0 + c.x*(I90_U1-I90_U0);
+        const x=PX(u), y=PY(I90_V + (c.lane?0.004:-0.004));
+        if(x<-20||x>W+20) continue;
+        const head=c.lane===1;
+        const col=head?"#fff3c8":"#ff6a58";
+        const rad=Math.max(1.1, dwz*0.0011);
+        ctx.save();
+        ctx.shadowColor=col; ctx.shadowBlur=8*dusk;
+        ctx.fillStyle=col; ctx.globalAlpha=0.8*dusk;
+        ctx.beginPath(); ctx.ellipse(x,y,rad*1.7,rad,0,0,7); ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    /* ---- SITEWORK: survey outline → gravel pad + drive ---- */
+    const outline = win(t, B.site+200, B.site+2000);
+    const padFill = easeOut(win(t, B.site+900, B.site+3400));
+    const driveFill = easeOut(win(t, B.site+1500, B.site+4200));
+
+    if(padFill>0){
+      uvPoly(PAD, mix("#b6ab95","#2a3446",dusk), null, 0, 0.64*padFill);
+      // scattered aggregate speckle for texture
+      ctx.save(); ctx.globalAlpha=0.5*padFill;
+      const rr=mulberry32(0x517e);
+      ctx.fillStyle=mix("#8f8672","#1c2431",dusk);
+      for(let i=0;i<50;i++){
+        const u=lerp(.30,.565, rr()), v=lerp(.475,.695, rr());
+        const x=PX(u), y=PY(v); ctx.fillRect(x,y,Math.max(1,dwz*0.001),Math.max(1,dhz*0.001));
+      }
+      ctx.restore();
+    }
+    if(driveFill>0){
+      uvPoly(DRIVE, mix("#ab9f88","#242d3d",dusk), null, 0, 0.85*driveFill);
+    }
+    if(outline>0 && padFill<0.98){
+      ctx.save();
+      ctx.setLineDash([7,6]); ctx.lineCap="round";
+      ctx.strokeStyle=mix("#8a6a2b","#d9b869",dusk); ctx.lineWidth=1.6; ctx.globalAlpha=outline*(1-padFill*0.6);
+      const P=PAD.map(p=>[PX(p[0]),PY(p[1])]);
+      ctx.beginPath(); P.forEach((p,i)=> i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.closePath(); ctx.stroke();
+      ctx.restore();
+    }
+
+    /* ---- pole lights ---- */
+    drawPoles(t,dusk);
+
+    /* ---- the buildings (depth-sorted) ---- */
+    for(const b of BUILDINGS) drawBuilding(b,t,dusk);
+
+    /* ---- finale vignette breath ---- */
+    if(dusk>0.5){
+      ctx.fillStyle=rgba("#050b14",(dusk-0.5)*0.45);
+      ctx.fillRect(0,0,W,H);
+    }
+  }
+
+  /* ======================================================================
+     PLAYBACK ENGINE
+     ====================================================================== */
+  let elapsed=0, playing=false, last=performance.now();
+  const stage=document.getElementById("stage");
+  const capLine=document.getElementById("capLine");
+  const statTag=document.getElementById("statTag");
+  const cta=document.getElementById("cta");
+  const dotsNav=document.getElementById("dots");
+
+  // caption nodes + dots from PHASES
+  const capNodes=[];
+  PHASES.forEach((p,i)=>{
+    if(p.key==="ask") return;
+    const el=document.createElement("p");
+    el.className="cap";
+    el.innerHTML=`${p.caption.t}<span class="sub">${p.caption.s}</span>`;
+    capLine.appendChild(el); capNodes[i]=el;
+  });
+  PHASES.forEach((p,i)=>{
+    const b=document.createElement("button");
+    b.className="dot"; b.type="button";
+    b.innerHTML=`<i></i><span>${p.label}</span>`;
+    b.setAttribute("aria-label","Go to phase: "+p.label);
+    b.addEventListener("click",()=>jumpTo(i));
+    dotsNav.appendChild(b);
+  });
+  const dotEls=Array.from(dotsNav.children);
+
+  function currentPhase(tt){ let idx=0; for(let i=0;i<PHASES.length;i++){ if(tt>=BOUND[i]) idx=i; } return idx; }
+
+  const TAGS={
+    land:'<b>34,600+</b> vehicles / day on I-90',
+    sitework:'Aggregate pads &middot; <b>Exit 67 access</b>',
+    steel:'Contractor shops &middot; <b>tall roll-up bays</b>',
+    flex:'Storage &amp; flex &middot; <b>lease-ready income</b>',
+    dusk:'<b>1.8 mi</b> from Ellsworth AFB',
+  };
+
+  function syncUI(tt){
+    const ph=currentPhase(tt);
+    capNodes.forEach((el,i)=> el && el.classList.toggle("on", i===ph && ph<ASK_INDEX));
+    dotEls.forEach((d,i)=> d.setAttribute("aria-current", i===ph?"true":"false"));
+    const key=PHASES[ph].key;
+    if(TAGS[key] && ph<ASK_INDEX){ statTag.innerHTML=TAGS[key]; statTag.classList.add("on"); }
+    else statTag.classList.remove("on");
+    stage.classList.toggle("finale", ph>=FINALE_INDEX);
+    const askOn = ph===ASK_INDEX;
+    cta.classList.toggle("on", askOn);
+    cta.setAttribute("aria-hidden", askOn?"false":"true");
+  }
+
+  function frame(now){
+    const dt=Math.min(0.05,(now-last)/1000); last=now;
+    if(playing){ elapsed+=dt*1000; if(elapsed>=T_END){ elapsed=T_END; playing=false; } }
+    updateCars(dt);
+    draw(elapsed); syncUI(elapsed);
+    requestAnimationFrame(frame);
+  }
+
+  function jumpTo(i){ elapsed = i>=ASK_INDEX ? T_END : BOUND[i]; playing = i<ASK_INDEX; }
+  function replay(){ elapsed=0; playing=true; }
+
+  document.getElementById("replayBtn").addEventListener("click", replay);
+  document.getElementById("ctaReplay").addEventListener("click", replay);
+  document.getElementById("numbersBtn").addEventListener("click", ()=>jumpTo(ASK_INDEX));
+
+  window.addEventListener("keydown",(e)=>{
+    if(e.key==="ArrowRight"||e.key==="ArrowDown"){ e.preventDefault(); jumpTo(Math.min(ASK_INDEX,currentPhase(elapsed)+1)); }
+    else if(e.key==="ArrowLeft"||e.key==="ArrowUp"){ e.preventDefault(); jumpTo(Math.max(0,currentPhase(elapsed)-1)); }
+  });
+
+  // debug hook for offline screenshots: freeze end of a beat
+  window.__setPhase=(i)=>{ i=i|0; elapsed = i>=ASK_INDEX?T_END:(BOUND[i+1]-1); playing=false; draw(elapsed); syncUI(elapsed); };
+
+  /* ---------------- boot ---------------- */
+  function start(){
+    resize();
+    window.addEventListener("resize", resize);
+    if(reduceMotion){
+      elapsed=T_END; playing=false;
+      draw(T_END); syncUI(T_END);
+      requestAnimationFrame(function once(){ draw(T_END); syncUI(T_END); });
+    } else {
+      playing=true; last=performance.now();
+      requestAnimationFrame(frame);
+    }
+  }
+
+  if(aerialImg.complete && aerialImg.naturalWidth>0){ imgReady=true; }
+  else{
+    aerialImg.addEventListener("load", ()=>{ imgReady=true; }, {once:true});
+    aerialImg.addEventListener("error", ()=>{ imgBroken=true; }, {once:true});
+  }
+  start();
+})();
+</script>
+</body>
+</html>
