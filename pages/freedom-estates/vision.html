@@ -1,0 +1,972 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Freedom Estates — The Master Plan Comes to Life</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="A cinematic look at Freedom Estates — a master-planned community rising at the I-90 &amp; Liberty Boulevard interchange in Box Elder, South Dakota.">
+
+<style>
+  /* ============================================================
+     FREEDOM ESTATES — "The Master Plan Comes to Life"
+     Cinematic pop-up reel. A single self-contained page; the only
+     external asset is ./assets/masterplan.jpg. No libraries, no
+     network requests. Vanilla JS + Canvas 2D.
+
+     The map image is drawn ONTO the canvas each frame under the
+     same camera projection used for the 2.5D massings, so the
+     buildings that rise out of the plan stay locked to it through
+     every pan and zoom.
+     ============================================================ */
+
+  :root{
+    /* Brand — prairie green / bone / brass (matched to sister page) */
+    --green-900:#132a1e;
+    --green-800:#1d3b2b;
+    --green-700:#2f5d43;
+    --bone:#f6f1e7;
+    --bone-dim:#e7e0d0;
+    --brass:#b08637;
+    --wheat:#d9b869;
+    --ink:#0c160f;
+
+    --dusk-sky:#0d1a30;
+    --dusk-amber:#e0913c;
+
+    --serif:"Iowan Old Style","Palatino Linotype","Palatino","Book Antiqua",Georgia,"Times New Roman",serif;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","Menlo","Consolas",monospace;
+
+    --maxw:1100px;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--green-900);
+    color:var(--bone);
+    font-family:var(--sans);
+    line-height:1.5;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  img{max-width:100%;display:block}
+  a{color:inherit}
+
+  /* ---------------- Cinematic stage ---------------- */
+  .stage{
+    position:relative;
+    width:100%;
+    height:100svh;
+    min-height:560px;
+    overflow:hidden;
+    background:#07100b;
+    isolation:isolate;
+  }
+  #scene{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    display:block;
+    z-index:1;
+  }
+  /* hidden source image — decoded, then painted into the canvas */
+  #mapsrc{ position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; left:-9999px; }
+
+  /* Deep cinematic letterbox bars */
+  .bar{
+    position:absolute; left:0; right:0;
+    height:clamp(26px,6.5vh,84px);
+    background:linear-gradient(#000,#000);
+    z-index:9; pointer-events:none;
+    transition:height .9s ease;
+  }
+  .bar.top{ top:0; box-shadow:inset 0 -1px 0 rgba(217,184,105,.10); }
+  .bar.bottom{ bottom:0; box-shadow:inset 0 1px 0 rgba(217,184,105,.10); }
+  .stage.finale .bar{ height:clamp(34px,9vh,120px); }
+
+  /* Film grain (self-contained SVG turbulence, no network) */
+  .grain{
+    position:absolute; inset:-50%;
+    width:200%; height:200%;
+    z-index:8; pointer-events:none;
+    opacity:.06;
+    mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    animation:grainshift 1.1s steps(3) infinite;
+  }
+  @keyframes grainshift{
+    0%{transform:translate(0,0)} 33%{transform:translate(-3%,2%)}
+    66%{transform:translate(2%,-2%)} 100%{transform:translate(0,0)}
+  }
+
+  /* Vignette + brass frame */
+  .stage::after{
+    content:"";
+    position:absolute; inset:0;
+    pointer-events:none; z-index:7;
+    box-shadow:inset 0 0 160px rgba(0,0,0,.6), inset 0 0 0 1px rgba(217,184,105,.10);
+    background:radial-gradient(125% 85% at 50% 46%, transparent 52%, rgba(0,0,0,.42) 100%);
+  }
+
+  /* ---------------- Caption overlay ---------------- */
+  .caption{
+    position:absolute; left:0; right:0;
+    top:max(env(safe-area-inset-top), clamp(46px,11vh,120px));
+    padding:0 22px;
+    z-index:10; pointer-events:none; text-align:center;
+  }
+  .eyebrow{
+    font-family:var(--sans); font-size:12px;
+    letter-spacing:.30em; text-transform:uppercase;
+    color:var(--wheat); margin:0 0 12px;
+    text-shadow:0 1px 10px rgba(0,0,0,.7); opacity:.92;
+  }
+  .cap-line{ position:relative; min-height:3em; }
+  .cap{
+    position:absolute; left:0; right:0; top:0;
+    margin:0 auto; max-width:18ch;
+    font-family:var(--serif); font-weight:600;
+    font-size:clamp(25px,6.8vw,48px); line-height:1.1;
+    color:var(--bone); text-shadow:0 2px 26px rgba(0,0,0,.8);
+    opacity:0; transform:translateY(14px) scale(.985);
+    transition:opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1);
+    letter-spacing:-.01em;
+  }
+  .cap.on{ opacity:1; transform:none; }
+  .cap .sub{
+    display:block; margin-top:12px;
+    font-family:var(--sans); font-weight:500;
+    font-size:clamp(13px,3.5vw,17.5px); letter-spacing:.01em;
+    color:var(--bone-dim); max-width:34ch; margin-inline:auto;
+    opacity:0; transform:translateY(8px);
+    transition:opacity .8s ease .18s, transform .8s ease .18s;
+  }
+  .cap.on .sub{ opacity:1; transform:none; }
+
+  /* Floating stat tag (traffic / zone acreage) */
+  .tag{
+    position:absolute; z-index:10;
+    left:50%; top:32%; transform:translate(-50%,-50%);
+    font-family:var(--mono); font-size:12px; letter-spacing:.05em;
+    color:var(--bone); background:rgba(12,22,15,.6);
+    border:1px solid rgba(217,184,105,.35);
+    backdrop-filter:blur(3px);
+    padding:6px 12px; border-radius:999px; white-space:nowrap;
+    opacity:0; transition:opacity .7s ease; pointer-events:none;
+  }
+  .tag b{ color:var(--wheat); font-weight:700; }
+  .tag.on{ opacity:1; }
+
+  /* ---------------- Controls ---------------- */
+  .controls{
+    position:absolute; left:0; right:0;
+    bottom:max(env(safe-area-inset-bottom), clamp(30px,7vh,96px));
+    z-index:11; display:flex; flex-direction:column;
+    align-items:center; gap:14px; padding:0 16px;
+  }
+  .dots{ display:flex; gap:5px; align-items:center; flex-wrap:wrap; justify-content:center; }
+  .dot{
+    appearance:none; -webkit-appearance:none;
+    border:0; background:transparent; padding:11px 5px; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:7px;
+  }
+  .dot i{
+    display:block; width:9px; height:9px; border-radius:50%;
+    background:rgba(246,241,231,.28);
+    box-shadow:0 0 0 1px rgba(0,0,0,.3);
+    transition:background .3s, transform .3s, box-shadow .3s;
+  }
+  .dot span{
+    font-size:9px; letter-spacing:.12em; text-transform:uppercase;
+    color:rgba(246,241,231,.42); font-family:var(--sans);
+    transition:color .3s; white-space:nowrap;
+  }
+  .dot[aria-current="true"] i{ background:var(--wheat); transform:scale(1.4); box-shadow:0 0 14px rgba(217,184,105,.75); }
+  .dot[aria-current="true"] span{ color:var(--wheat); }
+  .dot:hover i{ background:var(--bone); }
+
+  .btn-row{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  .btn{
+    appearance:none; -webkit-appearance:none;
+    font-family:var(--sans); font-size:13px; font-weight:600; letter-spacing:.03em;
+    min-height:44px; padding:0 18px; border-radius:999px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px solid rgba(217,184,105,.45);
+    background:rgba(12,22,15,.55); color:var(--bone);
+    backdrop-filter:blur(4px);
+    transition:background .2s, border-color .2s, transform .1s;
+  }
+  .btn:hover{ background:rgba(35,70,52,.7); border-color:var(--wheat); }
+  .btn:active{ transform:translateY(1px); }
+  .btn.primary{
+    background:linear-gradient(180deg,var(--wheat),var(--brass));
+    color:#241804; border-color:transparent;
+    box-shadow:0 6px 22px rgba(176,134,55,.4);
+  }
+  .btn.primary:hover{ filter:brightness(1.05); }
+
+  .dot:focus-visible,.btn:focus-visible,a:focus-visible{
+    outline:3px solid var(--wheat); outline-offset:3px; border-radius:12px;
+  }
+
+  /* ---------------- THE ASK overlay (in stage) ---------------- */
+  .cta{
+    position:absolute; inset:0; z-index:10;
+    display:flex; flex-direction:column; justify-content:center; align-items:center;
+    text-align:center; padding:clamp(20px,5vw,48px); gap:clamp(13px,3vw,22px);
+    background:linear-gradient(180deg, rgba(8,16,28,.66) 0%, rgba(7,13,22,.9) 100%);
+    opacity:0; visibility:hidden;
+    transition:opacity 1s ease, visibility 1s; overflow-y:auto;
+  }
+  .cta.on{ opacity:1; visibility:visible; }
+  .cta > *{ max-width:100%; }
+  .cta .kicker{ font-size:12px; letter-spacing:.30em; text-transform:uppercase; color:var(--wheat); }
+  .cta h2{
+    font-family:var(--serif); font-weight:600;
+    font-size:clamp(25px,6.4vw,52px); line-height:1.06; margin:0;
+    max-width:min(17ch,100%); overflow-wrap:break-word;
+  }
+  .numbers{ display:flex; flex-wrap:wrap; gap:clamp(14px,4vw,44px); justify-content:center; align-items:flex-end; margin:2px 0; }
+  .num{ display:flex; flex-direction:column; align-items:center; }
+  .num b{ font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:clamp(22px,6.4vw,38px); font-weight:700; color:var(--wheat); line-height:1; }
+  .num small{ font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--bone-dim); margin-top:8px; }
+  .facts{ display:flex; flex-wrap:wrap; gap:8px 10px; justify-content:center; max-width:min(680px,100%); }
+  .facts .chip{
+    max-width:100%; font-size:12.5px; letter-spacing:.01em;
+    padding:6px 12px; border-radius:999px;
+    background:rgba(246,241,231,.08); border:1px solid rgba(246,241,231,.16); color:var(--bone);
+  }
+  .facts .chip b{ color:var(--wheat); font-weight:700; }
+  .agent{ margin-top:6px; display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .agent .name{ font-family:var(--serif); font-size:clamp(18px,4.5vw,22px); }
+  .agent .org{ font-size:13px; color:var(--bone-dim); letter-spacing:.02em; }
+  .agent .links{ display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; justify-content:center; }
+
+  /* ---------------- Closing section (scrollable, print-safe) ---------------- */
+  .closing{
+    background:radial-gradient(120% 90% at 50% -10%, #1c3928 0%, var(--green-900) 60%);
+    padding:clamp(40px,8vw,80px) 20px clamp(56px,10vw,90px);
+  }
+  .wrap{ max-width:var(--maxw); margin:0 auto; }
+  .closing .lede{ text-align:center; margin:0 auto clamp(24px,5vw,40px); max-width:62ch; }
+  .closing .lede .eyebrow{ margin-bottom:14px; }
+  .closing h3{ font-family:var(--serif); font-weight:600; font-size:clamp(24px,5.5vw,38px); margin:0 0 12px; }
+  .closing .lede p{ color:var(--bone-dim); font-size:clamp(15px,2.4vw,17px); margin:0; }
+
+  .photo{
+    position:relative; border-radius:16px; overflow:hidden;
+    border:1px solid rgba(217,184,105,.22);
+    box-shadow:0 24px 60px rgba(0,0,0,.4);
+    background:linear-gradient(#2f5d43,#1d3b2b);
+  }
+  .photo img{ width:100%; height:auto; }
+  .photo .plabel{
+    position:absolute; left:14px; bottom:14px;
+    font-family:var(--mono); font-size:12px; letter-spacing:.04em;
+    background:rgba(10,18,13,.74); border:1px solid rgba(217,184,105,.4);
+    color:var(--bone); padding:6px 11px; border-radius:999px; backdrop-filter:blur(3px);
+  }
+  .photo .plabel b{ color:var(--wheat); }
+
+  .detail-row{ display:grid; grid-template-columns:1fr; gap:22px; margin-top:clamp(24px,5vw,40px); align-items:start; }
+  .card{ background:rgba(255,255,255,.03); border:1px solid rgba(246,241,231,.12); border-radius:16px; padding:22px; }
+  .card h4{ font-family:var(--sans); font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:var(--wheat); margin:0 0 14px; }
+  .spec{ margin:0; }
+  .spec div{ display:flex; justify-content:space-between; gap:16px; padding:9px 0; border-bottom:1px solid rgba(246,241,231,.10); font-size:14.5px; }
+  .spec div:last-child{ border-bottom:0; }
+  .spec dt{ color:var(--bone-dim); }
+  .spec dd{ margin:0; font-family:var(--mono); font-variant-numeric:tabular-nums; color:var(--bone); text-align:right; }
+
+  .contact-card{ display:flex; flex-direction:column; gap:14px; }
+  .contact-card .who .name{ font-family:var(--serif); font-size:22px; }
+  .contact-card .who .org{ font-size:13.5px; color:var(--bone-dim); }
+  .contact-actions{ display:flex; flex-direction:column; gap:10px; }
+  .contact-actions .btn{ justify-content:center; width:100%; }
+
+  .fineprint{ margin-top:clamp(30px,6vw,48px); text-align:center; font-size:12px; color:rgba(246,241,231,.5); letter-spacing:.01em; line-height:1.6; max-width:72ch; margin-inline:auto; }
+
+  @media (max-width:430px){
+    .eyebrow{ font-size:10.5px; letter-spacing:.16em; }
+    .num b{ font-size:clamp(20px,6vw,38px); }
+    .facts .chip{ font-size:11.5px; padding:6px 10px; }
+    .dot span{ font-size:8px; }
+  }
+  @media (min-width:760px){
+    .detail-row{ grid-template-columns:1.4fr 1fr; gap:30px; }
+  }
+  @media (prefers-color-scheme:light){
+    body{ background:var(--green-900); color:var(--bone); }
+  }
+  @media (prefers-reduced-motion:reduce){
+    .cap,.cap .sub{ transition:none; }
+    .grain{ animation:none; }
+    *{ scroll-behavior:auto !important; }
+  }
+  .visually-hidden{ position:absolute!important; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+</style>
+</head>
+<body>
+
+<!-- ============================ STAGE ============================ -->
+<section class="stage" id="stage" aria-label="Freedom Estates master plan vision">
+
+  <!-- The map is decoded here, then painted into the canvas each frame -->
+  <img id="mapsrc" src="assets/masterplan.jpg"
+       alt="Stylized master-plan sketch of Freedom Estates showing commercial, single-family, multi-family and future high-school zones along Interstate 90.">
+
+  <canvas id="scene" aria-hidden="true"></canvas>
+
+  <div class="grain" aria-hidden="true"></div>
+  <div class="bar top" aria-hidden="true"></div>
+  <div class="bar bottom" aria-hidden="true"></div>
+
+  <!-- Live caption -->
+  <div class="caption" aria-live="polite">
+    <p class="eyebrow">Freedom Estates &middot; Box Elder, South Dakota</p>
+    <div class="cap-line" id="capLine"><!-- captions injected --></div>
+  </div>
+
+  <!-- Floating stat tag -->
+  <div class="tag" id="statTag"><b>34,600+</b> vehicles / day on I-90</div>
+
+  <!-- THE ASK overlay -->
+  <div class="cta" id="cta" aria-hidden="true">
+    <p class="kicker">The vision is the plan</p>
+    <h2>Build the next chapter of Box&nbsp;Elder.</h2>
+    <div class="numbers">
+      <div class="num"><b>Master&#8209;Planned</b><small>Live &middot; Work &middot; Learn</small></div>
+      <div class="num"><b>24 ac</b><small>Multi&#8209;Family</small></div>
+      <div class="num"><b>I-90 &amp; Liberty</b><small>Interchange frontage</small></div>
+    </div>
+    <div class="facts">
+      <span class="chip"><b>Commercial</b> at the interchange gateway</span>
+      <span class="chip"><b>Single-family</b> neighborhood core</span>
+      <span class="chip">Future <b>Douglas High School</b></span>
+      <span class="chip"><b>34,600+</b> vehicles / day</span>
+      <span class="chip">Minutes from <b>Ellsworth AFB</b> &middot; B-21 Raider</span>
+    </div>
+    <div class="agent">
+      <span class="name">Kevin Andreson, Realtor</span>
+      <span class="org">Keller Williams Realty Black Hills</span>
+      <div class="links">
+        <a class="btn primary" href="tel:+16056465409">Call (605) 646-5409</a>
+        <a class="btn" href="mailto:kandreson@kw.com?subject=Freedom%20Estates%20—%20Master%20Plan">Email Kevin</a>
+      </div>
+    </div>
+    <button class="btn" type="button" id="ctaReplay" style="margin-top:6px">&#8635; Replay the vision</button>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <nav class="dots" id="dots" aria-label="Jump to phase"></nav>
+    <div class="btn-row">
+      <button class="btn" type="button" id="replayBtn" aria-label="Replay the vision sequence">&#8635; Replay</button>
+      <button class="btn primary" type="button" id="planBtn">See the plan &rarr;</button>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= CLOSING ========================= -->
+<section class="closing" aria-label="The master plan and how to reach Kevin">
+  <div class="wrap">
+    <div class="lede">
+      <p class="eyebrow">The master plan</p>
+      <h3>Freedom Estates — Box Elder, South Dakota</h3>
+      <p>A master-planned community taking shape at the Interstate&nbsp;90 &amp; Liberty Boulevard interchange — commercial frontage at the gateway, 24 acres of multi-family along Highway&nbsp;1416, a single-family neighborhood at its heart, and the future Douglas High School to the east. Minutes from Ellsworth Air Force Base, the future home of the B-21 Raider.</p>
+    </div>
+
+    <div class="photo">
+      <img src="assets/masterplan.jpg"
+           alt="Master-plan sketch showing the commercial, single-family, multi-family and future Douglas High School zones between Liberty Boulevard and 151st Avenue along Interstate 90.">
+      <span class="plabel">Master plan &middot; <b>I-90 &amp; Liberty Blvd</b></span>
+    </div>
+
+    <div class="detail-row">
+      <div class="card">
+        <h4>The community</h4>
+        <dl class="spec">
+          <div><dt>Commercial</dt><dd>Interchange gateway</dd></div>
+          <div><dt>Multi-Family</dt><dd>24 acres</dd></div>
+          <div><dt>Single Family</dt><dd>Neighborhood core</dd></div>
+          <div><dt>Douglas H.S.</dt><dd>Future campus</dd></div>
+          <div><dt>Access</dt><dd>I-90 / US-14 &middot; Liberty Blvd</dd></div>
+          <div><dt>Frontage</dt><dd>Liberty Blvd &ndash; 151st Ave</dd></div>
+          <div><dt>Traffic</dt><dd>34,600+ / day</dd></div>
+          <div><dt>Ellsworth AFB</dt><dd>Minutes away</dd></div>
+        </dl>
+      </div>
+
+      <div class="card contact-card">
+        <h4>Talk to the listing agent</h4>
+        <div class="who">
+          <div class="name">Kevin Andreson</div>
+          <div class="org">Realtor &middot; Keller Williams Realty Black Hills</div>
+        </div>
+        <div class="contact-actions">
+          <a class="btn primary" href="tel:+16056465409">Call (605) 646-5409</a>
+          <a class="btn" href="mailto:kandreson@kw.com?subject=Freedom%20Estates%20—%20Master%20Plan">kandreson@kw.com</a>
+        </div>
+      </div>
+    </div>
+
+    <p class="fineprint">
+      Concept visualization — not an approved plat or site plan. Zone locations, acreages and uses are conceptual and subject to change. Information deemed reliable but not guaranteed.
+    </p>
+  </div>
+</section>
+
+<script>
+(() => {
+  "use strict";
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ======================================================================
+     PHASE TIMELINE — single source of truth for timing & captions.
+     ====================================================================== */
+  const PHASES = [
+    { key:"land",     label:"The Land",     dur:6500,
+      caption:{ t:"It begins with the land.", s:"A master-planned community rising at the I-90 &amp; Liberty Boulevard interchange." } },
+    { key:"infra",    label:"Infrastructure", dur:5500,
+      caption:{ t:"First, the framework.", s:"Highways, boulevards and spine roads wire the whole community together." } },
+    { key:"commercial", label:"Commercial", dur:6000,
+      caption:{ t:"Commerce at the gateway.", s:"Flex, retail and service buildings anchor the Liberty Boulevard interchange." } },
+    { key:"multi",    label:"Multi-Family", dur:5500,
+      caption:{ t:"Room to grow — 24 acres.", s:"Apartment residences line Highway 1416 along the creek." } },
+    { key:"single",   label:"Single Family", dur:7000,
+      caption:{ t:"A neighborhood takes shape.", s:"Homes fill the heart of Freedom Estates, street by street." } },
+    { key:"school",   label:"Douglas H.S.", dur:5500,
+      caption:{ t:"Anchored by a school.", s:"The future Douglas High School campus grounds the community's east end." } },
+    { key:"finale",   label:"Dusk",         dur:7000,
+      caption:{ t:"Freedom Estates comes to life.", s:"A full community — lit, alive and ready to build." } },
+    { key:"ask",      label:"The Ask",      dur:0,
+      caption:{ t:"", s:"" } },
+  ];
+
+  const BOUND = [];
+  PHASES.reduce((acc,p,i)=>{ BOUND[i]=acc; return acc+p.dur; }, 0);
+  const T_END = BOUND[BOUND.length-1];
+  const ASK_INDEX = PHASES.length-1;
+  const FINALE_INDEX = ASK_INDEX-1;
+
+  const B = {
+    land:BOUND[0], infra:BOUND[1], comm:BOUND[2], multi:BOUND[3],
+    single:BOUND[4], school:BOUND[5], finale:BOUND[6],
+  };
+  const DUSK_START = B.finale + 900;
+  const DUSK_END   = T_END - 300;
+
+  /* ---------------------- math / easing ---------------------- */
+  const clamp = (v,a=0,b=1)=> v<a?a : v>b?b : v;
+  const lerp  = (a,b,t)=> a+(b-a)*t;
+  const easeOut   = t=> 1-Math.pow(1-t,3);
+  const easeInOut = t=> t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+  const easeBack  = t=>{ const c=2.70158; return 1+(c+1)*Math.pow(t-1,3)+c*Math.pow(t-1,2); };
+  const win = (t,s,e)=> clamp((t-s)/Math.max(1,e-s));
+
+  /* ---------------------- colour helpers ---------------------- */
+  const hx = h=>{ h=h.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; };
+  const mix = (a,b,t)=>{ a=hx(a); b=hx(b); return `rgb(${Math.round(lerp(a[0],b[0],t))},${Math.round(lerp(a[1],b[1],t))},${Math.round(lerp(a[2],b[2],t))})`; };
+  const rgba = (h,al)=>{ const c=hx(h); return `rgba(${c[0]},${c[1]},${c[2]},${al})`; };
+
+  /* seeded RNG so the neighbourhood layout is stable within a session */
+  function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+  const rnd = mulberry32(0x1416);
+
+  /* ======================================================================
+     CAMERA — image-space (u,v in 0..1) projected to screen, with a
+     Ken Burns move driven by keyframes. The base map is drawn onto the
+     canvas using the same projector, so massings stay locked to it.
+     ====================================================================== */
+  const canvas = document.getElementById("scene");
+  const ctx = canvas.getContext("2d");
+  const mapImg = document.getElementById("mapsrc");
+  const IMG_ASPECT = 1600/833;
+  let mapReady=false, mapBroken=false;
+  let W=0,H=0,DPR=1, dw=0,dh=0, cam={cu:.5,cv:.5,z:1}, dwz=1,dhz=1;
+
+  function resize(){
+    const r = canvas.getBoundingClientRect();
+    DPR = Math.min(window.devicePixelRatio||1, 2);
+    W = Math.max(1,Math.round(r.width));
+    H = Math.max(1,Math.round(r.height));
+    canvas.width  = Math.round(W*DPR);
+    canvas.height = Math.round(H*DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    // object-fit: cover dimensions of the map in screen px
+    if(W/H > IMG_ASPECT){ dw=W; dh=W/IMG_ASPECT; } else { dh=H; dw=H*IMG_ASPECT; }
+  }
+
+  function setCam(c){ cam=c; dwz=dw*cam.z; dhz=dh*cam.z; }
+  // project image-space (u,v) → screen px under the current camera
+  const PX = u=> W/2 + (u-cam.cu)*dwz;
+  const PY = v=> H/2 + (v-cam.cv)*dhz;
+
+  /* ---- camera keyframes (ms, focal uv, zoom) ----
+     Each zone's camera ARRIVES ~1.6s into its own phase and HOLDS until
+     that phase ends, so the buildings rise while their zone is framed.
+     (B.x = BOUND[x] = the START of phase x.) */
+  const KF = [
+    { t:0,             cu:.205, cv:.205, z:2.35 },  // Land: tight on the I-90 interchange
+    { t:B.infra,       cu:.50,  cv:.49,  z:1.02 },  //   pull out to the whole tract by phase end
+    { t:B.comm,        cu:.49,  cv:.50,  z:1.05 },  // Infrastructure: hold wide while roads trace
+    { t:B.comm+1600,   cu:.270, cv:.505, z:1.40 },  // Commercial: push into the west zone
+    { t:B.multi,       cu:.275, cv:.500, z:1.38 },  //   hold on Commercial through the phase
+    { t:B.multi+1600,  cu:.405, cv:.775, z:1.55 },  // Multi-Family: drop to the orange strip
+    { t:B.single,      cu:.410, cv:.775, z:1.52 },  //   hold on Multi-Family
+    { t:B.single+1700, cu:.480, cv:.500, z:1.44 },  // Single Family: over the neighbourhood core
+    { t:B.school,      cu:.485, cv:.500, z:1.48 },  //   hold on Single Family
+    { t:B.school+1700, cu:.790, cv:.560, z:1.44 },  // Douglas H.S.: pan east to the tract
+    { t:B.finale,      cu:.795, cv:.565, z:1.46 },  //   hold on the school
+    { t:B.finale+3200, cu:.50,  cv:.520, z:1.12 },  // Finale: rise out over the whole plan
+    { t:T_END,         cu:.50,  cv:.515, z:1.08 },
+  ];
+  function camAt(t){
+    if(t<=KF[0].t) return {cu:KF[0].cu,cv:KF[0].cv,z:KF[0].z};
+    let i=0; while(i<KF.length-1 && t>KF[i+1].t) i++;
+    const a=KF[i], b=KF[Math.min(i+1,KF.length-1)];
+    const e = a===b?1:easeInOut(win(t,a.t,b.t));
+    const c = { cu:lerp(a.cu,b.cu,e), cv:lerp(a.cv,b.cv,e), z:lerp(a.z,b.z,e) };
+    // finale rumble — a subtle parallax breath, tasteful
+    if(t>B.finale && !reduceMotion){
+      const r=(t-B.finale)/1000;
+      c.cu += Math.sin(r*0.9)*0.0016;
+      c.cv += Math.cos(r*0.7)*0.0014;
+    }
+    return c;
+  }
+
+  /* ======================================================================
+     GEOMETRY — zones, roads, creek, interstate (all in image-space uv)
+     ====================================================================== */
+  const LIBERTY  = [[.163,-.03],[.163,1.03]];
+  const AVE151   = [[.965,.02],[.928,1.02]];
+  const HWY1416  = [[.02,.99],[.30,.945],[.50,.90],[.70,.865],[1.0,.83]];
+  const SPINE = [
+    [[.235,.52],[.34,.49],[.45,.475],[.58,.47]],
+    [[.44,.40],[.50,.355],[.57,.375],[.585,.45]],
+    [[.40,.60],[.40,.70],[.40,.76]],
+    [[.62,.42],[.70,.44],[.78,.52],[.80,.62]],
+  ];
+  const CREEK = [[.045,.42],[.10,.52],[.15,.63],[.22,.70],[.30,.715],[.40,.70],[.47,.73],[.55,.80],[.60,.87],[.63,.93]];
+  const I90_Y = .225, I90_LANES=[.207,.243];
+
+  /* ---- moving traffic on I-90 (headlights in the finale) ---- */
+  const cars=[];
+  for(let i=0;i<15;i++){
+    cars.push({ x: rnd(), lane: rnd()<.5?0:1, v: .06+rnd()*.05 });
+  }
+  function updateCars(dt){
+    for(const c of cars){
+      const dir = c.lane?1:-1;
+      c.x += dir*c.v*dt;
+      if(c.x>1.04) c.x=-.04;
+      if(c.x<-.04) c.x=1.04;
+    }
+  }
+
+  /* ======================================================================
+     MASSINGS — buildings that pop straight up out of the map plane.
+     Each: centre (u,v), half-size (w,h) in uv, height ht (uv units),
+     rise start t0 / duration td, palette kind, precomputed windows.
+     ====================================================================== */
+  const B_LIST=[];
+  function windowsFor(cols,rows){
+    const a=[];
+    for(let r=0;r<rows;r++) for(let c=0;c<cols;c++)
+      a.push({ fx:(c+.5)/cols, fy:(r+.62)/rows, ph:rnd()*6.28 });
+    return a;
+  }
+  function addBuilding(o){ o.win = o.win || windowsFor(o.wc||3,o.wr||2); B_LIST.push(o); }
+
+  // -- Commercial: large flex / garage / retail massings (roll-up door hints) --
+  const comm=[
+    {u:.240,v:.430,w:.050,h:.028,ht:.052,wc:5,wr:1},
+    {u:.250,v:.500,w:.055,h:.026,ht:.046,wc:6,wr:1},
+    {u:.300,v:.465,w:.028,h:.046,ht:.060,wc:2,wr:2},
+    {u:.228,v:.560,w:.038,h:.022,ht:.040,wc:4,wr:1},
+    {u:.305,v:.555,w:.036,h:.026,ht:.050,wc:4,wr:1},
+  ];
+  comm.forEach((b,i)=> addBuilding(Object.assign(b,{kind:"comm", garage:true, t0:B.comm+700+i*280, td:900})));
+
+  // -- Multi-Family: 3-story apartment blocks along Hwy 1416 --
+  const multi=[
+    {u:.235,v:.775,w:.028,h:.018,ht:.075,wc:3,wr:3},
+    {u:.300,v:.782,w:.030,h:.018,ht:.080,wc:3,wr:3},
+    {u:.365,v:.780,w:.030,h:.018,ht:.078,wc:3,wr:3},
+    {u:.430,v:.782,w:.030,h:.018,ht:.082,wc:3,wr:3},
+    {u:.495,v:.788,w:.030,h:.018,ht:.078,wc:3,wr:3},
+    {u:.552,v:.800,w:.026,h:.016,ht:.072,wc:3,wr:3},
+  ];
+  multi.forEach((b,i)=> addBuilding(Object.assign(b,{kind:"multi", balcony:true, t0:B.multi+500+i*300, td:1000})));
+
+  // -- Single Family: staggered neighbourhood grid across the core --
+  (function(){
+    const uMin=.355,uMax=.615, vMin=.340,vMax=.675;
+    const cols=8, rows=6;
+    let k=0;
+    for(let r=0;r<rows;r++){
+      for(let c=0;c<cols;c++){
+        const u = lerp(uMin,uMax,(c+.5)/cols) + (rnd()-.5)*.012;
+        const v = lerp(vMin,vMax,(r+.5)/rows) + (rnd()-.5)*.012;
+        // carve a soft cul-de-sac void near the centre
+        const dcx=u-.485, dcy=v-.46;
+        if(Math.sqrt(dcx*dcx+dcy*dcy) < .052) continue;
+        if(rnd()<.10) continue; // gaps = streets / lots
+        const dist = Math.hypot(u-.36, v-.34);   // time-lapse spreads from NW corner
+        addBuilding({
+          u,v, w:.011+rnd()*.004, h:.011+rnd()*.004, ht:.020+rnd()*.010,
+          kind:"house", roofHue:(k*37)%4, wc:2, wr:1,
+          t0:B.single+250 + dist*7200 + rnd()*260, td:620,
+        });
+        k++;
+      }
+    }
+  })();
+
+  // -- Douglas H.S.: a connected campus + track/field on the east tract --
+  const school=[
+    {u:.760,v:.500,w:.060,h:.030,ht:.055,wc:8,wr:2, kind:"school", t0:B.school+500, td:1100},
+    {u:.800,v:.560,w:.026,h:.040,ht:.048,wc:2,wr:2, kind:"school", t0:B.school+900, td:1000},
+    {u:.712,v:.470,w:.022,h:.020,ht:.042,wc:2,wr:1, kind:"school", t0:B.school+1200, td:900},
+  ];
+  school.forEach(b=> addBuilding(b));
+  const TRACK = {u:.735,v:.665, rw:.052, rh:.030, t0:B.school+700, td:1400};
+
+  // depth-sort so nearer (larger v) massings paint last / on top
+  B_LIST.sort((a,b)=> a.v-b.v);
+
+  /* ---- palettes per kind (day → dusk mixed by `dusk`) ---- */
+  const HOUSE_ROOF=[["#b45f4a","#2a141a"],["#7f8a5c","#1e2418"],["#6f8aa6","#151f2b"],["#c08a3e","#26190f"]];
+  function palette(b,dusk){
+    switch(b.kind){
+      case "comm":  return { roof:mix("#c9cdd2","#1b2740",dusk), front:mix("#e7e2d4","#26344a",dusk), side:mix("#bcc0c4","#141d2e",dusk), line:rgba("#1a1f28",.45) };
+      case "multi": return { roof:mix("#7a4f3e","#241826",dusk), front:mix("#d8b48c","#2b2138",dusk), side:mix("#b8946f","#1a1424",dusk), line:rgba("#20140e",.4) };
+      case "school":return { roof:mix("#9a3f34","#241016",dusk), front:mix("#dccdb0","#26201a",dusk), side:mix("#c2b493","#181410",dusk), line:rgba("#1a1210",.4) };
+      default: { const r=HOUSE_ROOF[b.roofHue||0]; return { roof:mix(r[0],r[1],dusk), front:mix("#efe7d6","#2a2436",dusk), side:mix("#d3c9b4","#1c1826",dusk), line:rgba("#241f1a",.35) }; }
+    }
+  }
+
+  /* draw one pop-up massing */
+  function popBox(b,t,dusk){
+    const rise = easeOut(win(t,b.t0,b.t0+b.td));
+    if(rise<=0) return;
+    const u0=b.u-b.w, u1=b.u+b.w, v0=b.v-b.h, v1=b.v+b.h;
+    const Hpx = b.ht*dhz*rise;                 // vertical pop, scales with zoom
+    // base corners (screen)
+    const nwx=PX(u0),nex=PX(u1), ny=PY(v0), sy=PY(v1);
+    const swx=nwx, sex=nex;
+    const pal=palette(b,dusk);
+
+    // side walls (west + east), then front (south) wall, then roof
+    // west wall
+    poly([[nwx,ny],[swx,sy],[swx,sy-Hpx],[nwx,ny-Hpx]], pal.side, pal.line);
+    // east wall
+    poly([[nex,ny],[sex,sy],[sex,sy-Hpx],[nex,ny-Hpx]], pal.side, pal.line);
+    // front (south) wall
+    poly([[swx,sy],[sex,sy],[sex,sy-Hpx],[swx,sy-Hpx]], pal.front, pal.line);
+
+    // roll-up door hints on commercial fronts
+    if(b.garage && rise>.6){
+      ctx.globalAlpha=(rise-.6)/.4;
+      const n=Math.max(2,(b.win.length));
+      for(let i=0;i<n;i++){
+        const fx=(i+.5)/n, gx=lerp(swx,sex,fx), gw=(sex-swx)/n*0.6;
+        ctx.fillStyle=mix("#8f8f92","#0e1420",dusk);
+        ctx.fillRect(gx-gw/2, sy-Hpx*0.62, gw, Hpx*0.6);
+      }
+      ctx.globalAlpha=1;
+    }
+    // balcony line hints on multi-family fronts
+    if(b.balcony && rise>.6){
+      ctx.globalAlpha=(rise-.6)/.4;
+      ctx.strokeStyle=rgba(dusk>.4?"#3a2f26":"#b39674",.6); ctx.lineWidth=1;
+      for(let s=1;s<=3;s++){
+        const yy=sy-Hpx*(s/3.4);
+        ctx.beginPath(); ctx.moveTo(swx,yy); ctx.lineTo(sex,yy); ctx.stroke();
+      }
+      ctx.globalAlpha=1;
+    }
+
+    // roof (lightened) + subtle inset for a "capped" read
+    poly([[nwx,ny-Hpx],[nex,ny-Hpx],[sex,sy-Hpx],[swx,sy-Hpx]], pal.roof, pal.line);
+
+    // lit windows at dusk — the "hundreds of warm lights"
+    if(dusk>0.12 && rise>0.9){
+      for(const w of b.win){
+        const gx = lerp(swx,sex,w.fx);
+        const gy = sy - w.fy*Hpx;
+        const flick = 0.6 + 0.4*Math.sin(nowT*0.004 + w.ph);
+        const a = dusk*flick;
+        const sz = Math.max(1.3, dwz*0.0022 + (b.kind==="house"?0.6:1.1));
+        ctx.save();
+        ctx.shadowColor=rgba("#ffcf87",.9); ctx.shadowBlur=6*dusk;
+        ctx.fillStyle=rgba("#ffd89a", 0.35+0.5*a);
+        ctx.fillRect(gx-sz/2, gy-sz/2, sz, sz*1.15);
+        ctx.restore();
+      }
+    }
+  }
+
+  /* filled/stroked polygon from [[x,y],...] */
+  function poly(pts, fill, stroke, lw){
+    ctx.beginPath();
+    for(let i=0;i<pts.length;i++){ const p=pts[i]; i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]); }
+    ctx.closePath();
+    if(fill){ ctx.fillStyle=fill; ctx.fill(); }
+    if(stroke){ ctx.lineJoin="round"; ctx.strokeStyle=stroke; ctx.lineWidth=lw||1; ctx.stroke(); }
+  }
+
+  /* stroke a uv polyline, revealed up to fraction f of its length */
+  function tracePath(pts, f, stroke, lw, dash){
+    if(f<=0) return;
+    const P = pts.map(p=>[PX(p[0]),PY(p[1])]);
+    let total=0; const seg=[];
+    for(let i=1;i<P.length;i++){ const d=Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]); seg.push(d); total+=d; }
+    let target=total*f, drawn=0;
+    ctx.save();
+    if(dash) ctx.setLineDash(dash);
+    ctx.lineCap="round"; ctx.lineJoin="round";
+    ctx.strokeStyle=stroke; ctx.lineWidth=lw;
+    ctx.beginPath(); ctx.moveTo(P[0][0],P[0][1]);
+    for(let i=1;i<P.length;i++){
+      if(drawn+seg[i-1]<=target){ ctx.lineTo(P[i][0],P[i][1]); drawn+=seg[i-1]; }
+      else{ const r=(target-drawn)/seg[i-1]; ctx.lineTo(lerp(P[i-1][0],P[i][0],r), lerp(P[i-1][1],P[i][1],r)); break; }
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /* a glowing pulse travelling along a uv polyline */
+  function pulse(pts, pos, col, size){
+    const P = pts.map(p=>[PX(p[0]),PY(p[1])]);
+    let total=0; const seg=[];
+    for(let i=1;i<P.length;i++){ const d=Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]); seg.push(d); total+=d; }
+    let target=total*clamp(pos), drawn=0, x=P[0][0], y=P[0][1];
+    for(let i=1;i<P.length;i++){
+      if(drawn+seg[i-1]<target){ drawn+=seg[i-1]; continue; }
+      const r=(target-drawn)/seg[i-1]; x=lerp(P[i-1][0],P[i][0],r); y=lerp(P[i-1][1],P[i][1],r); break;
+    }
+    const g=ctx.createRadialGradient(x,y,0,x,y,size);
+    g.addColorStop(0,col); g.addColorStop(1,rgba("#ffe6a8",0));
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,size,0,7); ctx.fill();
+  }
+
+  /* ======================================================================
+     MAIN DRAW
+     ====================================================================== */
+  let nowT=0;
+  function draw(t){
+    nowT=t;
+    setCam(camAt(t));
+    const dusk = easeInOut(win(t, DUSK_START, DUSK_END));
+
+    ctx.clearRect(0,0,W,H);
+
+    /* ---- base map (or fallback) painted under the camera ---- */
+    const x0=PX(0), y0=PY(0), x1=PX(1), y1=PY(1);
+    if(mapReady && !mapBroken){
+      ctx.imageSmoothingQuality="high";
+      try{ ctx.drawImage(mapImg, x0,y0, x1-x0, y1-y0); }catch(e){ mapBroken=true; }
+    }
+    if(mapBroken || !mapReady){
+      const gr=ctx.createLinearGradient(0,y0,0,y1);
+      gr.addColorStop(0,"#2f5d43"); gr.addColorStop(1,"#1d3b2b");
+      ctx.fillStyle=gr; ctx.fillRect(x0,y0,x1-x0,y1-y0);
+    }
+
+    /* ---- reveal wipe: darken the not-yet-"active" map early on ---- */
+    const reveal = easeOut(win(t, 300, B.land-600));
+    if(reveal<1){
+      ctx.fillStyle=rgba("#07100b", (1-reveal)*0.55);
+      ctx.fillRect(0,0,W,H);
+    }
+
+    /* ---- dusk grade over the whole plan ---- */
+    if(dusk>0.001){
+      ctx.fillStyle=rgba("#0b1730", 0.5*dusk);
+      ctx.fillRect(0,0,W,H);
+      // warm pools near the built cores
+      const glow=ctx.createRadialGradient(PX(.42),PY(.55),0,PX(.42),PY(.55),Math.max(W,H)*0.55);
+      glow.addColorStop(0,rgba("#e0913c",0.14*dusk)); glow.addColorStop(1,rgba("#e0913c",0));
+      ctx.fillStyle=glow; ctx.fillRect(0,0,W,H);
+    }
+
+    /* ---- creek shimmer (a light travelling down the water) ---- */
+    if(t>M.creekIn){
+      const cf = easeOut(win(t,M.creekIn,M.creekIn+1600));
+      tracePath(CREEK, cf, rgba(dusk>.4?"#7fd0ff":"#bfe6ff", 0.5), 2.2);
+      const sp=(t%2600)/2600;
+      ctx.globalAlpha=0.9;
+      pulse(CREEK, sp, rgba("#eaf7ff",0.8), 8+cam.z*4);
+      ctx.globalAlpha=1;
+    }
+
+    /* ---- infrastructure: roads trace + light up ---- */
+    const rf = easeOut(win(t, M.roadsIn, M.roadsIn+2600));
+    if(rf>0){
+      const road = rgba(dusk>.4?"#f2e6c0":"#ffffff", 0.9);
+      tracePath(LIBERTY, rf, road, 3.2);
+      tracePath(AVE151,  easeOut(win(t,M.roadsIn+300,M.roadsIn+2600)), road, 2.4);
+      tracePath(HWY1416, easeOut(win(t,M.roadsIn+150,M.roadsIn+2600)), road, 3.0);
+      SPINE.forEach((sp,i)=> tracePath(sp, easeOut(win(t,M.roadsIn+700+i*250, M.roadsIn+2600+i*250)), rgba("#e9dfbf",0.85), 2.0));
+      // brass glow travelling the boulevard once it's traced
+      if(rf>0.95){
+        pulse(LIBERTY, (t%2200)/2200, rgba("#ffe6a8",0.85), 14);
+      }
+    }
+
+    /* ---- I-90 traffic pulse (phase 1) + finale headlights ---- */
+    // phase-1 pulse: energy along the interstate + Hwy 1416
+    const pAlive = 1 - win(t, B.infra, B.infra+1200);
+    if(pAlive>0){
+      ctx.globalAlpha=pAlive;
+      const i90=[[0,I90_Y],[1,I90_Y]];
+      pulse(i90, ((t%1800)/1800), rgba("#ffe6a8",0.9), 20);
+      pulse(i90, (((t+900)%1800)/1800), rgba("#ffd07a",0.7), 16);
+      pulse(HWY1416, ((t%2400)/2400), rgba("#ffe6a8",0.7), 14);
+      ctx.globalAlpha=1;
+    }
+    // headlights / tail-lights streaming on I-90 (always subtle; blaze at dusk)
+    if(t>M.roadsIn){
+      for(const c of cars){
+        const ly = I90_LANES[c.lane];
+        const x=PX(c.x), y=PY(ly);
+        if(x< -20||x>W+20) continue;
+        const head = c.lane===1;
+        const col = dusk>0.3 ? (head?"#fff3c8":"#ff5a49") : "#f2efe4";
+        const rad = Math.max(1.6, dwz*0.0016);
+        ctx.save();
+        if(dusk>0.25){ ctx.shadowColor=col; ctx.shadowBlur=10*dusk; }
+        ctx.fillStyle=col; ctx.globalAlpha=0.85;
+        ctx.beginPath(); ctx.ellipse(x,y,rad*1.6,rad,0,0,7); ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    /* ---- Douglas H.S. running track (drawn on the plane) ---- */
+    const trk = easeOut(win(t, TRACK.t0, TRACK.t0+TRACK.td));
+    if(trk>0){
+      const cx=PX(TRACK.u), cy=PY(TRACK.v), rx=TRACK.rw*dwz, ry=TRACK.rh*dhz;
+      ctx.save(); ctx.globalAlpha=trk;
+      ctx.fillStyle=mix("#3f7a4f","#173a26",dusk);
+      ctx.beginPath(); ctx.ellipse(cx,cy,rx*0.72,ry*0.72,0,0,7); ctx.fill();
+      ctx.lineWidth=Math.max(2,ry*0.16); ctx.strokeStyle=mix("#b5502f","#3a1a12",dusk);
+      ctx.beginPath(); ctx.ellipse(cx,cy,rx,ry,0,0,7); ctx.stroke();
+      ctx.restore();
+    }
+
+    /* ---- the massings (depth-sorted) ---- */
+    for(const b of B_LIST) popBox(b,t,dusk);
+
+    /* ---- finale vignette breath ---- */
+    if(dusk>0.5){
+      ctx.fillStyle=rgba("#050b14",(dusk-0.5)*0.5);
+      ctx.fillRect(0,0,W,H);
+    }
+  }
+
+  /* named milestones */
+  const M = {
+    creekIn: B.infra+300,
+    roadsIn: B.infra+200,
+  };
+
+  /* ======================================================================
+     PLAYBACK ENGINE
+     ====================================================================== */
+  let elapsed=0, playing=false, last=performance.now();
+  const stage=document.getElementById("stage");
+  const capLine=document.getElementById("capLine");
+  const statTag=document.getElementById("statTag");
+  const cta=document.getElementById("cta");
+  const dotsNav=document.getElementById("dots");
+
+  // caption nodes + dots from PHASES
+  const capNodes=[];
+  PHASES.forEach((p,i)=>{
+    if(p.key==="ask") return;
+    const el=document.createElement("p");
+    el.className="cap";
+    el.innerHTML=`${p.caption.t}<span class="sub">${p.caption.s}</span>`;
+    capLine.appendChild(el); capNodes[i]=el;
+  });
+  PHASES.forEach((p,i)=>{
+    const b=document.createElement("button");
+    b.className="dot"; b.type="button";
+    b.innerHTML=`<i></i><span>${p.label}</span>`;
+    b.setAttribute("aria-label","Go to phase: "+p.label);
+    b.addEventListener("click",()=>jumpTo(i));
+    dotsNav.appendChild(b);
+  });
+  const dotEls=Array.from(dotsNav.children);
+
+  function currentPhase(tt){ let idx=0; for(let i=0;i<PHASES.length;i++){ if(tt>=BOUND[i]) idx=i; } return idx; }
+
+  // tag content per phase
+  const TAGS={ land:'<b>34,600+</b> vehicles / day on I-90', commercial:'Commercial &middot; <b>interchange gateway</b>', multi:'Multi-Family &middot; <b>24 acres</b>', single:'<b>A full neighborhood</b>', school:'<b>Future</b> Douglas High School' };
+
+  function syncUI(tt){
+    const ph=currentPhase(tt);
+    capNodes.forEach((el,i)=> el && el.classList.toggle("on", i===ph && ph<ASK_INDEX));
+    dotEls.forEach((d,i)=> d.setAttribute("aria-current", i===ph?"true":"false"));
+    const key=PHASES[ph].key;
+    if(TAGS[key] && ph<ASK_INDEX){ statTag.innerHTML=TAGS[key]; statTag.classList.add("on"); }
+    else statTag.classList.remove("on");
+    stage.classList.toggle("finale", ph>=FINALE_INDEX);
+    const askOn = ph===ASK_INDEX;
+    cta.classList.toggle("on", askOn);
+    cta.setAttribute("aria-hidden", askOn?"false":"true");
+  }
+
+  function frame(now){
+    const dt=Math.min(0.05,(now-last)/1000); last=now;
+    if(playing){ elapsed+=dt*1000; if(elapsed>=T_END){ elapsed=T_END; playing=false; } }
+    updateCars(dt);
+    draw(elapsed); syncUI(elapsed);
+    requestAnimationFrame(frame);
+  }
+
+  function jumpTo(i){ elapsed = i>=ASK_INDEX ? T_END : BOUND[i]; playing = i<ASK_INDEX; }
+  function replay(){ elapsed=0; playing=true; }
+
+  document.getElementById("replayBtn").addEventListener("click", replay);
+  document.getElementById("ctaReplay").addEventListener("click", replay);
+  document.getElementById("planBtn").addEventListener("click", ()=>jumpTo(ASK_INDEX));
+
+  window.addEventListener("keydown",(e)=>{
+    if(e.key==="ArrowRight"||e.key==="ArrowDown"){ e.preventDefault(); jumpTo(Math.min(ASK_INDEX,currentPhase(elapsed)+1)); }
+    else if(e.key==="ArrowLeft"||e.key==="ArrowUp"){ e.preventDefault(); jumpTo(Math.max(0,currentPhase(elapsed)-1)); }
+  });
+
+  // debug hook for offline screenshots: freeze end of a beat
+  window.__setPhase=(i)=>{ i=i|0; elapsed = i>=ASK_INDEX?T_END:(BOUND[i+1]-1); playing=false; draw(elapsed); syncUI(elapsed); };
+
+  /* ---------------- boot ---------------- */
+  function start(){
+    resize();
+    window.addEventListener("resize", resize);
+    if(reduceMotion){
+      // static poster: finished dusk vision + the ask
+      elapsed=T_END; playing=false;
+      draw(T_END); syncUI(T_END);
+      requestAnimationFrame(function once(){ draw(T_END); syncUI(T_END); });
+    } else {
+      playing=true; last=performance.now();
+      requestAnimationFrame(frame);
+    }
+  }
+
+  if(mapImg.complete && mapImg.naturalWidth>0){ mapReady=true; }
+  else{
+    mapImg.addEventListener("load", ()=>{ mapReady=true; }, {once:true});
+    mapImg.addEventListener("error", ()=>{ mapBroken=true; }, {once:true});
+  }
+  // start regardless so the reel never hangs on a slow/broken image
+  start();
+})();
+</script>
+</body>
+</html>

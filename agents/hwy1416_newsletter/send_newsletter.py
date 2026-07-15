@@ -287,6 +287,20 @@ def build_html(message: str) -> str:
       </td>
     </tr>
 
+    <!-- Vision Reel feature -->
+    <tr>
+      <td style="padding:0 28px 28px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:{NAVY};border-radius:6px;border:1px solid {GOLD};">
+          <tr><td style="padding:22px 24px;">
+            <p style="margin:0 0 4px 0;font-size:10px;font-weight:bold;letter-spacing:0.14em;text-transform:uppercase;color:{GOLD_DIM};">Interactive Vision Reel</p>
+            <p style="margin:0 0 6px 0;font-family:{SERIF};font-size:18px;font-weight:bold;color:#ffffff;">Watch the site come to life</p>
+            <p style="margin:0 0 14px 0;font-size:12px;line-height:1.7;color:#c8cdb6;">A cinematic build-out of the Exit 67 tract &mdash; from bare land to a finished travel center at dusk. Best viewed on your phone.</p>
+            <a href="https://christianschmaltz5-blip.github.io/Dashboard/pages/gas-station/vision.html" style="display:inline-block;background:{RUST};color:#ffffff;font-size:12px;font-weight:bold;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;padding:12px 28px;border-radius:3px;border:1px solid {GOLD};">&#9654;&nbsp; Play the Vision Reel</a>
+          </td></tr>
+        </table>
+      </td>
+    </tr>
+
     <!-- CTA -->
     <tr>
       <td align="center" style="padding:0 28px 12px;">

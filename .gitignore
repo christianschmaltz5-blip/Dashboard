@@ -29,3 +29,4 @@ agents/buyer_match/buyers.json
 agents/buyer_match/alerted.json
 agents/buyer_match/__pycache__/
 graphify-out/
+.gstack/
