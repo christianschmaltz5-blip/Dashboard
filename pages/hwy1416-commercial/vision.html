@@ -542,6 +542,11 @@
     if(portrait){
       c.z = clamp(1.02 + (c.z-1.12)*0.14, 1.015, 1.065);
     }
+    // clamp pan so the photo always covers the frame — wide viewports otherwise
+    // show black bands when a keyframe pans past the image edge
+    const hu = W/(2*dw*c.z), hv = H/(2*dh*c.z);
+    c.cu = clamp(c.cu, hu, 1-hu);
+    c.cv = clamp(c.cv, hv, 1-hv);
     return c;
   }
 
@@ -552,9 +557,18 @@
   // CONCRETE — quality paving: a flared entrance apron off Hwy 1416 (west),
   // a poured spine running up through the site, and a garage court pad at the
   // north yard. All uv, gently trapezoidal to sit in the photo's perspective.
+  // shared scene axes: along-highway unit vec & perpendicular (depth) unit vec —
+  // every man-made footprint aligns to these so it sits in the photo's perspective
+  const AXA=[.3792,-.9253], AXP=[.9253,.3792];
+  const quadAt=(cu,cv,ha,hd)=>[
+    [cu-AXA[0]*ha-AXP[0]*hd, cv-AXA[1]*ha-AXP[1]*hd],
+    [cu+AXA[0]*ha-AXP[0]*hd, cv+AXA[1]*ha-AXP[1]*hd],
+    [cu+AXA[0]*ha+AXP[0]*hd, cv+AXA[1]*ha+AXP[1]*hd],
+    [cu-AXA[0]*ha+AXP[0]*hd, cv-AXA[1]*ha+AXP[1]*hd],
+  ];
   const APRON = [[.118,.586],[.214,.612],[.198,.664],[.096,.634]];
-  const SPINE = [[.189,.607],[.449,.470],[.463,.492],[.203,.629]];
-  const COURT = [[.336,.402],[.574,.410],[.578,.516],[.330,.508]];
+  const SPINE = [[.192,.610],[.452,.472],[.462,.488],[.202,.626]];
+  const COURT = quadAt(.455,.445,.060,.040);
   // pole lights along the concrete spine + around the garage court
   const POLES = [[.205,.600],[.300,.556],[.386,.512],[.360,.470],[.500,.470],[.556,.505]];
   // I-90 in the mid-distance (a faint line of traffic at dusk)
@@ -580,21 +594,21 @@
   const BUILDINGS = [];
   function addBuilding(o){ BUILDINGS.push(o); }
 
-  // -- Charcoal-steel contractor garages at the NORTH yard (blue zone). Farther
-  //    from camera, so smaller than the old mid-field shops but kept crisp. --
-  // Low, aerial-perspective massings: deep footprint (dominant roof) over a
-  // SHALLOW front wall, kept small to sit believably next to the mobile homes
-  // across the highway. h (roof depth) > ht (wall height) on purpose.
-  // two long storage / flex rows across the back (north) of the court
-  addBuilding({ kind:"flex", u:.442, v:.416, w:.058, h:.011, ht:.010, bays:12,
-    slab:B.garage+300,  frameA:B.garage+700,  frameB:B.garage+2200, skinA:B.garage+2400, skinB:B.garage+4200 });
-  addBuilding({ kind:"flex", u:.440, v:.436, w:.052, h:.010, ht:.009, bays:11,
-    slab:B.garage+1000, frameA:B.garage+1400, frameB:B.garage+2900, skinA:B.garage+3100, skinB:B.garage+4900 });
-  // two contractor shops standing in front of the storage rows
-  addBuilding({ kind:"shop", u:.404, v:.460, w:.030, h:.015, ht:.013, bays:5,
-    slab:B.garage+1900, frameA:B.garage+2400, frameB:B.garage+4200, skinA:B.garage+4400, skinB:B.garage+6400 });
-  addBuilding({ kind:"shop", u:.508, v:.464, w:.032, h:.015, ht:.013, bays:5,
-    slab:B.garage+2700, frameA:B.garage+3200, frameB:B.garage+5000, skinA:B.garage+5200, skinB:B.garage+7200 });
+  // -- Charcoal-steel contractor garages at the NORTH yard (blue zone), on the
+  //    same rotated parallelogram footprints as the multifamily so they sit in
+  //    the photo's perspective instead of facing the camera flat. Single-story,
+  //    roll-up bays along the front wall. Positions are court-relative:
+  //    centre + a·AXA (along highway) + d·AXP (toward camera). --
+  const gRow=(a,d,hl,hd,ht,bays,d0)=>addBuilding({ kind:"garage",
+    u:.455+AXA[0]*a+AXP[0]*d, v:.445+AXA[1]*a+AXP[1]*d,
+    along:{u:AXA[0]*hl, v:AXA[1]*hl}, dep:{u:AXP[0]*hd, v:AXP[1]*hd},
+    ht, w:hl+hd, bays,
+    slab:B.garage+d0, frameA:B.garage+d0+400, frameB:B.garage+d0+1900,
+    skinA:B.garage+d0+2100, skinB:B.garage+d0+3900 });
+  gRow(-.005,-.022,.046,.009,.013,9,  300);  // long flex row (back of the yard)
+  gRow( .005, .002,.040,.008,.012,8, 1100);  // second storage row
+  gRow(-.036, .024,.018,.010,.015,4, 2000);  // contractor shop (west, near the spine)
+  gRow( .032, .024,.020,.010,.015,4, 2700);  // contractor shop (east)
 
   // -- Wheat-gold multifamily row in the GREEN zone: a staggered line of simple
   //    2-3 story massings following Hwy 1416's diagonal. Nearer the camera than
@@ -647,7 +661,7 @@
   const CARS_PARKED = (()=>{
     const rr = mulberry32(0xca75);
     const arr=[];
-    for(let i=0;i<7;i++) arr.push({ u:lerp(.35,.57,rr()), v:lerp(.470,.505,rr()), w:lerp(.010,.014,rr()) });
+    for(let i=0;i<7;i++) arr.push({ u:lerp(.41,.50,rr()), v:lerp(.435,.485,rr()), w:lerp(.010,.014,rr()) });
     return arr;
   })();
   // per-shop glass pane tint choices, stable across frames (no dusk shimmer)
@@ -716,17 +730,28 @@
   const PAL_MULTI = {
     frontTop :["#ecca6e","#b98a3a"], frontMid:["#e0bb54","#a5762c"], frontBot:["#d3a83c","#8f6320"],
     sideShade:["#c19a3e","#6f5220"], sideShadeB:["#ab8632","#5c421a"],
-    roofBack :["#a7adb3","#2b3442"], roofFront:["#9298a0","#212a38"],
+    roofBack :["#8e9297","#2b3442"], roofFront:["#7c8187","#212a38"],
     eaveTrim :["#f5edd8","#d8c9a0"], corner:["#f5edd8","#c9b98f"],
     slab     :["#c8c3b4","#2a3446"], slabEdge:["#8f8a7a","#1a2230"],
     frame    :["#b89a4a","#6f5a2a"], winFrame:["#f5edd8","#caa860"],
     win      :["#cfe0ea","#ffd98a"], ao:["#241a08","#0a0a12"],
   };
 
+  // charcoal-steel palette for the contractor garages (same key layout)
+  const PAL_STEEL = {
+    frontTop :["#5a6067","#232a36"], frontMid:["#4c525a","#1d2430"], frontBot:["#3f454d","#171d28"],
+    sideShade:["#363c44","#141a24"], sideShadeB:["#2b3138","#0f141d"],
+    roofBack :["#767c83","#2b3442"], roofFront:["#5f656d","#212a38"],
+    eaveTrim :["#c8cdd3","#8fa0b5"], corner:["#aab0b7","#5d6b7e"],
+    slab     :["#c8c3b4","#2a3446"], slabEdge:["#8f8a7a","#1a2230"],
+    frame    :["#6a7078","#3a4450"], winFrame:["#23282e","#0d1218"],
+    win      :["#b9bec4","#ffd98a"], ao:["#0e1216","#05080e"],
+  };
+
   /* ---- one simple 2-3 story multifamily massing on a rotated (parallelogram)
          footprint; assembles slab → rising box → skin/windows ---- */
   function drawMultifamily(b,t,dusk){
-    const P=PAL_MULTI;
+    const P = b.kind==="garage" ? PAL_STEEL : PAL_MULTI;
     const M =(k)=>mix(P[k][0],P[k][1],dusk);
     const MA=(k,al)=>mixRGBA(P[k][0],P[k][1],dusk,al);
 
@@ -755,17 +780,9 @@
     const sh=Hpx*0.30;
     poly([GFL,GFR,GBR,GBL].map(p=>[p[0]+sh*0.5,p[1]+sh*0.18]), rgba("#0a0e08",0.16*clamp(rise)), null, 0);
 
-    // rising box (frame stage only)
-    if(skinP<0.02){
-      ctx.save(); ctx.globalAlpha=clamp(rise);
-      ctx.strokeStyle=M("frame"); ctx.lineWidth=1.6; ctx.lineJoin="round";
-      for(const g of [GFL,GFR,GBR,GBL]){ ctx.beginPath(); ctx.moveTo(g[0],g[1]); ctx.lineTo(g[0],g[1]-Hpx); ctx.stroke(); }
-      ctx.beginPath(); [RFL,RFR,RBR,RBL].forEach((p,i)=> i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.closePath(); ctx.stroke();
-      ctx.restore();
-      return;
-    }
-
-    const a=clamp(win(t, b.skinA, b.skinA+700));
+    // frame stage: the massing rises as a translucent ghost, then the skin
+    // fades it solid — no wireframe box (it read as a glitch on the photo)
+    const a = skinP<=0.02 ? 0.5*clamp(rise) : clamp(0.5+0.5*win(t, b.skinA, b.skinA+700));
     ctx.save(); ctx.globalAlpha=a;
 
     // south/left end wall (shaded siding)
@@ -792,21 +809,39 @@
     ctx.beginPath(); ctx.moveTo(GFL[0],GFL[1]); ctx.lineTo(GFR[0],GFR[1]); ctx.stroke();
     ctx.restore();
 
-    // windows on the front wall — cool by day, warm yellow-lit glow at dusk
+    // front-wall openings — apartment windows, or roll-up bay doors on garages;
+    // cool by day, warm yellow-lit glow at dusk
     if(skinP>0.32){
       const wa=clamp((skinP-0.32)/0.4);
-      const cols=b.wcols, rows=b.stories;
       const P2=(s,h)=>[lerp(GFL[0],GFR[0],s), lerp(GFL[1],GFR[1],s)-Hpx*h];
       ctx.save(); ctx.globalAlpha=wa;
-      for(let r=0;r<rows;r++){
-        const hb=0.14+r*(0.80/rows), htp=hb+(0.80/rows)*0.60;
-        for(let k=0;k<cols;k++){
-          const s0=(k+0.28)/cols, s1=(k+0.72)/cols;
-          const q=[P2(s0,hb),P2(s1,hb),P2(s1,htp),P2(s0,htp)];
+      if(b.kind==="garage"){
+        for(let k=0;k<b.bays;k++){
+          const s0=(k+0.18)/b.bays, s1=(k+0.82)/b.bays;
+          const q=[P2(s0,0.05),P2(s1,0.05),P2(s1,0.68),P2(s0,0.68)];
           ctx.save();
-          if(dusk>0.2){ ctx.shadowColor=rgba("#ffcf87",.9); ctx.shadowBlur=8*dusk; }
-          poly(q, mix(P.win[0],P.win[1],dusk), MA("winFrame",.55), 1);
+          if(dusk>0.2){ ctx.shadowColor=rgba("#ffcf87",.85); ctx.shadowBlur=7*dusk; }
+          poly(q, mix(P.win[0],P.win[1],dusk), MA("winFrame",.6), 1);
           ctx.restore();
+        }
+        // ridge highlight along the roof's long axis
+        ctx.strokeStyle=MA("eaveTrim",.45); ctx.lineWidth=1;
+        ctx.beginPath();
+        ctx.moveTo((RBL[0]+RFL[0])/2,(RBL[1]+RFL[1])/2);
+        ctx.lineTo((RBR[0]+RFR[0])/2,(RBR[1]+RFR[1])/2);
+        ctx.stroke();
+      } else {
+        const cols=b.wcols, rows=b.stories;
+        for(let r=0;r<rows;r++){
+          const hb=0.14+r*(0.80/rows), htp=hb+(0.80/rows)*0.60;
+          for(let k=0;k<cols;k++){
+            const s0=(k+0.28)/cols, s1=(k+0.72)/cols;
+            const q=[P2(s0,hb),P2(s1,hb),P2(s1,htp),P2(s0,htp)];
+            ctx.save();
+            if(dusk>0.2){ ctx.shadowColor=rgba("#ffcf87",.9); ctx.shadowBlur=8*dusk; }
+            poly(q, mix(P.win[0],P.win[1],dusk), MA("winFrame",.55), 1);
+            ctx.restore();
+          }
         }
       }
       ctx.restore();
@@ -1148,7 +1183,7 @@
     const spineF  = easeOut(win(t, B.site+1500, B.site+3800));   // spine up the site
     const courtF  = easeOut(win(t, B.site+2200, B.site+4600));   // north garage court
 
-    const concFill = mix("#cdcec9","#28313f",dusk);
+    const concFill = mix("#c6c2b5","#28313f",dusk);
     const concEdge = mixRGBA("#9a9b94","#161d29",dusk,.55);      // curb / edge shading
     const jointCol = mixRGBA("#9a9b94","#10161f",dusk,.5);       // expansion-joint lines
     // draw a joint line between two uv edges of a slab quad, at fraction s
@@ -1158,20 +1193,20 @@
     };
 
     if(aprF>0){
-      uvPoly(APRON, concFill, concEdge, 1.4, 0.80*aprF);
+      uvPoly(APRON, concFill, concEdge, 1.4, 0.55*aprF);
       ctx.save(); ctx.globalAlpha=aprF; ctx.strokeStyle=jointCol; ctx.lineWidth=1;
       for(let i=1;i<4;i++) jointLine(APRON[0],APRON[3],APRON[1],APRON[2],i/4);   // flare joints off the highway
       ctx.restore();
     }
     if(spineF>0){
-      uvPoly(SPINE, concFill, concEdge, 1.4, 0.80*spineF);
+      uvPoly(SPINE, concFill, concEdge, 1.4, 0.55*spineF);
       ctx.save(); ctx.globalAlpha=spineF; ctx.strokeStyle=jointCol; ctx.lineWidth=1;
       jointLine(SPINE[0],SPINE[3],SPINE[1],SPINE[2],0.5);                        // longitudinal centre joint
       for(let i=1;i<9;i++) jointLine(SPINE[0],SPINE[1],SPINE[3],SPINE[2],i/9);   // transverse joints
       ctx.restore();
     }
     if(courtF>0){
-      uvPoly(COURT, concFill, concEdge, 1.4, 0.74*courtF);
+      uvPoly(COURT, concFill, concEdge, 1.4, 0.48*courtF);
       // faint tonal mottle (clipped to the court) so the pour reads as quality slab
       ctx.save(); ctx.globalAlpha=courtF;
       ctx.beginPath(); COURT.forEach((p,i)=> i?ctx.lineTo(PX(p[0]),PY(p[1])):ctx.moveTo(PX(p[0]),PY(p[1]))); ctx.closePath(); ctx.clip();
@@ -1222,8 +1257,8 @@
       }
     }
 
-    /* ---- the buildings (depth-sorted): garages via drawBuilding, multifamily via drawMultifamily ---- */
-    for(const b of BUILDINGS){ if(b.kind==="multi") drawMultifamily(b,t,dusk); else drawBuilding(b,t,dusk); }
+    /* ---- the buildings (depth-sorted): all through the rotated-massing renderer ---- */
+    for(const b of BUILDINGS){ drawMultifamily(b,t,dusk); }
 
     /* ---- parked cars in the garage court (silhouettes that appear at dusk) ---- */
     if(dusk>0.25){
