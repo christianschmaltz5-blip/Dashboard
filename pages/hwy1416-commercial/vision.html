@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <title>Hwy 1416 Commercial — I-90 Exit 67 Flex Campus</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="A cinematic build-out of a commercial flex / contractor-garage campus on the 7.5-acre corner at Liberty Blvd &amp; Hwy 1416 — I-90 Exit 67, Box Elder, South Dakota.">
+<meta name="description" content="A cinematic build-out of charcoal-steel contractor garages and a wheat-gold multifamily row on the 7.5-acre corner at Liberty Blvd &amp; Hwy 1416 — I-90 Exit 67, Box Elder, South Dakota.">
 
 <style>
   /* ============================================================
@@ -334,7 +334,7 @@
   <!-- THE ASK overlay -->
   <div class="cta" id="cta" aria-hidden="true">
     <p class="kicker">The corner is ready</p>
-    <h2>Picture your flex campus on Exit&nbsp;67.</h2>
+    <h2>Picture your flex&nbsp;+ multifamily campus on Exit&nbsp;67.</h2>
     <div class="numbers">
       <div class="num"><b>7.57</b><small>Acres</small></div>
       <div class="num"><b>Light Ind.</b><small>Zoning &middot; Commercial</small></div>
@@ -373,7 +373,7 @@
     <div class="lede">
       <p class="eyebrow">This exact corner</p>
       <h3>Hwy 1416 Commercial — I-90 Exit 67</h3>
-      <p>A 7.57-acre light-industrial / commercial tract on the Liberty Boulevard &amp; Highway&nbsp;1416 interchange in Box Elder — the gateway parcel of the Freedom Estates master plan, and 1.8 miles from the gates of Ellsworth Air Force Base, the future home of the B-21 Raider. Built for contractor shops, storage condos and lease-ready flex space where 34,600+ vehicles pass every day.</p>
+      <p>A 7.57-acre light-industrial / commercial tract on the Liberty Boulevard &amp; Highway&nbsp;1416 interchange in Box Elder — the gateway parcel of the Freedom Estates master plan, and 1.8 miles from the gates of Ellsworth Air Force Base, the future home of the B-21 Raider. Built for charcoal-steel contractor garages and a wheat-gold multifamily row along the highway, where 34,600+ vehicles pass every day.</p>
     </div>
 
     <div class="photo">
@@ -390,7 +390,7 @@
           <div><dt>Zoning</dt><dd>Light Ind. / Comm.</dd></div>
           <div><dt>Frontage</dt><dd>Liberty Blvd &amp; Hwy 1416</dd></div>
           <div><dt>Access</dt><dd>I-90 Exit 67</dd></div>
-          <div><dt>Program</dt><dd>Flex / contractor garages</dd></div>
+          <div><dt>Program</dt><dd>Flex garages + multifamily</dd></div>
           <div><dt>Traffic</dt><dd>34,600+ / day</dd></div>
           <div><dt>Ellsworth AFB</dt><dd>1.8 miles</dd></div>
           <div><dt>Master plan</dt><dd>Freedom Estates</dd></div>
@@ -427,17 +427,17 @@
      Six beats: five timed, then THE ASK. ~47s total.
      ====================================================================== */
   const PHASES = [
-    { key:"land",     label:"The Land",      short:"Land",  dur:8500,
-      caption:{ t:"7.5 commercial acres on the interchange.", s:"Liberty Blvd &amp; Hwy 1416 at I-90 Exit 67 — 34,600 cars a day." } },
-    { key:"sitework", label:"Sitework",      short:"Site",  dur:8500,
-      caption:{ t:"Pads, gravel and access.", s:"Aggregate pads and drives, tied into the Exit 67 interchange." } },
-    { key:"steel",    label:"Steel Goes Up", short:"Steel", dur:10500,
-      caption:{ t:"Two contractor shops rise.", s:"Pre-engineered steel with tall roll-up contractor bays." } },
-    { key:"flex",     label:"Flex Rows",     short:"Flex",  dur:9500,
-      caption:{ t:"Storage &amp; flex income behind.", s:"Storage-condo bays — lease-ready, low-maintenance income." } },
-    { key:"dusk",     label:"Dusk",          short:"Dusk",  dur:10000,
+    { key:"land",     label:"The Land",    short:"Land",   dur:8500,
+      caption:{ t:"7.5 commercial acres on the interchange.", s:"Liberty Blvd &amp; Hwy 1416 at I-90 Exit 67." } },
+    { key:"sitework", label:"Sitework",    short:"Site",   dur:8500,
+      caption:{ t:"Concrete goes in.", s:"A flared entrance apron off the highway and a poured spine up to the yard." } },
+    { key:"garages",  label:"Garages",     short:"Garage", dur:10000,
+      caption:{ t:"Contractor garages rise at the north yard.", s:"Steel bays off the concrete spine." } },
+    { key:"multi",    label:"Multifamily", short:"Homes",  dur:10500,
+      caption:{ t:"A multifamily row lines the highway.", s:"Wheat-gold townhomes on the frontage." } },
+    { key:"dusk",     label:"Dusk",        short:"Dusk",   dur:10000,
       caption:{ t:"Lit up on the corridor.", s:"1.8 miles from Ellsworth AFB — future home of the B-21 Raider." } },
-    { key:"ask",      label:"The Ask",       short:"Ask",   dur:0,
+    { key:"ask",      label:"The Ask",     short:"Ask",    dur:0,
       caption:{ t:"", s:"" } },
   ];
 
@@ -448,7 +448,7 @@
   const FINALE_INDEX = ASK_INDEX-1;      // "dusk" beat
 
   const B = {
-    site:BOUND[1], steel:BOUND[2], flex:BOUND[3], dusk:BOUND[4], ask:BOUND[5],
+    site:BOUND[1], garage:BOUND[2], multi:BOUND[3], dusk:BOUND[4], ask:BOUND[5],
   };
   const DUSK_START = B.dusk + 1200;
   const DUSK_END   = T_END - 500;
@@ -511,15 +511,15 @@
   const KF = [
     { t:0,             cu:.430, cv:.500, z:1.12 },  // Land: wide over the field, interchange in view
     { t:B.site,        cu:.430, cv:.500, z:1.12 },
-    { t:B.site+1600,   cu:.420, cv:.585, z:1.32 },  // Sitework: settle onto the build area
-    { t:B.steel,       cu:.420, cv:.585, z:1.32 },
-    { t:B.steel+1600,  cu:.415, cv:.615, z:1.42 },  // Steel: frame the two contractor shops (front)
-    { t:B.flex,        cu:.415, cv:.615, z:1.42 },
-    { t:B.flex+1600,   cu:.425, cv:.548, z:1.34 },  // Flex: lift to take in the rows behind
-    { t:B.dusk,        cu:.425, cv:.548, z:1.34 },
-    { t:B.dusk+1600,   cu:.445, cv:.525, z:1.18 },  // Dusk: ease out for the money shot
-    { t:B.ask,         cu:.445, cv:.525, z:1.18 },
-    { t:T_END,         cu:.450, cv:.530, z:1.12 },
+    { t:B.site+1600,   cu:.360, cv:.560, z:1.24 },  // Sitework: settle onto the entrance + poured spine
+    { t:B.garage,      cu:.360, cv:.560, z:1.24 },
+    { t:B.garage+1600, cu:.470, cv:.455, z:1.46 },  // Garages: look north to the storage yard
+    { t:B.multi,       cu:.470, cv:.455, z:1.46 },
+    { t:B.multi+1600,  cu:.250, cv:.628, z:1.34 },  // Multifamily: frame the yellow row along the highway
+    { t:B.dusk,        cu:.250, cv:.628, z:1.34 },
+    { t:B.dusk+1600,   cu:.360, cv:.560, z:1.16 },  // Dusk: ease out for the money shot
+    { t:B.ask,         cu:.360, cv:.560, z:1.16 },
+    { t:T_END,         cu:.370, cv:.560, z:1.12 },
   ];
   function camAt(t){
     if(t<=KF[0].t) var c={cu:KF[0].cu,cv:KF[0].cv,z:KF[0].z};
@@ -549,12 +549,14 @@
      SITE GEOMETRY — everything in image-space uv, locked to the field
      between Liberty Blvd (left) and the creek bend (right).
      ====================================================================== */
-  // gravel yard / aggregate pad (slightly trapezoidal to follow perspective)
-  const PAD = [[.312,.470],[.560,.470],[.575,.700],[.288,.700]];
-  // gravel drive/apron connecting the campus to Liberty Blvd (lower-left)
-  const DRIVE = [[.318,.658],[.372,.658],[.300,.792],[.238,.792]];
-  // pole lights around the yard
-  const POLES = [[.305,.690],[.505,.672],[.330,.492],[.510,.500],[.560,.605]];
+  // CONCRETE — quality paving: a flared entrance apron off Hwy 1416 (west),
+  // a poured spine running up through the site, and a garage court pad at the
+  // north yard. All uv, gently trapezoidal to sit in the photo's perspective.
+  const APRON = [[.118,.586],[.214,.612],[.198,.664],[.096,.634]];
+  const SPINE = [[.189,.607],[.449,.470],[.463,.492],[.203,.629]];
+  const COURT = [[.336,.402],[.574,.410],[.578,.516],[.330,.508]];
+  // pole lights along the concrete spine + around the garage court
+  const POLES = [[.205,.600],[.300,.556],[.386,.512],[.360,.470],[.500,.470],[.556,.505]];
   // I-90 in the mid-distance (a faint line of traffic at dusk)
   const I90_V = .352, I90_U0 = .360, I90_U1 = .900;
 
@@ -578,19 +580,44 @@
   const BUILDINGS = [];
   function addBuilding(o){ BUILDINGS.push(o); }
 
-  // -- Two big contractor shops at the front (toward Liberty Blvd) --
-  addBuilding({ kind:"shop", u:.372, v:.632, w:.052, h:.026, ht:.070, bays:5,
-    slab:B.steel+300,  frameA:B.steel+800,  frameB:B.steel+3000, skinA:B.steel+3200, skinB:B.steel+5500 });
-  addBuilding({ kind:"shop", u:.476, v:.646, w:.052, h:.026, ht:.070, bays:6,
-    slab:B.steel+1300, frameA:B.steel+1800, frameB:B.steel+4000, skinA:B.steel+4200, skinB:B.steel+6600 });
+  // -- Charcoal-steel contractor garages at the NORTH yard (blue zone). Farther
+  //    from camera, so smaller than the old mid-field shops but kept crisp. --
+  // Low, aerial-perspective massings: deep footprint (dominant roof) over a
+  // SHALLOW front wall, kept small to sit believably next to the mobile homes
+  // across the highway. h (roof depth) > ht (wall height) on purpose.
+  // two long storage / flex rows across the back (north) of the court
+  addBuilding({ kind:"flex", u:.442, v:.416, w:.058, h:.011, ht:.010, bays:12,
+    slab:B.garage+300,  frameA:B.garage+700,  frameB:B.garage+2200, skinA:B.garage+2400, skinB:B.garage+4200 });
+  addBuilding({ kind:"flex", u:.440, v:.436, w:.052, h:.010, ht:.009, bays:11,
+    slab:B.garage+1000, frameA:B.garage+1400, frameB:B.garage+2900, skinA:B.garage+3100, skinB:B.garage+4900 });
+  // two contractor shops standing in front of the storage rows
+  addBuilding({ kind:"shop", u:.404, v:.460, w:.030, h:.015, ht:.013, bays:5,
+    slab:B.garage+1900, frameA:B.garage+2400, frameB:B.garage+4200, skinA:B.garage+4400, skinB:B.garage+6400 });
+  addBuilding({ kind:"shop", u:.508, v:.464, w:.032, h:.015, ht:.013, bays:5,
+    slab:B.garage+2700, frameA:B.garage+3200, frameB:B.garage+5000, skinA:B.garage+5200, skinB:B.garage+7200 });
 
-  // -- Three long, lower storage / flex rows behind them (parallel, receding) --
-  addBuilding({ kind:"flex", u:.410, v:.498, w:.080, h:.009, ht:.017, bays:13,
-    slab:B.flex+300,  frameA:B.flex+700,  frameB:B.flex+2200, skinA:B.flex+2400, skinB:B.flex+4200 });
-  addBuilding({ kind:"flex", u:.410, v:.532, w:.080, h:.009, ht:.017, bays:13,
-    slab:B.flex+1100, frameA:B.flex+1500, frameB:B.flex+3000, skinA:B.flex+3200, skinB:B.flex+5000 });
-  addBuilding({ kind:"flex", u:.410, v:.566, w:.080, h:.009, ht:.017, bays:13,
-    slab:B.flex+1900, frameA:B.flex+2300, frameB:B.flex+3800, skinA:B.flex+4000, skinB:B.flex+5800 });
+  // -- Wheat-gold multifamily row in the GREEN zone: a staggered line of simple
+  //    2-3 story massings following Hwy 1416's diagonal. Nearer the camera than
+  //    the garages (larger v) so they paint last. Footprints are parallelograms
+  //    (rotated to the highway), not axis-aligned boxes. --
+  (()=>{
+    const S=[.168,.792], N=[.292,.487];         // south tip → north end of the frontage band
+    const AL=[.3792,-.9253], PE=[.9253,.3792];  // along-highway unit vec & depth (toward camera) unit vec
+    const N_MF=7;
+    for(let i=0;i<N_MF;i++){
+      const tt=0.09 + i*(0.82/(N_MF-1));
+      const bu=lerp(S[0],N[0],tt), bv=lerp(S[1],N[1],tt);
+      const stag=((i%2)?1:-1)*0.004;            // stagger off the frontage line
+      const cu=bu + PE[0]*stag, cv=bv + PE[1]*stag;
+      const sizeF=lerp(1.14,0.82,tt);           // nearer (south) buildings larger
+      const hl=0.026*sizeF, hd=0.013*sizeF;
+      const gStart=B.multi + 300 + i*1000;
+      addBuilding({ kind:"multi", u:cu, v:cv,
+        along:{u:AL[0]*hl, v:AL[1]*hl}, dep:{u:PE[0]*hd, v:PE[1]*hd},
+        ht:0.039*sizeF, w:hl+hd, stories:(tt<0.5?3:2), wcols:(sizeF>1?5:4),
+        slab:gStart, frameA:gStart+450, frameB:gStart+2100, skinA:gStart+2300, skinB:gStart+4100 });
+    }
+  })();
 
   // depth-sort so nearer (larger v) massings paint last / on top
   BUILDINGS.sort((a,b)=> a.v-b.v);
@@ -602,13 +629,26 @@
      and only *draw* them each frame (positions are image-space uv, so they
      stay locked to the aerial through every pan/zoom, same as the massings).
      ====================================================================== */
-  const GRAVEL = (()=>{
-    const rr = mulberry32(0xbeef);
-    const patches=[];                       // soft tonal blotches so gravel isn't one flat wash
-    for(let i=0;i<9;i++) patches.push({ u:lerp(.31,.55,rr()), v:lerp(.48,.69,rr()), r:lerp(.012,.03,rr()), warm: rr()<.5 });
-    const speck=[];                         // dense two-tone aggregate speckle
-    for(let i=0;i<900;i++) speck.push({ u:lerp(.295,.57,rr()), v:lerp(.474,.697,rr()), a:.10+rr()*.25, warm: rr()<.5, s:.8+rr()*1.6 });
-    return { patches, speck };
+  const CONC = (()=>{
+    const rr = mulberry32(0xc047);
+    const patches=[];                       // faint tonal mottle so the pour reads as quality slab, not a flat blob
+    for(let i=0;i<7;i++) patches.push({ u:lerp(.34,.58,rr()), v:lerp(.41,.51,rr()), r:lerp(.02,.05,rr()), warm: rr()<.5 });
+    return { patches };
+  })();
+  // deterministic landscaping — shrub / tree blobs along the multifamily frontage + the entrance
+  const SHRUBS = (()=>{
+    const rr = mulberry32(0x5eed);
+    const arr=[];
+    for(let i=0;i<9;i++){ const tt=rr(); arr.push({ u:lerp(.205,.305,rr()), v:lerp(.52,.78,tt), r:lerp(.006,.013,rr()), big: rr()<.4 }); }
+    for(let i=0;i<3;i++) arr.push({ u:lerp(.11,.20,rr()), v:lerp(.60,.67,rr()), r:lerp(.006,.011,rr()), big: rr()<.5 });
+    return arr;
+  })();
+  // deterministic parked cars in the garage court (silhouettes that appear at dusk)
+  const CARS_PARKED = (()=>{
+    const rr = mulberry32(0xca75);
+    const arr=[];
+    for(let i=0;i<7;i++) arr.push({ u:lerp(.35,.57,rr()), v:lerp(.470,.505,rr()), w:lerp(.010,.014,rr()) });
+    return arr;
   })();
   // per-shop glass pane tint choices, stable across frames (no dusk shimmer)
   BUILDINGS.forEach((b,i)=>{ b._idx=i; });
@@ -636,6 +676,7 @@
   let shadowSprites=null;
   function buildShadowSprites(){
     shadowSprites = BUILDINGS.map(b=>{
+      if(b.kind==="multi") return null;             // multifamily draws its own soft shadow
       const Wpx0 = 2*b.w*dw, Hpx0 = b.ht*dh, shh = Hpx0*0.42, pad = 14;
       const spW = Math.ceil(Wpx0 + shh + pad*2 + 8);
       const spH = Math.ceil(shh*0.40 + pad*2 + 8);
@@ -665,6 +706,111 @@
   // uv polygon → screen
   function uvPoly(pts, fill, stroke, lw, alpha){
     poly(pts.map(p=>[PX(p[0]),PY(p[1])]), fill, stroke, lw, alpha);
+  }
+
+  /* ----------------------------------------------------------------------
+     MULTIFAMILY palette + draw. Wheat-gold siding, cream trim, muted gray
+     roofs — a warm counterpoint to the charcoal-steel garages. Each entry is
+     a [day, dusk] pair, graded by mix()/mixRGBA() like the rest of the scene.
+     ---------------------------------------------------------------------- */
+  const PAL_MULTI = {
+    frontTop :["#ecca6e","#b98a3a"], frontMid:["#e0bb54","#a5762c"], frontBot:["#d3a83c","#8f6320"],
+    sideShade:["#c19a3e","#6f5220"], sideShadeB:["#ab8632","#5c421a"],
+    roofBack :["#a7adb3","#2b3442"], roofFront:["#9298a0","#212a38"],
+    eaveTrim :["#f5edd8","#d8c9a0"], corner:["#f5edd8","#c9b98f"],
+    slab     :["#c8c3b4","#2a3446"], slabEdge:["#8f8a7a","#1a2230"],
+    frame    :["#b89a4a","#6f5a2a"], winFrame:["#f5edd8","#caa860"],
+    win      :["#cfe0ea","#ffd98a"], ao:["#241a08","#0a0a12"],
+  };
+
+  /* ---- one simple 2-3 story multifamily massing on a rotated (parallelogram)
+         footprint; assembles slab → rising box → skin/windows ---- */
+  function drawMultifamily(b,t,dusk){
+    const P=PAL_MULTI;
+    const M =(k)=>mix(P[k][0],P[k][1],dusk);
+    const MA=(k,al)=>mixRGBA(P[k][0],P[k][1],dusk,al);
+
+    const slabP=easeOut(win(t, b.slab, b.slab+900));
+    if(slabP<=0) return;
+    const frameP=win(t, b.frameA, b.frameB);
+    const skinP =win(t, b.skinA,  b.skinB);
+
+    const A=b.along, D=b.dep;
+    const uvC=(su,sv)=>[b.u+su, b.v+sv];
+    const uvBL=uvC(-A.u-D.u,-A.v-D.v), uvBR=uvC(A.u-D.u,A.v-D.v),
+          uvFR=uvC( A.u+D.u, A.v+D.v), uvFL=uvC(-A.u+D.u,-A.v+D.v);
+    const S=uv=>[PX(uv[0]),PY(uv[1])];
+    const GBL=S(uvBL),GBR=S(uvBR),GFR=S(uvFR),GFL=S(uvFL);
+
+    // ground slab / footprint fades in first
+    poly([GBL,GBR,GFR,GFL], M("slab"), MA("slabEdge",.4), 1, 0.5*slabP);
+    if(frameP<=0) return;
+
+    const rise= skinP>0.02 ? 1 : easeOut(frameP);
+    const Hpx= b.ht*dhz*rise;
+    const Rf = g=>[g[0],g[1]-Hpx];
+    const RBL=Rf(GBL),RBR=Rf(GBR),RFR=Rf(GFR),RFL=Rf(GFL);
+
+    // soft ground shadow, offset toward the lowering sun's shade
+    const sh=Hpx*0.30;
+    poly([GFL,GFR,GBR,GBL].map(p=>[p[0]+sh*0.5,p[1]+sh*0.18]), rgba("#0a0e08",0.16*clamp(rise)), null, 0);
+
+    // rising box (frame stage only)
+    if(skinP<0.02){
+      ctx.save(); ctx.globalAlpha=clamp(rise);
+      ctx.strokeStyle=M("frame"); ctx.lineWidth=1.6; ctx.lineJoin="round";
+      for(const g of [GFL,GFR,GBR,GBL]){ ctx.beginPath(); ctx.moveTo(g[0],g[1]); ctx.lineTo(g[0],g[1]-Hpx); ctx.stroke(); }
+      ctx.beginPath(); [RFL,RFR,RBR,RBL].forEach((p,i)=> i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.closePath(); ctx.stroke();
+      ctx.restore();
+      return;
+    }
+
+    const a=clamp(win(t, b.skinA, b.skinA+700));
+    ctx.save(); ctx.globalAlpha=a;
+
+    // south/left end wall (shaded siding)
+    const gEnd=ctx.createLinearGradient(0,GFL[1]-Hpx,0,GFL[1]);
+    gEnd.addColorStop(0,M("sideShade")); gEnd.addColorStop(1,M("sideShadeB"));
+    poly([GBL,GFL,RFL,RBL], gEnd, MA("ao",.4), 1);
+
+    // front (camera-facing) wall: vertical wheat-gold gradient
+    const gF=ctx.createLinearGradient(0,GFL[1]-Hpx,0,GFL[1]);
+    gF.addColorStop(0,M("frontTop")); gF.addColorStop(.6,M("frontMid")); gF.addColorStop(1,M("frontBot"));
+    poly([GFL,GFR,RFR,RFL], gF, MA("ao",.4), 1);
+
+    // roof (muted gray)
+    const gR=ctx.createLinearGradient(0,RBL[1],0,RFL[1]);
+    gR.addColorStop(0,M("roofBack")); gR.addColorStop(1,M("roofFront"));
+    poly([RBL,RBR,RFR,RFL], gR, MA("ao",.3), 1);
+
+    // trim: cream eave along the front + corner boards + base shadow line
+    ctx.strokeStyle=M("eaveTrim"); ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.moveTo(RFL[0],RFL[1]); ctx.lineTo(RFR[0],RFR[1]); ctx.stroke();
+    ctx.strokeStyle=M("corner"); ctx.lineWidth=1.3;
+    for(const g of [GFL,GFR]){ ctx.beginPath(); ctx.moveTo(g[0],g[1]); ctx.lineTo(g[0],g[1]-Hpx); ctx.stroke(); }
+    ctx.strokeStyle=MA("ao",.4); ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(GFL[0],GFL[1]); ctx.lineTo(GFR[0],GFR[1]); ctx.stroke();
+    ctx.restore();
+
+    // windows on the front wall — cool by day, warm yellow-lit glow at dusk
+    if(skinP>0.32){
+      const wa=clamp((skinP-0.32)/0.4);
+      const cols=b.wcols, rows=b.stories;
+      const P2=(s,h)=>[lerp(GFL[0],GFR[0],s), lerp(GFL[1],GFR[1],s)-Hpx*h];
+      ctx.save(); ctx.globalAlpha=wa;
+      for(let r=0;r<rows;r++){
+        const hb=0.14+r*(0.80/rows), htp=hb+(0.80/rows)*0.60;
+        for(let k=0;k<cols;k++){
+          const s0=(k+0.28)/cols, s1=(k+0.72)/cols;
+          const q=[P2(s0,hb),P2(s1,hb),P2(s1,htp),P2(s0,htp)];
+          ctx.save();
+          if(dusk>0.2){ ctx.shadowColor=rgba("#ffcf87",.9); ctx.shadowBlur=8*dusk; }
+          poly(q, mix(P.win[0],P.win[1],dusk), MA("winFrame",.55), 1);
+          ctx.restore();
+        }
+      }
+      ctx.restore();
+    }
   }
 
   /* ---- draw one steel building at time t ---- */
@@ -741,9 +887,9 @@
     // apron first, so the building's shadow can fall across it
     ctx.save(); ctx.globalAlpha = a*0.9;
     const apr = isShop ? Hpx*0.16 : Hpx*0.35;
-    poly([[nwx-3,sy],[nex+3,sy],[nex+6,sy+apr],[nwx-1,sy+apr]], mix("#c9c4b4","#2a3446",dusk), mixRGBA("#8d8878","#1a2230",dusk,.35), 1);
+    poly([[nwx-3,sy],[nex+3,sy],[nex+6,sy+apr],[nwx-1,sy+apr]], mix("#c6c1b2","#2a3446",dusk), mixRGBA("#8a8576","#1a2230",dusk,.35), 1);
     if(detailFine){
-      ctx.strokeStyle=mixRGBA("#8d8878","#1a2230",dusk,.35); ctx.lineWidth=1;
+      ctx.strokeStyle=mixRGBA("#8a8576","#1a2230",dusk,.35); ctx.lineWidth=1;
       const nj = isShop ? b.bays : 5;
       for(let i=1;i<nj;i++){ const gx=lerp(nwx,nex,i/nj); ctx.beginPath(); ctx.moveTo(gx,sy); ctx.lineTo(gx+3,sy+apr); ctx.stroke(); }
     }
@@ -761,72 +907,72 @@
     /* ---- walls, roof, trim — all under a single wall-fade alpha ---- */
     ctx.save(); ctx.globalAlpha = a;
 
-    // side-wall slivers (west lit / east shade) — thin edges of thickness
+    // side-wall slivers (west lit / east shade) — thin edges of thickness (charcoal steel)
     const gW=ctx.createLinearGradient(0,sy-Hpx,0,sy);
-    gW.addColorStop(0,mix("#d3d7da","#26304a",dusk)); gW.addColorStop(1,mix("#bcc1c6","#20293f",dusk));
+    gW.addColorStop(0,mix("#5a616a","#26303f",dusk)); gW.addColorStop(1,mix("#4c525c","#212b39",dusk));
     const gE=ctx.createLinearGradient(0,sy-Hpx,0,sy);
-    gE.addColorStop(0,mix("#9aa1a8","#1b2236",dusk)); gE.addColorStop(1,mix("#878e95","#171e31",dusk));
+    gE.addColorStop(0,mix("#3a404a","#171f2c",dusk)); gE.addColorStop(1,mix("#31373f","#141b26",dusk));
     ctx.fillStyle=gW; ctx.fillRect(nwx-2, ny-Hpx, 2, (sy-ny));
     ctx.fillStyle=gE; ctx.fillRect(nex,   ny-Hpx, 2, (sy-ny));
 
-    // front (south) wall: vertical gradient + corrugation + wainscot
+    // front (south) wall: vertical gradient + corrugation + wainscot (dark metal)
     const gF=ctx.createLinearGradient(0,sy-Hpx,0,sy);
-    gF.addColorStop(0,  mix("#e6e9ec","#334063",dusk));
-    gF.addColorStop(.75,mix("#d2d7db","#2c3656",dusk));
-    gF.addColorStop(1,  mix("#c8cdd2","#2a3552",dusk));
-    poly([[nwx,sy],[nex,sy],[nex,sy-Hpx],[nwx,sy-Hpx]], gF, mixRGBA("#1a1f28","#0c1120",dusk,.35), 1);
+    gF.addColorStop(0,  mix("#5c636d","#28323f",dusk));
+    gF.addColorStop(.75,mix("#4e555f","#212b38",dusk));
+    gF.addColorStop(1,  mix("#454b54","#1c2532",dusk));
+    poly([[nwx,sy],[nex,sy],[nex,sy-Hpx],[nwx,sy-Hpx]], gF, mixRGBA("#16191f","#0a0e18",dusk,.4), 1);
     // corrugation: paired light/dark ribs (count from projected width, capped)
     if(detailRib){
       const ribs=Math.min(80, Math.round(Wpx/3.2));
       ctx.lineWidth=1;
       for(let i=1;i<ribs;i++){
         const gx=lerp(nwx,nex,i/ribs);
-        ctx.strokeStyle = i%2 ? mixRGBA("#ffffff","#4a5a76",dusk,.16) : mixRGBA("#2c3540","#0c1018",dusk,.09);
+        ctx.strokeStyle = i%2 ? mixRGBA("#e2e6ea","#4a5a76",dusk,.14) : mixRGBA("#1c222b","#080c14",dusk,.12);
         ctx.beginPath(); ctx.moveTo(gx,sy-1); ctx.lineTo(gx,sy-Hpx+2); ctx.stroke();
       }
     }
-    // wainscot band + white reveal trim
+    // wainscot band + light-gray reveal trim
     const wy=sy-Hpx*0.20;
-    poly([[nwx,sy],[nex,sy],[nex,wy],[nwx,wy]], mixRGBA("#a8afb6","#222c44",dusk,.75), null, 0);
-    ctx.strokeStyle=mixRGBA("#f4f6f8","#3a4a66",dusk,.85); ctx.lineWidth=1.1;
+    poly([[nwx,sy],[nex,sy],[nex,wy],[nwx,wy]], mixRGBA("#363c45","#1a2233",dusk,.75), null, 0);
+    ctx.strokeStyle=mixRGBA("#b9bfc6","#3a4a66",dusk,.85); ctx.lineWidth=1.1;
     ctx.beginPath(); ctx.moveTo(nwx,wy); ctx.lineTo(nex,wy); ctx.stroke();
     // eave-overhang shadow under the roofline
     const gEs=ctx.createLinearGradient(0,sy-Hpx,0,sy-Hpx+5);
-    gEs.addColorStop(0,mixRGBA("#232b34","#080c14",dusk,.34)); gEs.addColorStop(1,mixRGBA("#232b34","#080c14",dusk,0));
+    gEs.addColorStop(0,mixRGBA("#14181e","#060a12",dusk,.36)); gEs.addColorStop(1,mixRGBA("#14181e","#060a12",dusk,0));
     ctx.fillStyle=gEs; ctx.fillRect(nwx,sy-Hpx,Wpx,5);
-    // white corner trim
-    ctx.strokeStyle=mixRGBA("#f4f6f8","#3a4a66",dusk,.9); ctx.lineWidth=1.4;
+    // light-gray corner trim
+    ctx.strokeStyle=mixRGBA("#c2c8ce","#40506a",dusk,.9); ctx.lineWidth=1.4;
     for(const gx of [nwx+1,nex-1]){ ctx.beginPath(); ctx.moveTo(gx,sy); ctx.lineTo(gx,sy-Hpx); ctx.stroke(); }
     // base ambient occlusion (stays dark at dusk)
     const gAO=ctx.createLinearGradient(0,sy-4,0,sy);
-    gAO.addColorStop(0,rgba("#12161b",0)); gAO.addColorStop(1,rgba("#12161b",.30));
+    gAO.addColorStop(0,rgba("#0e1216",0)); gAO.addColorStop(1,rgba("#0e1216",.32));
     ctx.fillStyle=gAO; ctx.fillRect(nwx,sy-4,Wpx,4);
 
-    // roof: two pitched planes + ridge cap + seams + eave/back trim
+    // roof: two pitched planes + ridge cap + seams + eave/back trim (lighter gray metal roof)
     const rTop=ny-Hpx, rBot=sy-Hpx, ridge=(rTop+rBot)/2;
     const gRb=ctx.createLinearGradient(0,rTop,0,ridge);
-    gRb.addColorStop(0,mix("#b6bcc2","#1a2233",dusk)); gRb.addColorStop(1,mix("#a3aab1","#161d2c",dusk));
+    gRb.addColorStop(0,mix("#6d727a","#20293a",dusk)); gRb.addColorStop(1,mix("#5f656d","#1b2433",dusk));
     const gRf=ctx.createLinearGradient(0,ridge,0,rBot);
-    gRf.addColorStop(0,mix("#8e959d","#121826",dusk)); gRf.addColorStop(1,mix("#99a0a8","#141b2b",dusk));
+    gRf.addColorStop(0,mix("#4f545c","#161f2c",dusk)); gRf.addColorStop(1,mix("#565c64","#1a2330",dusk));
     poly([[nwx,rTop],[nex,rTop],[nex,ridge],[nwx,ridge]], gRb, null, 0);
     poly([[nwx,ridge],[nex,ridge],[nex,rBot],[nwx,rBot]], gRf, null, 0);
     if(detailRib){
       const seams=Math.min(80, Math.round(Wpx/11));
-      ctx.strokeStyle=mixRGBA("#3c454f","#0c1018",dusk,.16); ctx.lineWidth=1;
+      ctx.strokeStyle=mixRGBA("#262d36","#0a0e16",dusk,.18); ctx.lineWidth=1;
       for(let i=1;i<seams;i++){ const gx=lerp(nwx,nex,i/seams); ctx.beginPath(); ctx.moveTo(gx,rTop); ctx.lineTo(gx,rBot); ctx.stroke(); }
     }
-    ctx.strokeStyle=mix("#dde1e5","#28324a",dusk); ctx.lineWidth=1.4;
+    ctx.strokeStyle=mix("#c8cdd2","#28324a",dusk); ctx.lineWidth=1.4;
     ctx.beginPath(); ctx.moveTo(nwx,ridge); ctx.lineTo(nex,ridge); ctx.stroke();               // ridge cap
-    ctx.strokeStyle=mixRGBA("#f4f6f8","#3a4a66",dusk,.9); ctx.lineWidth=1.2;
+    ctx.strokeStyle=mixRGBA("#c6ccd2","#3a4a66",dusk,.9); ctx.lineWidth=1.2;
     ctx.beginPath(); ctx.moveTo(nwx,rBot); ctx.lineTo(nex,rBot); ctx.stroke();                  // eave trim
-    ctx.strokeStyle=mixRGBA("#eceff2","#354564",dusk,.6); ctx.lineWidth=1;
+    ctx.strokeStyle=mixRGBA("#aab0b6","#33445e",dusk,.6); ctx.lineWidth=1;
     ctx.beginPath(); ctx.moveTo(nwx,rTop); ctx.lineTo(nex,rTop); ctx.stroke();                  // back trim
     // rooftop units on the shops
     if(isShop && detailRib){
       for(const fx of [0.24,0.68]){
         const ux=lerp(nwx,nex,fx), uw=Wpx*0.055, uh=Hpx*0.075;
-        poly([[ux,ridge-uh*.2],[ux+uw,ridge-uh*.2],[ux+uw,ridge-uh*.2-uh],[ux,ridge-uh*.2-uh]], mix("#b9bfc5","#1a2233",dusk), mixRGBA("#3c454f","#0c1018",dusk,.4), 1);
-        ctx.fillStyle=rgba("#12161b",.18); ctx.fillRect(ux+1,ridge-uh*.2,uw+2,2);
+        poly([[ux,ridge-uh*.2],[ux+uw,ridge-uh*.2],[ux+uw,ridge-uh*.2-uh],[ux,ridge-uh*.2-uh]], mix("#7c828a","#1a2233",dusk), mixRGBA("#262d36","#0c1018",dusk,.4), 1);
+        ctx.fillStyle=rgba("#0e1216",.18); ctx.fillRect(ux+1,ridge-uh*.2,uw+2,2);
       }
     }
     ctx.restore();   // end wall-fade alpha
@@ -996,56 +1142,60 @@
       }
     }
 
-    /* ---- SITEWORK: survey outline → gravel pad + drive ---- */
+    /* ---- SITEWORK: survey stakes → poured concrete apron, spine & yard court ---- */
     const outline = win(t, B.site+200, B.site+2000);
-    const padFill = easeOut(win(t, B.site+900, B.site+3400));
-    const driveFill = easeOut(win(t, B.site+1500, B.site+4200));
+    const aprF    = easeOut(win(t, B.site+900,  B.site+3200));   // entrance apron
+    const spineF  = easeOut(win(t, B.site+1500, B.site+3800));   // spine up the site
+    const courtF  = easeOut(win(t, B.site+2200, B.site+4600));   // north garage court
 
-    if(padFill>0){
-      // base gravel wash
-      uvPoly(PAD, mix("#b3a892","#2a3446",dusk), null, 0, 0.72*padFill);
-      // pad bounding box in screen px — patch/speckle fills clip to here (cheap)
-      const bx0=PX(.284), bx1=PX(.576), by0=PY(.466), by1=PY(.702);
-      const pw=bx1-bx0, phh=by1-by0;
-      // soft tonal patches so the fill isn't one flat colour
-      ctx.save(); ctx.globalAlpha=padFill;
-      for(const p of GRAVEL.patches){
-        const cx=PX(p.u), cy=PY(p.v), r=Math.max(6, p.r*dwz);
+    const concFill = mix("#cdcec9","#28313f",dusk);
+    const concEdge = mixRGBA("#9a9b94","#161d29",dusk,.55);      // curb / edge shading
+    const jointCol = mixRGBA("#9a9b94","#10161f",dusk,.5);       // expansion-joint lines
+    // draw a joint line between two uv edges of a slab quad, at fraction s
+    const jointLine=(A0,A1,B0,B1,s)=>{
+      const a=[lerp(A0[0],A1[0],s),lerp(A0[1],A1[1],s)], b=[lerp(B0[0],B1[0],s),lerp(B0[1],B1[1],s)];
+      ctx.beginPath(); ctx.moveTo(PX(a[0]),PY(a[1])); ctx.lineTo(PX(b[0]),PY(b[1])); ctx.stroke();
+    };
+
+    if(aprF>0){
+      uvPoly(APRON, concFill, concEdge, 1.4, 0.80*aprF);
+      ctx.save(); ctx.globalAlpha=aprF; ctx.strokeStyle=jointCol; ctx.lineWidth=1;
+      for(let i=1;i<4;i++) jointLine(APRON[0],APRON[3],APRON[1],APRON[2],i/4);   // flare joints off the highway
+      ctx.restore();
+    }
+    if(spineF>0){
+      uvPoly(SPINE, concFill, concEdge, 1.4, 0.80*spineF);
+      ctx.save(); ctx.globalAlpha=spineF; ctx.strokeStyle=jointCol; ctx.lineWidth=1;
+      jointLine(SPINE[0],SPINE[3],SPINE[1],SPINE[2],0.5);                        // longitudinal centre joint
+      for(let i=1;i<9;i++) jointLine(SPINE[0],SPINE[1],SPINE[3],SPINE[2],i/9);   // transverse joints
+      ctx.restore();
+    }
+    if(courtF>0){
+      uvPoly(COURT, concFill, concEdge, 1.4, 0.74*courtF);
+      // faint tonal mottle (clipped to the court) so the pour reads as quality slab
+      ctx.save(); ctx.globalAlpha=courtF;
+      ctx.beginPath(); COURT.forEach((p,i)=> i?ctx.lineTo(PX(p[0]),PY(p[1])):ctx.moveTo(PX(p[0]),PY(p[1]))); ctx.closePath(); ctx.clip();
+      const bx0=PX(.33),by0=PY(.40),bw=PX(.578)-PX(.33),bh=PY(.516)-PY(.40);
+      for(const p of CONC.patches){
+        const cx=PX(p.u),cy=PY(p.v),r=Math.max(8,p.r*dwz);
         const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
-        g.addColorStop(0, mixRGBA(p.warm?"#c2b8a0":"#a3987f","#3a4658",dusk,.18));
-        g.addColorStop(1, mixRGBA("#b3a892","#2a3446",dusk,0));
-        ctx.fillStyle=g; ctx.fillRect(bx0,by0,pw,phh);
+        g.addColorStop(0,mixRGBA(p.warm?"#d7d8d3":"#bcbdb7","#323b49",dusk,.16));
+        g.addColorStop(1,mixRGBA("#cdcec9","#28313f",dusk,0));
+        ctx.fillStyle=g; ctx.fillRect(bx0,by0,bw,bh);
       }
       ctx.restore();
-      // dense two-tone aggregate speckle — count scales with projected pad size (LOD)
-      const nSpeck=Math.round(clamp(pw/620,0.14,1)*GRAVEL.speck.length);
-      const specWarm=mix("#8f8672","#1c2431",dusk), specCool=mix("#d6cdb8","#1c2431",dusk);
-      ctx.save();
-      for(let i=0;i<nSpeck;i++){
-        const p=GRAVEL.speck[i];
-        ctx.globalAlpha=p.a*padFill;
-        ctx.fillStyle=p.warm?specWarm:specCool;
-        ctx.fillRect(PX(p.u),PY(p.v),Math.max(1,p.s),Math.max(1,p.s));
-      }
-      ctx.restore();
-      // graded pad edge where fill meets grass
-      uvPoly(PAD, null, mixRGBA("#6f6754","#1a2230",dusk,.30*padFill), 1.4, 1);
-    }
-    if(driveFill>0){
-      uvPoly(DRIVE, mix("#ab9f88","#242d3d",dusk), null, 0, 0.85*driveFill);
-      // twin wheel tracks worn into the drive
-      ctx.save(); ctx.lineCap="round";
-      ctx.strokeStyle=mixRGBA("#7d735e","#20283a",dusk,.5*driveFill); ctx.lineWidth=Math.max(1.4, dwz*0.0016);
-      for(const tr of [[[.333,.664],[.262,.786]],[[.352,.664],[.281,.786]]]){
-        ctx.beginPath(); ctx.moveTo(PX(tr[0][0]),PY(tr[0][1])); ctx.lineTo(PX(tr[1][0]),PY(tr[1][1])); ctx.stroke();
-      }
+      // control-joint grid
+      ctx.save(); ctx.globalAlpha=courtF; ctx.strokeStyle=jointCol; ctx.lineWidth=1;
+      for(let i=1;i<7;i++) jointLine(COURT[0],COURT[1],COURT[3],COURT[2],i/7);
+      for(let i=1;i<3;i++) jointLine(COURT[0],COURT[3],COURT[1],COURT[2],i/3);
       ctx.restore();
     }
-    if(outline>0 && padFill<0.98){
+    // survey stakes before the pour
+    if(outline>0 && courtF<0.98){
       ctx.save();
       ctx.setLineDash([7,6]); ctx.lineCap="round";
-      ctx.strokeStyle=mix("#8a6a2b","#d9b869",dusk); ctx.lineWidth=1.6; ctx.globalAlpha=outline*(1-padFill*0.6);
-      const P=PAD.map(p=>[PX(p[0]),PY(p[1])]);
+      ctx.strokeStyle=mix("#8a6a2b","#d9b869",dusk); ctx.lineWidth=1.6; ctx.globalAlpha=outline*(1-courtF*0.6);
+      const P=COURT.map(p=>[PX(p[0]),PY(p[1])]);
       ctx.beginPath(); P.forEach((p,i)=> i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.closePath(); ctx.stroke();
       ctx.restore();
     }
@@ -1053,8 +1203,41 @@
     /* ---- pole lights ---- */
     drawPoles(t,dusk);
 
-    /* ---- the buildings (depth-sorted) ---- */
-    for(const b of BUILDINGS) drawBuilding(b,t,dusk);
+    /* ---- landscaping (shrub / tree blobs) fading in with the multifamily row ---- */
+    const green = easeOut(win(t, B.multi+1500, B.multi+5000));
+    if(green>0){
+      for(const s of SHRUBS){
+        const x=PX(s.u), y=PY(s.v), r=Math.max(3,(s.big?1.5:1)*s.r*dwz)*green;
+        ctx.fillStyle=mixRGBA("#0e1a10","#05070c",dusk,.22);
+        ctx.beginPath(); ctx.ellipse(x+r*0.3,y+r*0.28,r*0.95,r*0.45,0,0,7); ctx.fill();
+        // canopy stays a readable deep green even at dusk (never near-black)
+        const g=ctx.createRadialGradient(x-r*0.3,y-r*0.4,0,x,y,r);
+        g.addColorStop(0,mix("#5f7f43","#324e35",dusk)); g.addColorStop(1,mix("#3c5a2c","#22371f",dusk));
+        ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill();
+        // subtle cool moonlight rim on top at dusk
+        if(dusk>0.2){
+          ctx.fillStyle=rgba("#9ab8a6",0.12*dusk);
+          ctx.beginPath(); ctx.ellipse(x-r*0.28,y-r*0.42,r*0.5,r*0.32,-0.5,0,7); ctx.fill();
+        }
+      }
+    }
+
+    /* ---- the buildings (depth-sorted): garages via drawBuilding, multifamily via drawMultifamily ---- */
+    for(const b of BUILDINGS){ if(b.kind==="multi") drawMultifamily(b,t,dusk); else drawBuilding(b,t,dusk); }
+
+    /* ---- parked cars in the garage court (silhouettes that appear at dusk) ---- */
+    if(dusk>0.25){
+      const ca=clamp((dusk-0.25)/0.5);
+      for(const c of CARS_PARKED){
+        const x=PX(c.u), y=PY(c.v), w=Math.max(4,c.w*dwz), h=w*0.5;
+        ctx.save(); ctx.globalAlpha=ca;
+        ctx.fillStyle=mixRGBA("#12161b","#05070c",dusk,.55);
+        ctx.fillRect(x-w/2, y-h/2, w, h);
+        ctx.fillStyle=rgba("#2b3340",.5);
+        ctx.fillRect(x-w*0.3, y-h*0.42, w*0.6, h*0.42);
+        ctx.restore();
+      }
+    }
 
     /* ---- finale vignette breath ---- */
     if(dusk>0.5){
@@ -1096,9 +1279,9 @@
 
   const TAGS={
     land:'<b>34,600+</b> vehicles / day on I-90',
-    sitework:'Aggregate pads &middot; <b>Exit 67 access</b>',
-    steel:'Contractor shops &middot; <b>tall roll-up bays</b>',
-    flex:'Storage &amp; flex &middot; <b>lease-ready income</b>',
+    sitework:'Concrete entrance &middot; <b>Exit 67 access</b>',
+    garages:'Charcoal steel &middot; <b>roll-up contractor bays</b>',
+    multi:'Wheat-gold multifamily &middot; <b>highway frontage</b>',
     dusk:'<b>1.8 mi</b> from Ellsworth AFB',
   };
 
