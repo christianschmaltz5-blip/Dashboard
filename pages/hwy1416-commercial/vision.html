@@ -464,6 +464,8 @@
   const hx = h=>{ h=h.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; };
   const mix = (a,b,t)=>{ a=hx(a); b=hx(b); return `rgb(${Math.round(lerp(a[0],b[0],t))},${Math.round(lerp(a[1],b[1],t))},${Math.round(lerp(a[2],b[2],t))})`; };
   const rgba = (h,al)=>{ const c=hx(h); return `rgba(${c[0]},${c[1]},${c[2]},${al})`; };
+  // day→dusk colour graded to an alpha in one shot (used all over the HQ illustration pass)
+  const mixRGBA = (a,b,t,al)=>{ a=hx(a); b=hx(b); return `rgba(${Math.round(lerp(a[0],b[0],t))},${Math.round(lerp(a[1],b[1],t))},${Math.round(lerp(a[2],b[2],t))},${al})`; };
 
   /* seeded RNG so any jitter is stable within a session */
   function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
@@ -593,6 +595,63 @@
   // depth-sort so nearer (larger v) massings paint last / on top
   BUILDINGS.sort((a,b)=> a.v-b.v);
 
+  /* ======================================================================
+     PRECOMPUTED STATIC RANDOMNESS — the HQ illustration treatment wants
+     hundreds of speckle points and per-pane glass tints. Generating those
+     per frame would shimmer AND cost. Build them ONCE, seeded, into arrays
+     and only *draw* them each frame (positions are image-space uv, so they
+     stay locked to the aerial through every pan/zoom, same as the massings).
+     ====================================================================== */
+  const GRAVEL = (()=>{
+    const rr = mulberry32(0xbeef);
+    const patches=[];                       // soft tonal blotches so gravel isn't one flat wash
+    for(let i=0;i<9;i++) patches.push({ u:lerp(.31,.55,rr()), v:lerp(.48,.69,rr()), r:lerp(.012,.03,rr()), warm: rr()<.5 });
+    const speck=[];                         // dense two-tone aggregate speckle
+    for(let i=0;i<900;i++) speck.push({ u:lerp(.295,.57,rr()), v:lerp(.474,.697,rr()), a:.10+rr()*.25, warm: rr()<.5, s:.8+rr()*1.6 });
+    return { patches, speck };
+  })();
+  // per-shop glass pane tint choices, stable across frames (no dusk shimmer)
+  BUILDINGS.forEach((b,i)=>{ b._idx=i; });
+  for(const b of BUILDINGS){
+    if(b.kind!=="shop") continue;
+    const rr = mulberry32((b.u*1e6)|0);
+    b._panes = [];
+    for(let i=0;i<b.bays;i++){
+      const bay=[];
+      for(let s=0;s<5;s++) for(let m=0;m<3;m++) bay.push( rr()<.6 ? null : { warm: rr()<.5, a:.08+rr()*.08 } );
+      b._panes.push(bay);
+    }
+  }
+
+  /* ----------------------------------------------------------------------
+     PRE-RENDERED SHADOW SPRITES — the soft, layered ground shadow uses two
+     gaussian-blur passes. Running ctx.filter="blur()" per building per frame
+     costs ~57ms/frame in software rendering (each blur allocates a big layer).
+     Instead we bake each building's blurred shadow ONCE into a tiny offscreen
+     canvas. The whole scene scales uniformly with cam.z, so the shadow shape
+     is zoom-invariant: per frame we just drawImage the sprite scaled by z.
+     Rebuilt on resize (dw/dh change the reference size). ~near-black colour,
+     so the tiny day→dusk shift is imperceptible and we bake the day tint.
+     ---------------------------------------------------------------------- */
+  let shadowSprites=null;
+  function buildShadowSprites(){
+    shadowSprites = BUILDINGS.map(b=>{
+      const Wpx0 = 2*b.w*dw, Hpx0 = b.ht*dh, shh = Hpx0*0.42, pad = 14;
+      const spW = Math.ceil(Wpx0 + shh + pad*2 + 8);
+      const spH = Math.ceil(shh*0.40 + pad*2 + 8);
+      const c = document.createElement("canvas"); c.width=spW; c.height=spH;
+      const cx = c.getContext("2d");
+      const P = (x,y)=>[pad+x, pad+y];              // local (nwx,sy)→(pad,pad)
+      const fillPoly=(pts,style)=>{ cx.fillStyle=style; cx.beginPath(); pts.forEach((p,i)=> i?cx.lineTo(p[0],p[1]):cx.moveTo(p[0],p[1])); cx.closePath(); cx.fill(); };
+      cx.filter="blur(7px)";
+      fillPoly([P(4,0),P(Wpx0+4,0),P(Wpx0+shh,shh*0.40),P(shh,shh*0.40)], "rgba(20,26,16,0.30)");
+      cx.filter="blur(2px)";
+      fillPoly([P(0,0),P(Wpx0,0),P(Wpx0+shh*.35,shh*.16),P(shh*.35,shh*.16)], "rgba(16,21,13,0.28)");
+      cx.filter="none";
+      return { canvas:c, pad, spW, spH };
+    });
+  }
+
   /* filled/stroked polygon from [[x,y],...] */
   function poly(pts, fill, stroke, lw, alpha){
     if(alpha!==undefined) ctx.globalAlpha=alpha;
@@ -628,8 +687,9 @@
     const rise = skin>0.02 ? 1 : easeOut(frame);
     const Hpx = b.ht*dhz*rise;
 
-    // -------- ground shadow (sun upper-left → shadow lower-right) --------
-    if(rise>0.15){
+    // -------- ground shadow during the STEEL-FRAME stage only --------
+    // (once skinned, drawBuildingSkin lays down its own soft, layered shadow)
+    if(skin<0.03 && rise>0.15){
       const sh = Hpx*0.34;
       poly([[nwx,sy],[nex,sy],[nex+sh,sy+sh*0.42],[nwx+sh,sy+sh*0.42]],
            rgba("#0a0e08", 0.22), null, 0, clamp(rise));
@@ -660,68 +720,206 @@
       return;
     }
 
-    // -------- skinned steel building --------
+    // -------- skinned steel building (max-detail illustration pass) --------
     const a = clamp(win(t, b.skinA, b.skinA+700));   // walls fade in
-    const front = mix("#dadde0","#2a3552",dusk);      // south face (toward viewer, lit sky)
-    const west  = mix("#c7cacd","#20293f",dusk);      // left face (sun)
-    const east  = mix("#a7acb1","#171e31",dusk);      // right face (shade)
-    const roof  = mix("#8f969c","#141b2b",dusk);      // low-pitch metal roof (darker)
-    const line  = rgba("#1a1f28",.42);
+    drawBuildingSkin(b, nwx, nex, ny, sy, Hpx, a, skin, dusk);
+  }
 
-    // west wall
-    poly([[nwx,ny],[nwx,sy],[nwx,sy-Hpx],[nwx,ny-Hpx]], west, line, 1, a);
-    // east wall
-    poly([[nex,ny],[nex,sy],[nex,sy-Hpx],[nex,ny-Hpx]], east, line, 1, a);
-    // front (south) wall
-    poly([[nwx,sy],[nex,sy],[nex,sy-Hpx],[nwx,sy-Hpx]], front, line, 1, a);
+  /* ----------------------------------------------------------------------
+     drawBuildingSkin — the approved bakeoff `drawBuildingHQ` look, ported
+     onto the reel's live geometry. Everything grades day→dusk via mix()/
+     mixRGBA() and fades in with `a` (walls) and `da` (doors). Fine detail
+     is gated on projected pixel size so nothing turns to noise when wide.
+     ---------------------------------------------------------------------- */
+  function drawBuildingSkin(b, nwx, nex, ny, sy, Hpx, a, skin, dusk){
+    const isShop = b.kind==="shop";
+    const Wpx = nex-nwx;
+    const detailRib  = Wpx > 50;               // ribbing / roof seams / rooftop units
+    const detailFine = (Wpx / b.bays) > 6;     // mullions, per-pane tint, saw-cuts, man door, slats
 
-    // corrugated striations on the front wall
-    if(a>0.6){
-      ctx.save(); ctx.globalAlpha=(a-0.6)/0.4*0.5;
-      ctx.strokeStyle=rgba("#ffffff",.10); ctx.lineWidth=1;
-      const n=Math.round((nex-nwx)/6);
-      for(let i=1;i<n;i++){ const gx=lerp(nwx,nex,i/n); ctx.beginPath(); ctx.moveTo(gx,sy); ctx.lineTo(gx,sy-Hpx*0.98); ctx.stroke(); }
+    /* ---- concrete apron + soft layered ground shadow (both on the ground) ---- */
+    // apron first, so the building's shadow can fall across it
+    ctx.save(); ctx.globalAlpha = a*0.9;
+    const apr = isShop ? Hpx*0.16 : Hpx*0.35;
+    poly([[nwx-3,sy],[nex+3,sy],[nex+6,sy+apr],[nwx-1,sy+apr]], mix("#c9c4b4","#2a3446",dusk), mixRGBA("#8d8878","#1a2230",dusk,.35), 1);
+    if(detailFine){
+      ctx.strokeStyle=mixRGBA("#8d8878","#1a2230",dusk,.35); ctx.lineWidth=1;
+      const nj = isShop ? b.bays : 5;
+      for(let i=1;i<nj;i++){ const gx=lerp(nwx,nex,i/nj); ctx.beginPath(); ctx.moveTo(gx,sy); ctx.lineTo(gx+3,sy+apr); ctx.stroke(); }
+    }
+    ctx.restore();
+
+    // soft layered ground shadow — pre-blurred sprite, scaled by the live zoom
+    const sp = shadowSprites && shadowSprites[b._idx];
+    if(sp){
+      const z=cam.z;
+      ctx.save(); ctx.globalAlpha = clamp(a);
+      ctx.drawImage(sp.canvas, nwx - sp.pad*z, sy - sp.pad*z, sp.spW*z, sp.spH*z);
       ctx.restore();
     }
 
-    // roof + eave line
-    poly([[nwx,ny-Hpx],[nex,ny-Hpx],[nex,sy-Hpx],[nwx,sy-Hpx]], roof, line, 1, a);
-    poly([[nwx,sy-Hpx],[nex,sy-Hpx]], null, null); // (noop guard)
-    ctx.save(); ctx.globalAlpha=a;
-    ctx.strokeStyle=mix("#b5bbc0","#20283a",dusk); ctx.lineWidth=1.6;
-    ctx.beginPath(); ctx.moveTo(nwx,sy-Hpx); ctx.lineTo(nex,sy-Hpx); ctx.stroke();     // eave
-    // ridge highlight down the roof
-    ctx.strokeStyle=mix("#a4aab0","#1b2333",dusk); ctx.lineWidth=1.4;
-    ctx.beginPath(); ctx.moveTo((nwx+nex)/2, ny-Hpx); ctx.lineTo((nwx+nex)/2, sy-Hpx); ctx.stroke();
-    ctx.restore();
+    /* ---- walls, roof, trim — all under a single wall-fade alpha ---- */
+    ctx.save(); ctx.globalAlpha = a;
 
-    // -------- tall roll-up glass bay doors on the front face --------
+    // side-wall slivers (west lit / east shade) — thin edges of thickness
+    const gW=ctx.createLinearGradient(0,sy-Hpx,0,sy);
+    gW.addColorStop(0,mix("#d3d7da","#26304a",dusk)); gW.addColorStop(1,mix("#bcc1c6","#20293f",dusk));
+    const gE=ctx.createLinearGradient(0,sy-Hpx,0,sy);
+    gE.addColorStop(0,mix("#9aa1a8","#1b2236",dusk)); gE.addColorStop(1,mix("#878e95","#171e31",dusk));
+    ctx.fillStyle=gW; ctx.fillRect(nwx-2, ny-Hpx, 2, (sy-ny));
+    ctx.fillStyle=gE; ctx.fillRect(nex,   ny-Hpx, 2, (sy-ny));
+
+    // front (south) wall: vertical gradient + corrugation + wainscot
+    const gF=ctx.createLinearGradient(0,sy-Hpx,0,sy);
+    gF.addColorStop(0,  mix("#e6e9ec","#334063",dusk));
+    gF.addColorStop(.75,mix("#d2d7db","#2c3656",dusk));
+    gF.addColorStop(1,  mix("#c8cdd2","#2a3552",dusk));
+    poly([[nwx,sy],[nex,sy],[nex,sy-Hpx],[nwx,sy-Hpx]], gF, mixRGBA("#1a1f28","#0c1120",dusk,.35), 1);
+    // corrugation: paired light/dark ribs (count from projected width, capped)
+    if(detailRib){
+      const ribs=Math.min(80, Math.round(Wpx/3.2));
+      ctx.lineWidth=1;
+      for(let i=1;i<ribs;i++){
+        const gx=lerp(nwx,nex,i/ribs);
+        ctx.strokeStyle = i%2 ? mixRGBA("#ffffff","#4a5a76",dusk,.16) : mixRGBA("#2c3540","#0c1018",dusk,.09);
+        ctx.beginPath(); ctx.moveTo(gx,sy-1); ctx.lineTo(gx,sy-Hpx+2); ctx.stroke();
+      }
+    }
+    // wainscot band + white reveal trim
+    const wy=sy-Hpx*0.20;
+    poly([[nwx,sy],[nex,sy],[nex,wy],[nwx,wy]], mixRGBA("#a8afb6","#222c44",dusk,.75), null, 0);
+    ctx.strokeStyle=mixRGBA("#f4f6f8","#3a4a66",dusk,.85); ctx.lineWidth=1.1;
+    ctx.beginPath(); ctx.moveTo(nwx,wy); ctx.lineTo(nex,wy); ctx.stroke();
+    // eave-overhang shadow under the roofline
+    const gEs=ctx.createLinearGradient(0,sy-Hpx,0,sy-Hpx+5);
+    gEs.addColorStop(0,mixRGBA("#232b34","#080c14",dusk,.34)); gEs.addColorStop(1,mixRGBA("#232b34","#080c14",dusk,0));
+    ctx.fillStyle=gEs; ctx.fillRect(nwx,sy-Hpx,Wpx,5);
+    // white corner trim
+    ctx.strokeStyle=mixRGBA("#f4f6f8","#3a4a66",dusk,.9); ctx.lineWidth=1.4;
+    for(const gx of [nwx+1,nex-1]){ ctx.beginPath(); ctx.moveTo(gx,sy); ctx.lineTo(gx,sy-Hpx); ctx.stroke(); }
+    // base ambient occlusion (stays dark at dusk)
+    const gAO=ctx.createLinearGradient(0,sy-4,0,sy);
+    gAO.addColorStop(0,rgba("#12161b",0)); gAO.addColorStop(1,rgba("#12161b",.30));
+    ctx.fillStyle=gAO; ctx.fillRect(nwx,sy-4,Wpx,4);
+
+    // roof: two pitched planes + ridge cap + seams + eave/back trim
+    const rTop=ny-Hpx, rBot=sy-Hpx, ridge=(rTop+rBot)/2;
+    const gRb=ctx.createLinearGradient(0,rTop,0,ridge);
+    gRb.addColorStop(0,mix("#b6bcc2","#1a2233",dusk)); gRb.addColorStop(1,mix("#a3aab1","#161d2c",dusk));
+    const gRf=ctx.createLinearGradient(0,ridge,0,rBot);
+    gRf.addColorStop(0,mix("#8e959d","#121826",dusk)); gRf.addColorStop(1,mix("#99a0a8","#141b2b",dusk));
+    poly([[nwx,rTop],[nex,rTop],[nex,ridge],[nwx,ridge]], gRb, null, 0);
+    poly([[nwx,ridge],[nex,ridge],[nex,rBot],[nwx,rBot]], gRf, null, 0);
+    if(detailRib){
+      const seams=Math.min(80, Math.round(Wpx/11));
+      ctx.strokeStyle=mixRGBA("#3c454f","#0c1018",dusk,.16); ctx.lineWidth=1;
+      for(let i=1;i<seams;i++){ const gx=lerp(nwx,nex,i/seams); ctx.beginPath(); ctx.moveTo(gx,rTop); ctx.lineTo(gx,rBot); ctx.stroke(); }
+    }
+    ctx.strokeStyle=mix("#dde1e5","#28324a",dusk); ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.moveTo(nwx,ridge); ctx.lineTo(nex,ridge); ctx.stroke();               // ridge cap
+    ctx.strokeStyle=mixRGBA("#f4f6f8","#3a4a66",dusk,.9); ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(nwx,rBot); ctx.lineTo(nex,rBot); ctx.stroke();                  // eave trim
+    ctx.strokeStyle=mixRGBA("#eceff2","#354564",dusk,.6); ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(nwx,rTop); ctx.lineTo(nex,rTop); ctx.stroke();                  // back trim
+    // rooftop units on the shops
+    if(isShop && detailRib){
+      for(const fx of [0.24,0.68]){
+        const ux=lerp(nwx,nex,fx), uw=Wpx*0.055, uh=Hpx*0.075;
+        poly([[ux,ridge-uh*.2],[ux+uw,ridge-uh*.2],[ux+uw,ridge-uh*.2-uh],[ux,ridge-uh*.2-uh]], mix("#b9bfc5","#1a2233",dusk), mixRGBA("#3c454f","#0c1018",dusk,.4), 1);
+        ctx.fillStyle=rgba("#12161b",.18); ctx.fillRect(ux+1,ridge-uh*.2,uw+2,2);
+      }
+    }
+    ctx.restore();   // end wall-fade alpha
+
+    /* ---- doors (appear once skin>0.5) ---- */
     if(skin>0.5){
       const da=clamp((skin-0.5)/0.4);
-      const n=b.bays;
-      const doorTop = b.kind==="shop" ? 0.72 : 0.62;
-      const glass = dusk>0.12 ? mix("#8296a3","#ffce80",dusk) : "#aec1cc";
-      for(let i=0;i<n;i++){
-        const cx=lerp(nwx,nex,(i+0.5)/n);
-        const bw=(nex-nwx)/n*0.62;
-        const x0=cx-bw/2, x1=cx+bw/2;
-        const yb=sy, yt=sy-Hpx*doorTop;
-        ctx.save();
-        if(dusk>0.2){ ctx.shadowColor=rgba("#ffcf87",.9); ctx.shadowBlur=10*dusk; }
-        poly([[x0,yb],[x1,yb],[x1,yt],[x0,yt]], glass, rgba("#0b141c",.42), 1, da);
-        ctx.restore();
-        // roll-up slats + header
-        ctx.save(); ctx.globalAlpha=da*0.6;
-        ctx.strokeStyle=rgba(dusk>0.3?"#7a5a2a":"#3a4650",.55); ctx.lineWidth=1;
-        for(let s=1;s<=3;s++){ const yy=lerp(yb,yt,s/4); ctx.beginPath(); ctx.moveTo(x0,yy); ctx.lineTo(x1,yy); ctx.stroke(); }
-        ctx.restore();
+      const nb=b.bays;
+      ctx.save(); ctx.globalAlpha=da;
+      if(isShop){
+        const doorTop=0.72;
+        for(let i=0;i<nb;i++){
+          const cx=lerp(nwx,nex,(i+0.5)/nb), bw=Wpx/nb*0.64;
+          const x0=cx-bw/2, x1=cx+bw/2, yb=sy-1, yt=sy-Hpx*doorTop;
+          // white frame + header shadow
+          poly([[x0-2,yb+1],[x1+2,yb+1],[x1+2,yt-3],[x0-2,yt-3]], mix("#eef1f3","#3a4a66",dusk), null, 0);
+          ctx.fillStyle=rgba("#12161b",.2); ctx.fillRect(x0-2,yt-3,bw+4,2);
+          // glass: cool sky by day, warm interior glow at dusk (with bloom)
+          const gG=ctx.createLinearGradient(0,yt,0,yb);
+          gG.addColorStop(0,  mix("#dcebf4","#ffe6b0",dusk));
+          gG.addColorStop(.55,mix("#adc3d1","#ffce80",dusk));
+          gG.addColorStop(1,  mix("#8fa6b4","#e0992e",dusk));
+          ctx.save();
+          if(dusk>0.2){ ctx.shadowColor=rgba("#ffcf87",.9); ctx.shadowBlur=10*dusk; }
+          poly([[x0,yb],[x1,yb],[x1,yt],[x0,yt]], gG, mixRGBA("#0b141c","#4a2f10",dusk,.5), 1);
+          ctx.restore();
+          // interior detail, clipped to the glass
+          ctx.save();
+          ctx.beginPath(); ctx.moveTo(x0,yb); ctx.lineTo(x1,yb); ctx.lineTo(x1,yt); ctx.lineTo(x0,yt); ctx.closePath(); ctx.clip();
+          // diagonal sky glint (fades out as it goes dark)
+          const glA=(1-dusk*0.7);
+          const gl=ctx.createLinearGradient(x0,yt,x1,yb);
+          gl.addColorStop(.32,rgba("#ffffff",0)); gl.addColorStop(.46,rgba("#ffffff",.20*glA)); gl.addColorStop(.58,rgba("#ffffff",0));
+          ctx.fillStyle=gl; ctx.fillRect(x0,yt,bw,yb-yt);
+          // roll-up sections: dark seam + light slat below
+          for(let s=1;s<=4;s++){
+            const yy=lerp(yb,yt,s/5);
+            ctx.strokeStyle=mixRGBA("#22303a","#3a2810",dusk,.5); ctx.lineWidth=1;
+            ctx.beginPath(); ctx.moveTo(x0,yy); ctx.lineTo(x1,yy); ctx.stroke();
+            ctx.strokeStyle=mixRGBA("#ffffff","#ffd27a",dusk,.25);
+            ctx.beginPath(); ctx.moveTo(x0,yy+1); ctx.lineTo(x1,yy+1); ctx.stroke();
+          }
+          if(detailFine){
+            // vertical mullions
+            for(let m=1;m<=2;m++){
+              const mx=lerp(x0,x1,m/3);
+              ctx.strokeStyle=mixRGBA("#22303a","#3a2810",dusk,.45); ctx.lineWidth=1;
+              ctx.beginPath(); ctx.moveTo(mx,yb); ctx.lineTo(mx,yt); ctx.stroke();
+            }
+            // stable per-pane tint (precomputed choices)
+            const panes=b._panes[i]; let k=0;
+            for(let s=0;s<5;s++) for(let m=0;m<3;m++){
+              const pane=panes[k++]; if(!pane) continue;
+              const px0=lerp(x0,x1,m/3), py0=lerp(yb,yt,s/5);
+              ctx.fillStyle=mixRGBA(pane.warm?"#ffffff":"#577182", pane.warm?"#ffd98c":"#3a2c14", dusk, pane.a);
+              ctx.fillRect(px0,py0,bw/3,(yt-yb)/5);
+            }
+          }
+          ctx.restore();
+        }
+        // man door in the first inter-bay gap
+        if(detailFine){
+          const gapC=lerp(nwx,nex,1/nb);
+          const mdw=Wpx*0.026, mdx=gapC-mdw/2, mdh=Hpx*0.40;
+          poly([[mdx-1.5,sy],[mdx+mdw+1.5,sy],[mdx+mdw+1.5,sy-mdh-2],[mdx-1.5,sy-mdh-2]], mix("#eef1f3","#3a4a66",dusk), null, 0);
+          poly([[mdx,sy],[mdx+mdw,sy],[mdx+mdw,sy-mdh],[mdx,sy-mdh]], mix("#41494f","#20283a",dusk), mixRGBA("#12161b","#060a12",dusk,.5), 1);
+        }
+      }else{
+        // flex rows: solid white-framed roll-ups, gently warm at dusk
+        const doorTop=0.66;
+        for(let i=0;i<nb;i++){
+          const cx=lerp(nwx,nex,(i+0.5)/nb), bw=Wpx/nb*0.60;
+          const x0=cx-bw/2, x1=cx+bw/2, yb=sy-.5, yt=sy-Hpx*doorTop;
+          poly([[x0-1,yb],[x1+1,yb],[x1+1,yt-1],[x0-1,yt-1]], mixRGBA("#eef1f3","#3a4a66",dusk,.9), null, 0);
+          // flex bays are solid roll-ups (not glass) — warm at dusk, but no bloom
+          const gD=ctx.createLinearGradient(0,yt,0,yb);
+          gD.addColorStop(0,mix("#d9dde0","#caa25a",dusk));
+          gD.addColorStop(1,mix("#c2c7cc","#a07d34",dusk));
+          poly([[x0,yb],[x1,yb],[x1,yt],[x0,yt]], gD, mixRGBA("#2a343e","#4a2f10",dusk,.45), .8);
+          if(detailFine){
+            ctx.strokeStyle=mixRGBA("#2a343e","#3a2810",dusk,.25); ctx.lineWidth=.7;
+            for(let s=1;s<=2;s++){ const yy=lerp(yb,yt,s/3); ctx.beginPath(); ctx.moveTo(x0,yy); ctx.lineTo(x1,yy); ctx.stroke(); }
+          }
+        }
       }
-      // warm interior spill on the apron at dusk
+      ctx.restore();
+
+      // warm interior spill on the apron at dusk (bounded to its own region — not full canvas)
       if(dusk>0.3){
-        const p=[ (nwx+nex)/2, sy+Hpx*0.05 ];
-        const g=ctx.createRadialGradient(p[0],p[1],0,p[0],p[1],Math.max(40,(nex-nwx)*0.9));
+        const px=(nwx+nex)/2, py=sy+Hpx*0.05, rad=Math.max(40,Wpx*0.9);
+        const g=ctx.createRadialGradient(px,py,0,px,py,rad);
         g.addColorStop(0,rgba("#ffcf87",0.22*dusk)); g.addColorStop(1,rgba("#ffcf87",0));
-        ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+        ctx.fillStyle=g; ctx.fillRect(px-rad,py-rad,rad*2,rad*2);
       }
     }
   }
@@ -804,19 +1002,44 @@
     const driveFill = easeOut(win(t, B.site+1500, B.site+4200));
 
     if(padFill>0){
-      uvPoly(PAD, mix("#b6ab95","#2a3446",dusk), null, 0, 0.64*padFill);
-      // scattered aggregate speckle for texture
-      ctx.save(); ctx.globalAlpha=0.5*padFill;
-      const rr=mulberry32(0x517e);
-      ctx.fillStyle=mix("#8f8672","#1c2431",dusk);
-      for(let i=0;i<50;i++){
-        const u=lerp(.30,.565, rr()), v=lerp(.475,.695, rr());
-        const x=PX(u), y=PY(v); ctx.fillRect(x,y,Math.max(1,dwz*0.001),Math.max(1,dhz*0.001));
+      // base gravel wash
+      uvPoly(PAD, mix("#b3a892","#2a3446",dusk), null, 0, 0.72*padFill);
+      // pad bounding box in screen px — patch/speckle fills clip to here (cheap)
+      const bx0=PX(.284), bx1=PX(.576), by0=PY(.466), by1=PY(.702);
+      const pw=bx1-bx0, phh=by1-by0;
+      // soft tonal patches so the fill isn't one flat colour
+      ctx.save(); ctx.globalAlpha=padFill;
+      for(const p of GRAVEL.patches){
+        const cx=PX(p.u), cy=PY(p.v), r=Math.max(6, p.r*dwz);
+        const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+        g.addColorStop(0, mixRGBA(p.warm?"#c2b8a0":"#a3987f","#3a4658",dusk,.18));
+        g.addColorStop(1, mixRGBA("#b3a892","#2a3446",dusk,0));
+        ctx.fillStyle=g; ctx.fillRect(bx0,by0,pw,phh);
       }
       ctx.restore();
+      // dense two-tone aggregate speckle — count scales with projected pad size (LOD)
+      const nSpeck=Math.round(clamp(pw/620,0.14,1)*GRAVEL.speck.length);
+      const specWarm=mix("#8f8672","#1c2431",dusk), specCool=mix("#d6cdb8","#1c2431",dusk);
+      ctx.save();
+      for(let i=0;i<nSpeck;i++){
+        const p=GRAVEL.speck[i];
+        ctx.globalAlpha=p.a*padFill;
+        ctx.fillStyle=p.warm?specWarm:specCool;
+        ctx.fillRect(PX(p.u),PY(p.v),Math.max(1,p.s),Math.max(1,p.s));
+      }
+      ctx.restore();
+      // graded pad edge where fill meets grass
+      uvPoly(PAD, null, mixRGBA("#6f6754","#1a2230",dusk,.30*padFill), 1.4, 1);
     }
     if(driveFill>0){
       uvPoly(DRIVE, mix("#ab9f88","#242d3d",dusk), null, 0, 0.85*driveFill);
+      // twin wheel tracks worn into the drive
+      ctx.save(); ctx.lineCap="round";
+      ctx.strokeStyle=mixRGBA("#7d735e","#20283a",dusk,.5*driveFill); ctx.lineWidth=Math.max(1.4, dwz*0.0016);
+      for(const tr of [[[.333,.664],[.262,.786]],[[.352,.664],[.281,.786]]]){
+        ctx.beginPath(); ctx.moveTo(PX(tr[0][0]),PY(tr[0][1])); ctx.lineTo(PX(tr[1][0]),PY(tr[1][1])); ctx.stroke();
+      }
+      ctx.restore();
     }
     if(outline>0 && padFill<0.98){
       ctx.save();
@@ -916,9 +1139,10 @@
   window.__setPhase=(i)=>{ i=i|0; elapsed = i>=ASK_INDEX?T_END:(BOUND[i+1]-1); playing=false; draw(elapsed); syncUI(elapsed); };
 
   /* ---------------- boot ---------------- */
+  function onResize(){ resize(); buildShadowSprites(); }
   function start(){
-    resize();
-    window.addEventListener("resize", resize);
+    onResize();
+    window.addEventListener("resize", onResize);
     if(reduceMotion){
       elapsed=T_END; playing=false;
       draw(T_END); syncUI(T_END);
