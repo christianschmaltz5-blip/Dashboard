@@ -20,7 +20,7 @@ nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-co
 .nav-title{font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
 .nav-actions{display:flex;gap:10px;align-items:center;}
 
-button{font-family:'Josefin Sans',sans-serif;cursor:pointer;}
+button{font-family:'Josefin Sans',sans-serif;cursor:pointer;touch-action:manipulation;}
 .btn{padding:9px 16px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:var(--text);transition:all .18s;}
 .btn:hover{background:rgba(255,255,255,0.1);}
 .btn-primary{background:linear-gradient(135deg,#1B3A6B,#2563EB);border:none;color:#fff;}
@@ -60,7 +60,7 @@ h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
 .overlay{position:absolute;inset:0;}
 
 .qs-field{position:absolute;box-sizing:border-box;}
-.qs-field .fbox{width:100%;height:100%;border:1.5px solid rgba(37,99,235,0.55);background:rgba(96,165,250,0.12);border-radius:3px;color:#0b2a4a;font-family:'Josefin Sans',sans-serif;font-weight:500;padding:0 3px;outline:none;overflow:hidden;white-space:nowrap;display:flex;align-items:center;}
+.qs-field .fbox{width:100%;height:100%;border:1.5px solid rgba(37,99,235,0.55);background:rgba(96,165,250,0.12);border-radius:3px;color:#0b2a4a;font-family:'Josefin Sans',sans-serif;font-weight:500;padding:0 3px;outline:none;overflow:hidden;white-space:nowrap;display:flex;align-items:center;touch-action:manipulation;}
 .qs-field .fbox:focus{border-color:#2563EB;background:rgba(191,219,254,0.55);}
 .qs-field.f-date .fbox{background:rgba(52,211,153,0.16);border-color:rgba(16,185,129,0.6);}
 .qs-field.f-sig .fbox{cursor:pointer;justify-content:center;color:#1e3a8a;font-weight:600;font-size:11px;letter-spacing:0.05em;}
@@ -124,9 +124,11 @@ body.fill-only .qs-field .resize{display:none !important;}
   .subtitle{font-size:13px;}
   .doc-grid{grid-template-columns:1fr !important;}
   .modal{padding:20px;border-radius:14px;}
-  #sigPad{height:130px;}
+  #sigPad{height:160px;}
   /* bigger tap target + no iOS zoom-on-focus for the fill boxes */
   .qs-field .fbox{min-height:22px;}
+  .modal-actions .btn{padding:12px 16px;font-size:12px;}
+  .qs-field.f-sig .fbox{min-height:26px;}
 }
 #qrBox{display:flex;flex-direction:column;align-items:center;gap:14px;}
 #qrCanvas{background:#fff;padding:14px;border-radius:12px;}
@@ -338,6 +340,7 @@ function addField(pageIdx, type, x, y, w, h, value){
     el.appendChild(box); rec.box=box;
   } else {
     const box=document.createElement('div'); box.className='fbox'; box.contentEditable='true';
+    box.setAttribute('inputmode','text');
     box.textContent=value||'';
     box.oninput=()=>{ rec.value=box.textContent; };
     box.onclick=(e)=>e.stopPropagation();
@@ -503,6 +506,7 @@ function padPos(e){ const r=pad.getBoundingClientRect(); return {x:(e.clientX-r.
 pad.addEventListener('pointerdown',e=>{padDrawing=true;padHasInk=true;const p=padPos(e);padCtx.beginPath();padCtx.moveTo(p.x,p.y);pad.setPointerCapture(e.pointerId);});
 pad.addEventListener('pointermove',e=>{if(!padDrawing)return;const p=padPos(e);padCtx.lineTo(p.x,p.y);padCtx.stroke();});
 pad.addEventListener('pointerup',()=>padDrawing=false);
+pad.addEventListener('pointercancel',()=>padDrawing=false);
 function clearPad(){ padCtx.clearRect(0,0,pad.width,pad.height); padHasInk=false; }
 document.getElementById('sigClear').onclick=clearPad;
 document.getElementById('sigCancel').onclick=()=>sigModal.classList.remove('show');
@@ -578,8 +582,44 @@ document.getElementById('downloadBtn').onclick=async()=>{
   }catch(err){ console.error(err); note('Export error — see console.'); }
 };
 
-/* ---------- submit to office (tenant fill-only) via FormSubmit ---------- */
+/* ---------- submit to office (tenant fill-only): Drive upload, FormSubmit fallback ---------- */
 const OFFICE_EMAIL = 'arecblackhills@gmail.com';
+const DRIVE_ENDPOINT = '';  // paste the Apps Script /exec URL here after deploying pages/quick-sign/submit-endpoint.gs
+
+function showSentBar(){
+  const bar=document.createElement('div');
+  bar.textContent="✓ Sent to the office — you're all done. You can close this page.";
+  bar.style.cssText="position:fixed;left:0;right:0;bottom:0;z-index:600;background:#0f5132;color:#fff;padding:14px 16px;text-align:center;font-weight:600;font-family:'Josefin Sans',sans-serif;font-size:14px;";
+  document.body.appendChild(bar);
+}
+
+function submitViaEmail(outBytes){
+  const file = new File([new Blob([outBytes],{type:'application/pdf'})], pdfFileName(), {type:'application/pdf'});
+  // FormSubmit requires a real multipart POST (not AJAX) to carry an attachment.
+  const form = document.createElement('form');
+  form.method='POST'; form.action='https://formsubmit.co/'+OFFICE_EMAIL;
+  form.enctype='multipart/form-data'; form.style.display='none';
+  const add=(n,v)=>{ const i=document.createElement('input'); i.type='hidden'; i.name=n; i.value=v; form.appendChild(i); };
+  add('_subject','Signed document: '+current.title);
+  add('Document', current.title);
+  add('Submitted', new Date().toLocaleString());
+  add('_captcha','false');
+  add('_template','table');
+  add('_next', location.origin+location.pathname+'?doc='+encodeURIComponent(current.key)+'&fill=1&sent=1');
+  const fi=document.createElement('input'); fi.type='file'; fi.name='attachment';
+  const dt=new DataTransfer(); dt.items.add(file); fi.files=dt.files;
+  form.appendChild(fi); document.body.appendChild(form);
+  form.submit();
+}
+
+function bytesToBase64(bytes){
+  let binary = '', chunkSize = 0x8000;
+  for(let i=0; i<bytes.length; i+=chunkSize){
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i+chunkSize));
+  }
+  return btoa(binary);
+}
+
 const submitBtnEl = document.getElementById('submitBtn');
 if(submitBtnEl) submitBtnEl.onclick = async () => {
   try{
@@ -588,23 +628,28 @@ if(submitBtnEl) submitBtnEl.onclick = async () => {
     if(sigFields.length && !sigFields.some(r=>r.value||r.sigImg)){ note('Please add your signature before you submit.'); return; }
     note('Preparing your document…');
     const out = await buildCompletedPdf();
-    const file = new File([new Blob([out],{type:'application/pdf'})], pdfFileName(), {type:'application/pdf'});
-    // FormSubmit requires a real multipart POST (not AJAX) to carry an attachment.
-    const form = document.createElement('form');
-    form.method='POST'; form.action='https://formsubmit.co/'+OFFICE_EMAIL;
-    form.enctype='multipart/form-data'; form.style.display='none';
-    const add=(n,v)=>{ const i=document.createElement('input'); i.type='hidden'; i.name=n; i.value=v; form.appendChild(i); };
-    add('_subject','Signed document: '+current.title);
-    add('Document', current.title);
-    add('Submitted', new Date().toLocaleString());
-    add('_captcha','false');
-    add('_template','table');
-    add('_next', location.origin+location.pathname+'?doc='+encodeURIComponent(current.key)+'&fill=1&sent=1');
-    const fi=document.createElement('input'); fi.type='file'; fi.name='attachment';
-    const dt=new DataTransfer(); dt.items.add(file); fi.files=dt.files;
-    form.appendChild(fi); document.body.appendChild(form);
+
+    if(!DRIVE_ENDPOINT){ note('Sending to the office…'); submitViaEmail(out); return; }
+
+    const origLabel = submitBtnEl.textContent;
+    submitBtnEl.disabled = true; submitBtnEl.textContent = 'Sending…';
     note('Sending to the office…');
-    form.submit();
+    try{
+      const b64 = bytesToBase64(out);
+      const res = await fetch(DRIVE_ENDPOINT, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({token:'qs-arec-2026', filename: pdfFileName(), docTitle: current.title, pdf: b64})});
+      const data = await res.json();
+      if(data && data.ok){
+        showSentBar();
+        submitBtnEl.textContent = '✓ Sent';
+      } else {
+        submitBtnEl.disabled = false; submitBtnEl.textContent = origLabel;
+        submitViaEmail(out);
+      }
+    }catch(err){
+      console.error(err);
+      submitBtnEl.disabled = false; submitBtnEl.textContent = origLabel;
+      submitViaEmail(out);
+    }
   }catch(err){ console.error(err); note('Could not submit — please tap “Download a copy” and email it to the office.'); }
 };
 
@@ -638,12 +683,7 @@ if(!DOCS.length){ document.getElementById('docGrid').innerHTML='<p style="color:
     document.body.classList.add('fill-only');
     const db=document.getElementById('downloadBtn'); if(db) db.textContent='Download a copy';
   }
-  if(p.get('sent')==='1'){
-    const bar=document.createElement('div');
-    bar.textContent="✓ Sent to the office — you're all done. You can close this page.";
-    bar.style.cssText="position:fixed;left:0;right:0;bottom:0;z-index:600;background:#0f5132;color:#fff;padding:14px 16px;text-align:center;font-weight:600;font-family:'Josefin Sans',sans-serif;font-size:14px;";
-    document.body.appendChild(bar);
-  }
+  if(p.get('sent')==='1'){ showSentBar(); }
   const k = p.get('doc');
   if(k){ const d = DOCS.find(x=>x.key===k); if(d) openDoc(d); }
 }catch(e){} })();
