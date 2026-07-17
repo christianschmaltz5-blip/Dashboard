@@ -356,6 +356,7 @@ function addField(pageIdx, type, x, y, w, h, value){
   enableDrag(el, handle, rec);
   enableResize(el, resize, rec);
   ps.overlay.appendChild(el);
+  if(kind==='date') rec.box.style.fontSize = Math.max(9, Math.min(15, rec.box.clientHeight*0.62))+'px';
   fieldEls.push(rec);
   return rec;
 }
