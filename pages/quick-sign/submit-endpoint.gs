@@ -33,6 +33,17 @@ function doPost(e) {
 
     var file = folder.createFile(blob);
 
+    try {
+      MailApp.sendEmail({
+        to: 'arecblackhills@gmail.com',
+        subject: 'Signed document: ' + data.docTitle,
+        body: 'A completed form was submitted via Quick Sign.\n\nSaved to Drive: ' + file.getUrl(),
+        attachments: [blob]
+      });
+    } catch (mailErr) {
+      // Drive save already succeeded; don't fail the submission over email.
+    }
+
     return jsonOut({ ok: true, url: file.getUrl() });
   } catch (err) {
     return jsonOut({ ok: false, error: String(err) });
