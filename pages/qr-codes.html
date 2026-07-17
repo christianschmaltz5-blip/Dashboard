@@ -44,6 +44,14 @@ h1{font-size:2rem;font-weight:600;letter-spacing:-0.01em;}
 .linkline{font-size:10px;color:var(--dim);font-family:'DM Sans',sans-serif;word-break:break-all;line-height:1.35;}
 .empty{color:var(--muted);padding:3rem;text-align:center;}
 
+@media (max-width:640px){
+  nav{flex-wrap:wrap;height:auto;padding:12px 1rem;}
+  .nav-actions{width:100%;margin-top:10px;}
+  .nav-actions .btn{flex:1;}
+  .wrap{padding:1.5rem 1rem 3rem;}
+  h1{font-size:1.5rem;}
+}
+
 @media print{
   nav{display:none;} body{background:#fff;color:#000;}
   .wrap{padding:0;max-width:none;} .lede,.group-h span{color:#444;}
@@ -70,14 +78,10 @@ h1{font-size:2rem;font-weight:600;letter-spacing:-0.01em;}
   <div id="groups"><p class="empty" id="loadingMsg">Loading documents…</p></div>
 </div>
 
-<!-- hidden staging area for generating QR canvases -->
-<div id="stage" style="position:absolute;left:-9999px;top:-9999px;"></div>
-
 <script>
 (function(){
   var DOCS = window.QS_DOCS || [];
   var groupsEl = document.getElementById('groups');
-  var stage = document.getElementById('stage');
   var loading = document.getElementById('loadingMsg');
   if(!DOCS.length){ if(loading) loading.textContent='Could not load documents (manifests.js missing).'; return; }
   if(loading) loading.remove();
@@ -88,13 +92,13 @@ h1{font-size:2rem;font-weight:600;letter-spacing:-0.01em;}
   function isLease(d){ return /^lease-/.test(d.key); }
   function isOld(d){ return /older|supersed/i.test(d.subtitle||'') || /-(v1|2025)$/.test(d.key); }
 
-  // build a QR <canvas> at high resolution for a URL
+  // build a QR at high resolution for a URL.
+  // qrcodejs paints a <canvas>, then async-swaps in an <img> and inline-hides the canvas —
+  // so the holder with BOTH elements must stay in the card, or the visible one gets left behind.
   function makeQR(url){
     var holder = document.createElement('div');
-    stage.appendChild(holder);
     new QRCode(holder, {text:url, width:512, height:512, correctLevel:QRCode.CorrectLevel.M});
-    // qrcodejs renders a <canvas>; fall back to its <img> if needed
-    return holder.querySelector('canvas') || holder.querySelector('img');
+    return holder;
   }
 
   // compose a labeled PNG (QR + document title) and download it
@@ -135,8 +139,9 @@ h1{font-size:2rem;font-weight:600;letter-spacing:-0.01em;}
         '<button class="btn cp">Copy link</button>'+
       '</div>'+
       '<div class="linkline">'+url+'</div>';
-    var qr=makeQR(url);
-    el.querySelector('.qrbox').appendChild(qr);
+    var holder=makeQR(url);
+    var qr=holder.querySelector('canvas')||holder.querySelector('img');
+    el.querySelector('.qrbox').appendChild(holder);
     el.querySelector('.dl').onclick=function(){ downloadLabeled(qr, doc.title); };
     el.querySelector('.cp').onclick=function(){
       var b=this; navigator.clipboard.writeText(url).then(function(){ var o=b.textContent; b.textContent='Copied ✓'; setTimeout(function(){b.textContent=o;},1400); });
