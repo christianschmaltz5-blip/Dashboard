@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Phoenix Cap-Rate Watch — Kevin Andreson</title>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#000;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.1);--text:#fff;--muted:rgba(255,255,255,0.5);--dim:rgba(255,255,255,0.25);--accent:#60A5FA;}
+body{font-family:'Josefin Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.9);backdrop-filter:blur(12px);}
+.nav-back{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s;} .nav-back:hover{color:var(--text);}
+.nav-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.nav-title{font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+
+main{max-width:1000px;margin:0 auto;padding:2.5rem 2rem 5rem;}
+h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
+.subtitle{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:1.5rem;font-family:'DM Sans',sans-serif;max-width:760px;}
+
+.meta-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:1.75rem;}
+.meta-pill{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:7px 13px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:rgba(255,255,255,0.65);}
+.meta-pill b{color:#fff;font-weight:700;}
+.meta-pill.live{background:rgba(16,185,129,0.1);border-color:rgba(52,211,153,0.25);color:#34D399;}
+.meta-dot{width:6px;height:6px;border-radius:50%;background:#34D399;box-shadow:0 0 5px #34D399;}
+
+.section-label{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--dim);margin:1.75rem 0 12px;display:flex;align-items:center;gap:10px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.section-sub{font-size:11px;color:var(--muted);font-family:'DM Sans',sans-serif;margin:-8px 0 14px;line-height:1.6;}
+
+/* Benchmark strip */
+.bench-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.bench-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+.bench-cls{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;}
+.bench-val{font-size:20px;font-weight:300;color:#fff;}
+.bench-sub{font-size:10px;color:var(--muted);font-family:'DM Sans',sans-serif;margin-top:3px;}
+
+/* Table */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:var(--surface);}
+table.deals{width:100%;border-collapse:collapse;min-width:760px;}
+table.deals th{text-align:left;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);padding:12px 14px;border-bottom:1px solid var(--border);white-space:nowrap;}
+table.deals td{padding:14px;font-size:12.5px;color:rgba(255,255,255,0.8);border-bottom:1px solid rgba(255,255,255,0.05);font-family:'DM Sans',sans-serif;vertical-align:top;}
+table.deals tr:last-child td{border-bottom:none;}
+.d-name{font-weight:700;color:#fff;font-family:'Josefin Sans',sans-serif;font-size:13px;margin-bottom:2px;}
+.d-addr{font-size:11px;color:var(--muted);}
+.d-notes{font-size:11.5px;color:rgba(255,255,255,0.5);line-height:1.6;max-width:340px;}
+.spread{font-weight:700;color:#34D399;font-family:'Josefin Sans',sans-serif;}
+.spread.mid{color:#FBBF24;}
+.badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:3px 9px;border-radius:11px;white-space:nowrap;}
+.badge.medium{background:rgba(96,165,250,0.13);color:#60A5FA;border:1px solid rgba(96,165,250,0.25);}
+.badge.lowmed{background:rgba(245,158,11,0.13);color:#FBBF24;border:1px solid rgba(251,191,36,0.25);}
+.badge.low{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.45);border:1px solid rgba(255,255,255,0.1);}
+.d-link{font-size:11px;color:var(--accent);text-decoration:none;}
+.d-link:hover{text-decoration:underline;}
+
+/* Disqualified — collapsible */
+.disq-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 16px;font-size:12px;font-weight:700;letter-spacing:0.04em;color:rgba(255,255,255,0.65);}
+.disq-toggle:hover{color:#fff;border-color:rgba(255,255,255,0.2);}
+.disq-toggle svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;transition:transform .2s;}
+.disq-toggle.open svg{transform:rotate(90deg);}
+.disq-body{display:none;margin-top:10px;}
+.disq-body.show{display:block;}
+.disq-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:10px;}
+.disq-addr{font-size:13px;font-weight:700;color:#fff;margin-bottom:8px;}
+.disq-caps{display:flex;gap:18px;margin-bottom:8px;flex-wrap:wrap;}
+.disq-cap-label{font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);}
+.disq-cap-val{font-size:16px;font-weight:300;}
+.disq-cap-val.stated{color:#F87171;}
+.disq-cap-val.real{color:#34D399;}
+.disq-arrow{color:var(--dim);font-size:14px;align-self:center;}
+.disq-reason{font-size:11.5px;color:rgba(255,255,255,0.5);line-height:1.7;font-family:'DM Sans',sans-serif;}
+
+/* History */
+.hist-list{display:flex;flex-direction:column;gap:8px;}
+.hist-row{display:flex;align-items:center;gap:16px;font-size:12px;color:var(--muted);font-family:'DM Sans',sans-serif;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 16px;flex-wrap:wrap;}
+.hist-date{font-weight:700;color:#fff;font-family:'Josefin Sans',sans-serif;min-width:90px;}
+.hist-stat{color:rgba(255,255,255,0.4);}
+
+.empty{background:rgba(255,255,255,0.03);border:1px dashed rgba(255,255,255,0.12);border-radius:12px;padding:24px 20px;text-align:center;font-family:'DM Sans',sans-serif;color:var(--muted);font-size:13px;}
+
+.disclaimer{margin-top:2.5rem;font-size:10px;color:rgba(255,255,255,0.28);line-height:1.8;font-family:'DM Sans',sans-serif;text-align:center;}
+
+/* Mobile: stacked cards instead of tables */
+.cards-mobile{display:none;}
+@media (max-width:640px){
+  main{padding:1.75rem 1.25rem 4rem;}
+  .bench-grid{grid-template-columns:repeat(2,1fr);}
+  .tbl-wrap{display:none;}
+  .cards-mobile{display:flex;flex-direction:column;gap:10px;}
+  .deal-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+  .deal-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;}
+  .deal-card-stats{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:8px;font-size:11px;font-family:'DM Sans',sans-serif;color:var(--muted);}
+  .deal-card-stats b{color:#fff;font-family:'Josefin Sans',sans-serif;}
+  .disq-caps{gap:12px;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-back" href="../index.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back to Dashboard</a>
+  <div class="nav-title">FOR KEVIN ANDRESON</div>
+</nav>
+
+<main>
+  <h1>Phoenix Cap-Rate Watch</h1>
+  <p class="subtitle">Recurring scan for mispriced Phoenix income property — flags listings whose going-in cap rate clears its class benchmark by 100+ basis points. Every "current cap rate" a broker publishes is sanity-checked against implied operating expenses before it's trusted.</p>
+
+  <div class="meta-row" id="meta-row"></div>
+
+  <div class="section-label">Class Benchmarks</div>
+  <div class="section-sub">A deal qualifies at benchmark + 1.00% (100bps).</div>
+  <div class="bench-grid" id="bench-grid"></div>
+
+  <div class="section-label">Qualifying Deals</div>
+  <div class="section-sub">≥100bps spread, ranked by spread.</div>
+  <div class="tbl-wrap"><table class="deals" id="qualifying-table"></table></div>
+  <div class="cards-mobile" id="qualifying-cards"></div>
+
+  <div class="section-label">Near Misses</div>
+  <div class="section-sub">50-99bps, or a real spread on paper with no NOI to verify it.</div>
+  <div class="tbl-wrap"><table class="deals" id="nearmiss-table"></table></div>
+  <div class="cards-mobile" id="nearmiss-cards"></div>
+
+  <div class="section-label">Disqualified — Broker Cap vs. Re-Underwritten Cap</div>
+  <div class="disq-toggle" id="disq-toggle" onclick="toggleDisq()">
+    <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+    <span id="disq-toggle-label">Show disqualified listings</span>
+  </div>
+  <div class="disq-body" id="disq-body"></div>
+
+  <div class="section-label">Scan History</div>
+  <div class="hist-list" id="hist-list"></div>
+
+  <p class="disclaimer">Sourced from live Crexi/Zillow browsing, not search snippets. Stated cap rates are re-underwritten at 5% vacancy and class-typical opex before being trusted — see notes on each deal. This page reads from a single data file; the weekly scan only ever updates <code>pages/phoenix-scan/data.js</code>.</p>
+</main>
+
+<script src="phoenix-scan/data.js"></script>
+<script>
+const D = window.PHX_SCAN;
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function money(n){ return n==null ? '—' : '$'+Number(n).toLocaleString(); }
+function pct(n){ return n==null ? '—' : n.toFixed(2)+'%'; }
+function badgeClass(conf){
+  const c=(conf||'').toLowerCase();
+  if(c.includes('medium') && !c.includes('low')) return 'medium';
+  if(c.includes('low-med') || c.includes('lowmed')) return 'lowmed';
+  return 'low';
+}
+function spreadClass(bps){ return bps>=150 ? '' : 'mid'; }
+
+// ── Meta row ─────────────────────────────────────────────────────────────
+document.getElementById('meta-row').innerHTML = `
+  <div class="meta-pill live"><span class="meta-dot"></span>Updated ${esc(D.updated)}</div>
+  <div class="meta-pill"><b>${esc(D.listingsScanned)}</b>&nbsp;listings scanned</div>
+  <div class="meta-pill"><b>${D.qualifying.length}</b>&nbsp;qualifying</div>
+  <div class="meta-pill"><b>${D.nearMisses.length}</b>&nbsp;near miss${D.nearMisses.length===1?'':'es'}</div>`;
+
+// ── Benchmark strip ──────────────────────────────────────────────────────
+document.getElementById('bench-grid').innerHTML = Object.entries(D.benchmarks).map(([cls,val])=>`
+  <div class="bench-card">
+    <div class="bench-cls">Class ${esc(cls)}</div>
+    <div class="bench-val">${val.toFixed(2)}%</div>
+    <div class="bench-sub">qualifies at ${(val+1).toFixed(2)}%+</div>
+  </div>`).join('');
+
+// ── Qualifying / Near-miss tables ────────────────────────────────────────
+function renderDeals(deals, tableId, cardsId, emptyMsg){
+  const table=document.getElementById(tableId), cards=document.getElementById(cardsId);
+  if(!deals.length){
+    table.parentElement.innerHTML = `<div class="empty">${emptyMsg}</div>`;
+    cards.innerHTML='';
+    return;
+  }
+  const sorted=[...deals].sort((a,b)=>b.spreadBps-a.spreadBps);
+
+  table.innerHTML = `
+    <thead><tr>
+      <th>Property</th><th>Ask</th><th>Units</th><th>Class</th><th>Est. NOI</th>
+      <th>Cap Rate</th><th>Spread</th><th>Confidence</th><th>Notes</th>
+    </tr></thead>
+    <tbody>${sorted.map(d=>`
+      <tr>
+        <td><div class="d-name">${esc(d.name)}</div><div class="d-addr">${esc(d.address)}, ${esc(d.zip)}</div>${d.url?`<a class="d-link" href="${esc(d.url)}" target="_blank" rel="noopener">View listing ↗</a>`:''}</td>
+        <td>${money(d.ask)}</td>
+        <td>${esc(d.units)}</td>
+        <td>${esc(d.cls)}</td>
+        <td>${money(d.noi)}</td>
+        <td>${pct(d.capPct)}</td>
+        <td class="spread ${spreadClass(d.spreadBps)}">+${esc(d.spreadBps)}bps</td>
+        <td><span class="badge ${badgeClass(d.confidence)}">${esc(d.confidence)}</span></td>
+        <td class="d-notes">${esc(d.notes)}</td>
+      </tr>`).join('')}
+    </tbody>`;
+
+  cards.innerHTML = sorted.map(d=>`
+    <div class="deal-card">
+      <div class="deal-card-head">
+        <div><div class="d-name">${esc(d.name)}</div><div class="d-addr">${esc(d.address)}, ${esc(d.zip)}</div></div>
+        <span class="badge ${badgeClass(d.confidence)}">${esc(d.confidence)}</span>
+      </div>
+      <div class="deal-card-stats">
+        <span><b>${money(d.ask)}</b> ask</span>
+        <span><b>${esc(d.units)}</b> units</span>
+        <span>Class <b>${esc(d.cls)}</b></span>
+        <span>NOI <b>${money(d.noi)}</b></span>
+        <span>Cap <b>${pct(d.capPct)}</b></span>
+        <span class="spread ${spreadClass(d.spreadBps)}">+${esc(d.spreadBps)}bps</span>
+      </div>
+      <div class="d-notes">${esc(d.notes)}</div>
+      ${d.url?`<div style="margin-top:8px;"><a class="d-link" href="${esc(d.url)}" target="_blank" rel="noopener">View listing ↗</a></div>`:''}
+    </div>`).join('');
+}
+
+renderDeals(D.qualifying, 'qualifying-table', 'qualifying-cards', 'No qualifying deals this scan.');
+renderDeals(D.nearMisses, 'nearmiss-table', 'nearmiss-cards', 'No near misses this scan.');
+
+// ── Disqualified (collapsed) ─────────────────────────────────────────────
+document.getElementById('disq-body').innerHTML = D.disqualified.length
+  ? D.disqualified.map(x=>`
+    <div class="disq-card">
+      <div class="disq-addr">${esc(x.address)}</div>
+      <div class="disq-caps">
+        <div><div class="disq-cap-label">Stated Cap</div><div class="disq-cap-val stated">${pct(x.statedCapPct)}</div></div>
+        <div class="disq-arrow">→</div>
+        <div><div class="disq-cap-label">Real Cap</div><div class="disq-cap-val real">${x.realCapPct==null?'n/a':pct(x.realCapPct)}</div></div>
+      </div>
+      <div class="disq-reason">${esc(x.reason)}</div>
+    </div>`).join('')
+  : `<div class="empty">Nothing disqualified this scan.</div>`;
+
+function toggleDisq(){
+  const toggle=document.getElementById('disq-toggle'), body=document.getElementById('disq-body'), label=document.getElementById('disq-toggle-label');
+  const open=body.classList.toggle('show');
+  toggle.classList.toggle('open', open);
+  label.textContent = open ? `Hide disqualified listings (${D.disqualified.length})` : 'Show disqualified listings';
+}
+document.getElementById('disq-toggle-label').textContent = `Show disqualified listings (${D.disqualified.length})`;
+
+// ── Scan history ──────────────────────────────────────────────────────────
+document.getElementById('hist-list').innerHTML = D.history.length
+  ? [...D.history].reverse().map(h=>`
+    <div class="hist-row">
+      <span class="hist-date">${esc(h.date)}</span>
+      <span>${esc(h.scanned)} scanned</span>
+      <span class="hist-stat">·</span>
+      <span>${esc(h.qualifyingCount)} qualifying</span>
+      <span class="hist-stat">·</span>
+      <span>${esc(h.top)}</span>
+    </div>`).join('')
+  : `<div class="empty">No scan history yet.</div>`;
+</script>
+</body>
+</html>
