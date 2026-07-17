@@ -286,16 +286,24 @@ async function openDoc(doc){
     pageSizes[p-1] = {w:vp.width, h:vp.height, overlay};
   }
   // place fields from a saved template if present, else the detected layout
+  await TPL_READY;
   placementList(doc).forEach(f => addField(f.page, f.type, f.x, f.y, f.w, f.h,
      f.type==='date' ? today() : ''));
   document.getElementById('resetTplBtn').style.display = hasTemplate(doc) ? '' : 'none';
   document.getElementById('saveTplBtn').textContent = hasTemplate(doc) ? 'Update template' : 'Save as template';
 }
 
-/* ---------- templates (saved layouts, per document, in this browser) ---------- */
+/* ---------- templates (saved layouts, per document) ----------
+   With DRIVE_ENDPOINT configured they save to the office Drive and load on every
+   device; localStorage is only the fallback when the endpoint is off/unreachable. */
+let SERVER_TPLS = null; // filled from the endpoint at boot (TPL_READY)
 function tplKey(doc){ return 'qs_tpl_' + doc.key; }
-function hasTemplate(doc){ try{ return !!localStorage.getItem(tplKey(doc)); }catch(e){ return false; } }
+function hasTemplate(doc){
+  if(SERVER_TPLS && SERVER_TPLS[doc.key]) return true;
+  try{ return !!localStorage.getItem(tplKey(doc)); }catch(e){ return false; }
+}
 function placementList(doc){
+  if(SERVER_TPLS && SERVER_TPLS[doc.key]) return SERVER_TPLS[doc.key];
   try{ const s = localStorage.getItem(tplKey(doc)); if(s) return JSON.parse(s); }catch(e){}
   const out = [];
   (doc.layout||[]).forEach(pg => (pg.fields||[]).forEach(f =>
@@ -305,16 +313,29 @@ function placementList(doc){
 function saveTemplate(){
   if(!current) return;
   const list = fieldEls.map(r => ({page:r.pageIdx, type:r.type, x:r.x, y:r.y, w:r.w, h:r.h}));
-  try{
-    localStorage.setItem(tplKey(current), JSON.stringify(list));
-    document.getElementById('resetTplBtn').style.display = '';
-    document.getElementById('saveTplBtn').textContent = 'Update template';
+  try{ localStorage.setItem(tplKey(current), JSON.stringify(list)); }catch(e){}
+  document.getElementById('resetTplBtn').style.display = '';
+  document.getElementById('saveTplBtn').textContent = 'Update template';
+  if(DRIVE_ENDPOINT){
+    if(SERVER_TPLS) SERVER_TPLS[current.key] = list;
+    fetch(DRIVE_ENDPOINT, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({token:'qs-arec-2026', action:'saveTpl', key:current.key, layout:list})})
+      .then(r=>r.json())
+      .then(j=> note(j.ok ? 'Template saved for everyone — all devices get this layout.'
+                          : 'Saved on this device only (server said: '+j.error+').'))
+      .catch(()=> note('Saved on this device only — could not reach the office endpoint.'));
+  } else {
     note('Template saved — this box layout will load automatically next time you open '+current.title+'.');
-  }catch(e){ note('Could not save (browser storage is full or blocked).'); }
+  }
 }
 function clearTemplate(){
   if(!current) return;
   localStorage.removeItem(tplKey(current));
+  if(DRIVE_ENDPOINT){
+    if(SERVER_TPLS) delete SERVER_TPLS[current.key];
+    fetch(DRIVE_ENDPOINT, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({token:'qs-arec-2026', action:'clearTpl', key:current.key})}).catch(()=>{});
+  }
   note('Layout reset to the original.');
   openDoc(current);
 }
@@ -588,6 +609,10 @@ document.getElementById('downloadBtn').onclick=async()=>{
 /* ---------- submit to office (tenant fill-only): Drive upload, FormSubmit fallback ---------- */
 const OFFICE_EMAIL = 'arecblackhills@gmail.com';
 const DRIVE_ENDPOINT = '';  // paste the Apps Script /exec URL here after deploying pages/quick-sign/submit-endpoint.gs
+// shared templates load once per visit; pages wait on this before placing boxes
+const TPL_READY = DRIVE_ENDPOINT
+  ? fetch(DRIVE_ENDPOINT+'?tpl=1').then(r=>r.json()).then(j=>{ SERVER_TPLS=j.templates||{}; }).catch(()=>{ SERVER_TPLS={}; })
+  : Promise.resolve(SERVER_TPLS={});
 
 function showSentBar(){
   const bar=document.createElement('div');

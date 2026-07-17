@@ -23,6 +23,16 @@ function doPost(e) {
       return jsonOut({ ok: false, error: 'Invalid token' });
     }
 
+    // Shared box layouts: saveTpl stores a document's layout, clearTpl removes it.
+    // They live in "quick-sign-templates.json" inside the submissions folder.
+    if (data.action === 'saveTpl' || data.action === 'clearTpl') {
+      var tpls = readTpls();
+      if (data.action === 'saveTpl') tpls[data.key] = data.layout;
+      else delete tpls[data.key];
+      tplFile().setContent(JSON.stringify(tpls));
+      return jsonOut({ ok: true });
+    }
+
     var bytes = Utilities.base64Decode(data.pdf);
     var blob = Utilities.newBlob(bytes, 'application/pdf');
 
@@ -48,6 +58,23 @@ function doPost(e) {
   } catch (err) {
     return jsonOut({ ok: false, error: String(err) });
   }
+}
+
+// GET returns the shared templates so every device loads the same box layouts.
+function doGet(e) {
+  return jsonOut({ ok: true, templates: readTpls() });
+}
+
+function tplFile() {
+  var folder = getOrCreateFolder(FOLDER_NAME);
+  var files = folder.getFilesByName('quick-sign-templates.json');
+  if (files.hasNext()) return files.next();
+  return folder.createFile('quick-sign-templates.json', '{}', 'application/json');
+}
+
+function readTpls() {
+  try { return JSON.parse(tplFile().getBlob().getDataAsString()) || {}; }
+  catch (err) { return {}; }
 }
 
 function getOrCreateFolder(name) {
