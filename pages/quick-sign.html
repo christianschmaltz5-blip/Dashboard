@@ -51,8 +51,8 @@ h1{font-size:26px;font-weight:700;letter-spacing:0.02em;margin-bottom:6px;}
 .picker.hidden{display:none;}
 .ed-bar{position:sticky;top:56px;z-index:150;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 2rem;border-bottom:1px solid var(--border);background:rgba(10,10,12,0.92);backdrop-filter:blur(12px);}
 .ed-title{font-size:14px;font-weight:600;margin-right:auto;}
-.ed-hint{font-size:11px;color:var(--muted);width:100%;order:5;display:flex;align-items:center;gap:6px;}
-.ed-hint svg{width:13px;height:13px;stroke:var(--accent2);fill:none;stroke-width:2;}
+.ed-hint{font-size:11px;color:var(--muted);width:100%;order:5;line-height:1.55;}
+.ed-hint svg{width:13px;height:13px;stroke:var(--accent2);fill:none;stroke-width:2;vertical-align:-2px;margin-right:4px;}
 
 .pdf-scroll{max-width:900px;margin:1.5rem auto;padding:0 1rem 5rem;}
 .page-wrap{position:relative;margin:0 auto 22px;box-shadow:0 8px 30px rgba(0,0,0,0.5);background:#fff;line-height:0;}
@@ -125,10 +125,11 @@ body.fill-only .qs-field .resize{display:none !important;}
   .doc-grid{grid-template-columns:1fr !important;}
   .modal{padding:20px;border-radius:14px;}
   #sigPad{height:160px;}
-  /* bigger tap target + no iOS zoom-on-focus for the fill boxes */
-  .qs-field .fbox{min-height:22px;}
+  /* boxes must keep the page's exact geometry — min-heights broke alignment (pinch-zoom to fill) */
+  .qs-field .fbox{border-width:1px;padding:0 2px;}
   .modal-actions .btn{padding:12px 16px;font-size:12px;}
-  .qs-field.f-sig .fbox{min-height:26px;}
+  /* let the toolbar scroll away so the document gets the full screen */
+  .ed-bar{position:static;}
 }
 #qrBox{display:flex;flex-direction:column;align-items:center;gap:14px;}
 #qrCanvas{background:#fff;padding:14px;border-radius:12px;}
@@ -260,7 +261,8 @@ async function openDoc(doc){
   current._bytes = bytes.slice(0);
   const pdf = await pdfjsLib.getDocument({data: bytes}).promise;
   scroll.innerHTML = '';
-  const targetW = Math.min(880, scroll.clientWidth);
+  const scs = getComputedStyle(scroll);
+  const targetW = Math.min(880, scroll.clientWidth - parseFloat(scs.paddingLeft) - parseFloat(scs.paddingRight));
 
   for(let p=1;p<=pdf.numPages;p++){
     const page = await pdf.getPage(p);
