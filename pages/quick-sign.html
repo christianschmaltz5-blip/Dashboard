@@ -687,6 +687,15 @@ if(!DOCS.length){ document.getElementById('docGrid').innerHTML='<p style="color:
     const db=document.getElementById('downloadBtn'); if(db) db.textContent='Download a copy';
   }
   if(p.get('sent')==='1'){ showSentBar(); }
+  // ?exportTpl=1 downloads every layout saved in THIS browser as JSON,
+  // so saved templates can be baked into manifests.js for everyone.
+  if(p.get('exportTpl')){
+    const t={}; for(let i=0;i<localStorage.length;i++){ const key=localStorage.key(i);
+      if(key.indexOf('qs_tpl_')===0) t[key.slice(7)]=JSON.parse(localStorage.getItem(key)); }
+    const a=document.createElement('a');
+    a.href='data:application/json,'+encodeURIComponent(JSON.stringify(t));
+    a.download='quick-sign-templates.json'; document.body.appendChild(a); a.click(); a.remove();
+  }
   const k = p.get('doc');
   if(k){ const d = DOCS.find(x=>x.key===k); if(d) openDoc(d); }
 }catch(e){} })();
