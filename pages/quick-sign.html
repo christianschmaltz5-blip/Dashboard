@@ -250,7 +250,7 @@ async function openDoc(doc){
   document.getElementById('edTitle').textContent = doc.title;
   // reflect the open doc in the URL so links / the Share·QR button deep-link to it
   try{
-    var qs = '?doc='+encodeURIComponent(doc.key) + (document.body.classList.contains('fill-only') ? '&fill=1' : '');
+    var qs = '?doc='+encodeURIComponent(doc.key) + (document.body.classList.contains('fill-only') ? '&fill=1' : '&admin=1');
     history.replaceState(null,'', location.pathname+qs);
   }catch(e){}
   const scroll = document.getElementById('pdfScroll');
@@ -693,7 +693,8 @@ document.getElementById('navBack').addEventListener('click', e=>{
 const qrModal=document.getElementById('qrModal');
 document.getElementById('qrBtn').onclick=()=>{
   const box=document.getElementById('qrCanvas'); box.innerHTML='';
-  const url = window.location.href.split('#')[0];
+  // shared links are ALWAYS the tenant fill-only version — editing stays admin-only
+  const url = location.origin+location.pathname+(current ? '?doc='+encodeURIComponent(current.key)+'&fill=1' : '');
   new QRCode(box,{text:url,width:200,height:200,correctLevel:QRCode.CorrectLevel.M});
   document.getElementById('qrUrl').textContent=url;
   qrModal.classList.add('show');
@@ -704,10 +705,12 @@ document.getElementById('qrClose').onclick=()=>qrModal.classList.remove('show');
 if(!DOCS.length){ document.getElementById('docGrid').innerHTML='<p style="color:var(--muted)">Could not load documents (manifests.js missing).</p>'; }
 
 /* deep-link: open a specific document from ?doc=KEY (used by the per-document QR codes).
-   ?fill=1 opens it in tenant "fill-only" mode — fill & sign, no moving/adding/deleting boxes. */
+   Tenant fill-only mode is the DEFAULT — fill & sign, no moving/adding/deleting boxes.
+   The editor requires ?admin=1 (the dashboard tile links there); this also locks down
+   any old shared/printed QR whose URL predates the fill=1 convention. */
 (function(){ try{
   const p = new URLSearchParams(location.search);
-  if(p.get('fill')==='1' || p.get('fill')==='true'){
+  if(p.get('admin')!=='1'){
     document.body.classList.add('fill-only');
     const db=document.getElementById('downloadBtn'); if(db) db.textContent='Download a copy';
   }
