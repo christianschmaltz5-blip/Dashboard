@@ -2,18 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Exit 67 Commercial — I-90 Interchange · Box Elder, SD</title>
+<title>Freedom Estates — Master Plan · Box Elder, South Dakota</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="A cinematic marketing page for Exit 67 Commercial — a 7.57-acre light-industrial / commercial corner on the I-90 Exit 67 interchange at Liberty Blvd & Hwy 1416, Box Elder, South Dakota. Highway-frontage single-family homes and a brick-and-stone flex / garage-condo court.">
+<meta name="description" content="Freedom Estates — a shovel-ready master-planned community on the I-90 Exit 67 interchange at Box Elder, South Dakota. 32 acres in two tracts: a 24.76-acre multi-family residential neighborhood and a 7.30-acre light-industrial / commercial gateway corner, 1.8 miles from Ellsworth Air Force Base.">
 
 <style>
 /* ============================================================
-   EXIT 67 COMMERCIAL — cinematic dev-site landing page
-   Single self-contained file. Only external asset: assets/aerial.jpg,
-   painted onto ONE fixed canvas under a shared Ken-Burns camera so the
-   massed buildings stay locked to the drone photo. Clouds are procedural
-   (pre-rendered offscreen). No libraries, no network beyond the aerial.
-   Palette: golden-hour amber + cream + charcoal. Gold accent #C9A24A.
+   FREEDOM ESTATES — cinematic master-plan landing page
+   Single self-contained file. Assets: five images in assets/.
+   Hero paints procedural golden-hour clouds over a fixed canvas,
+   descends onto the real drone aerial, then crossfades to the
+   master-plan render under a slow Ken Burns push. Street views
+   are DOM <img> crossfades. Palette: golden amber + cream + charcoal.
    ============================================================ */
 :root{
   --gold:#c9a24a; --gold-2:#b8923e; --gold-dk:#8f6f2c;
@@ -54,15 +54,15 @@ a{color:inherit; text-decoration:none}
 }
 #preloader.done{ opacity:0; visibility:hidden; pointer-events:none; }
 .pl-mark{
-  font-family:var(--sans); font-weight:800; letter-spacing:.02em;
-  font-size:clamp(58px,15vw,150px); line-height:.9; color:var(--char);
-  display:flex; align-items:baseline; gap:.02em;
+  font-family:var(--sans); font-weight:800; letter-spacing:-.01em;
+  font-size:clamp(44px,11vw,104px); line-height:.92; color:var(--char);
+  text-align:center;
 }
 .pl-mark .six{ color:var(--gold); }
 .pl-word{
-  margin-top:18px; font-size:clamp(12px,3.4vw,17px);
-  letter-spacing:.46em; text-transform:uppercase; font-weight:600;
-  color:var(--char); padding-left:.46em;
+  margin-top:18px; font-size:clamp(11px,3.2vw,16px);
+  letter-spacing:.42em; text-transform:uppercase; font-weight:600;
+  color:var(--char); padding-left:.42em; text-align:center;
 }
 .pl-count{
   position:absolute; bottom:max(env(safe-area-inset-bottom),34px);
@@ -88,8 +88,8 @@ a{color:inherit; text-decoration:none}
   border-bottom-color:rgba(201,162,74,.18); padding-top:14px; padding-bottom:14px;
 }
 .nav-mark{
-  font-weight:800; font-size:22px; letter-spacing:.02em; color:var(--cream);
-  display:flex; align-items:baseline;
+  font-weight:800; font-size:20px; letter-spacing:.01em; color:var(--cream);
+  display:flex; align-items:baseline; gap:.28em;
 }
 .nav-mark .six{ color:var(--gold); }
 .nav-links{ display:flex; align-items:center; gap:clamp(14px,3vw,34px); }
@@ -113,10 +113,10 @@ a{color:inherit; text-decoration:none}
 .nav-cta:active{ transform:translateY(1px); }
 @media (max-width:720px){ .nav-links .link{ display:none; } }
 
-/* ---------------- hero + blueprint scroll tracks ---------------- */
+/* ---------------- hero + street scroll tracks ---------------- */
 .track{ position:relative; z-index:5; }
 #heroTrack{ height:400vh; }
-#bpTrack{ height:260vh; }
+#streetTrack{ height:320vh; }
 
 .hero-overlay{
   position:fixed; inset:0; z-index:12; pointer-events:none;
@@ -144,29 +144,58 @@ a{color:inherit; text-decoration:none}
 }
 @keyframes cuepulse{ 0%,100%{opacity:.35;transform:scaleY(.7)} 50%{opacity:1;transform:scaleY(1)} }
 
-.bp-overlay{
-  position:fixed; inset:0; z-index:12; pointer-events:none;
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  text-align:center; padding:0 22px;
+/* ---------------- street-view crossfade (DOM images over canvas) ---------------- */
+.street-stage{ position:fixed; inset:0; z-index:10; pointer-events:none; }
+.street-img{
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; opacity:0; will-change:opacity;
 }
-.bp-overlay .eyebrow{ color:#8a6a2b; text-shadow:0 1px 10px rgba(247,244,236,.85); }
-.bp-title{
-  margin:12px 0 0; font-size:clamp(28px,6vw,58px); font-weight:300;
-  letter-spacing:-.01em; color:#23282e; text-shadow:0 1px 14px rgba(247,244,236,.7);
+.street-overlay{
+  position:fixed; inset:0; z-index:12; pointer-events:none;
+  background:linear-gradient(180deg,rgba(8,10,14,.28) 0%,rgba(8,10,14,0) 32%,rgba(8,10,14,.55) 100%);
+  opacity:0;
+}
+.street-cap{
+  position:fixed; left:0; right:0; bottom:clamp(64px,14vh,140px); z-index:13;
+  text-align:center; padding:0 22px; pointer-events:none; opacity:0;
+}
+.street-cap .eyebrow{ text-shadow:0 2px 18px rgba(0,0,0,.6); }
+.street-cap .st-line{
+  margin:12px 0 0; font-size:clamp(26px,5.4vw,52px); font-weight:300;
+  letter-spacing:-.01em; color:#fff; text-shadow:0 3px 30px rgba(0,0,0,.5);
 }
 
 /* ---------------- content sections (opaque, scroll over canvas) ---------------- */
 .sheet{ position:relative; z-index:20; }
 .wrap{ max-width:var(--maxw); margin:0 auto; padding:0 clamp(20px,5vw,44px); }
 
-/* THE NUMBERS — light */
-#numbers{
+/* THE MASTER PLAN — light */
+#plan{
   background:linear-gradient(180deg,#f6efe2 0%, #efe6d3 100%); color:var(--char);
   padding:clamp(72px,13vw,150px) 0;
 }
-#numbers .grid{
-  display:grid; grid-template-columns:1fr; gap:clamp(38px,6vw,72px); align-items:center;
+#plan h2{
+  font-size:clamp(30px,5.4vw,56px); font-weight:300; letter-spacing:-.02em;
+  line-height:1.04; margin:16px 0 0; max-width:20ch;
 }
+#plan h2 b{ font-weight:600; }
+.plan-fig{
+  margin:clamp(30px,5vw,54px) 0 0; border-radius:16px; overflow:hidden;
+  border:1px solid rgba(21,24,29,.14); box-shadow:0 30px 80px rgba(21,24,29,.18);
+}
+.plan-fig img{ width:100%; height:auto; }
+.legend{ display:flex; flex-wrap:wrap; gap:14px 26px; margin:28px 0 0; }
+.legend .lg{ display:flex; align-items:center; gap:9px; font-size:13.5px; color:#4a463c; font-weight:500; }
+.legend .lg i{ width:14px; height:14px; border-radius:4px; display:inline-block; border:1px solid rgba(21,24,29,.18); }
+.plan-cap{ margin:22px 0 0; font-size:13px; letter-spacing:.01em; color:#6a6151; font-style:italic; }
+
+/* THE NUMBERS — light */
+#numbers{
+  background:linear-gradient(180deg,#efe6d3 0%, #e7dcc6 100%); color:var(--char);
+  padding:clamp(72px,13vw,150px) 0;
+  border-top:1px solid rgba(21,24,29,.08);
+}
+#numbers .grid{ display:grid; grid-template-columns:1fr; gap:clamp(38px,6vw,72px); align-items:center; }
 #numbers h2{
   font-size:clamp(30px,5.4vw,56px); font-weight:300; letter-spacing:-.02em;
   line-height:1.04; margin:16px 0 0; max-width:16ch;
@@ -193,11 +222,22 @@ a{color:inherit; text-decoration:none}
   background:rgba(21,24,29,.05); border:1px solid rgba(21,24,29,.12); color:#2c2a24;
 }
 .chip b{ color:var(--gold-dk); font-weight:700; }
+.offers{ display:grid; grid-template-columns:1fr; gap:18px; margin-top:clamp(38px,6vw,60px); }
+.offer{
+  padding:28px; border-radius:18px; background:rgba(255,255,255,.5);
+  border:1px solid rgba(21,24,29,.12);
+}
+.offer-tag{ font-size:11px; letter-spacing:.2em; text-transform:uppercase; font-weight:700; color:var(--gold-dk); }
+.offer h3{ margin:10px 0 16px; font-size:clamp(20px,3vw,26px); font-weight:600; letter-spacing:-.01em; }
+.offer-row{ display:flex; align-items:baseline; justify-content:space-between; gap:16px; border-top:1px solid rgba(21,24,29,.1); padding-top:16px; }
+.offer-row span:first-child{ font-size:clamp(20px,3.4vw,30px); font-weight:300; }
+.offer-row .price{ font-size:clamp(20px,3.4vw,30px); font-weight:600; color:var(--char); }
 @media (min-width:860px){
   #numbers .grid{ grid-template-columns:1fr 1.05fr; }
   .stat-wrap{ text-align:right; }
   .stat-huge{ justify-content:flex-end; }
   .chips{ justify-content:flex-end; }
+  .offers{ grid-template-columns:1fr 1fr; }
 }
 
 /* THE VISION — dark */
@@ -256,7 +296,7 @@ footer{
   display:grid; grid-template-columns:1fr; gap:34px;
   padding:clamp(30px,6vw,54px) clamp(20px,5vw,44px); border-top:1px solid rgba(244,236,221,.1);
 }
-.foot-brand .fmark{ font-weight:800; font-size:26px; }
+.foot-brand .fmark{ font-weight:800; font-size:24px; }
 .foot-brand .fmark .six{ color:var(--gold); }
 .foot-brand p{ margin:12px 0 0; font-size:14px; color:rgba(244,236,221,.6); max-width:34ch; }
 .foot-col h4{ font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--gold); margin:0 0 16px; }
@@ -280,59 +320,99 @@ footer{
 <!-- ONE fixed cinematic canvas under everything -->
 <canvas id="scene" aria-hidden="true"></canvas>
 
+<!-- Street-view crossfade layers (DOM images over the canvas) -->
+<div class="street-stage" id="streetStage" aria-hidden="true">
+  <img class="street-img" id="stImg1" src="assets/street-entrance.jpg" alt="">
+  <img class="street-img" id="stImg2" src="assets/street-residential.jpg" alt="">
+  <img class="street-img" id="stImg3" src="assets/street-flex.jpg" alt="">
+</div>
+<div class="street-overlay" id="streetOverlay" aria-hidden="true"></div>
+<div class="street-cap" id="cap1" aria-hidden="true"><p class="eyebrow">The Entrance</p><div class="st-line">In off Highway&nbsp;1416.</div></div>
+<div class="street-cap" id="cap2" aria-hidden="true"><p class="eyebrow">Residential Streets</p><div class="st-line">Homes around a park.</div></div>
+<div class="street-cap" id="cap3" aria-hidden="true"><p class="eyebrow">Commercial / Flex Court</p><div class="st-line">A gateway business park.</div></div>
+
 <!-- Preloader (also the ad's loop shot) -->
-<div id="preloader" role="status" aria-label="Loading Exit 67 Commercial">
-  <div class="pl-mark">E<span class="six">67</span></div>
-  <div class="pl-word">Exit 67 Commercial</div>
-  <div class="pl-count"><span id="plNum">0</span>% &middot; Box Elder, South Dakota</div>
+<div id="preloader" role="status" aria-label="Loading Freedom Estates">
+  <div class="pl-mark">Freedom<br><span class="six">Estates</span></div>
+  <div class="pl-word">Master Plan &middot; Box Elder, SD</div>
+  <div class="pl-count"><span id="plNum">0</span>% &middot; Freedom Estates</div>
   <div class="pl-bar" id="plBar"></div>
 </div>
 
 <!-- Nav -->
 <nav id="nav" aria-label="Primary">
-  <a class="nav-mark" href="#top" aria-label="Exit 67 Commercial home">E<span class="six">67</span></a>
+  <a class="nav-mark" href="#top" aria-label="Freedom Estates home">Freedom <span class="six">Estates</span></a>
   <div class="nav-links">
-    <a class="link" href="#top">The Site</a>
+    <a class="link" href="#plan">The Plan</a>
     <a class="link" href="#vision">The Vision</a>
     <a class="link" href="#numbers">The Numbers</a>
-    <a class="nav-cta" href="mailto:kandreson@kw.com?subject=Exit%2067%20Commercial%20—%20I-90%20Exit%2067">Let's Talk</a>
+    <a class="nav-cta" href="mailto:kandreson@kw.com?subject=Freedom%20Estates%20—%20Box%20Elder%20SD">Let's Talk</a>
   </div>
 </nav>
 
-<!-- Hero scroll-driven descent -->
+<!-- Hero scroll-driven descent: clouds -> real aerial -> master plan -->
 <a id="top"></a>
-<section id="heroTrack" class="track" aria-label="Aerial descent over the Exit 67 corner"></section>
+<section id="heroTrack" class="track" aria-label="Aerial descent onto Freedom Estates"></section>
 
 <div class="hero-overlay" id="heroOverlay" aria-hidden="true">
   <p class="eyebrow">I-90 Exit 67 &middot; Box Elder, South Dakota</p>
-  <h1 class="hero-title">The corner<br>gets <b>built.</b></h1>
+  <h1 class="hero-title">A community,<br><b>planned.</b></h1>
 </div>
 <div class="scroll-cue" id="scrollCue" aria-hidden="true">Scroll<i></i></div>
 
-<!-- Blueprint reveal scroll section -->
-<section id="bpTrack" class="track" aria-label="From plans to reality"></section>
-<div class="bp-overlay" id="bpOverlay" aria-hidden="true">
-  <p class="eyebrow">The Master Plan</p>
-  <div class="bp-title">Every lot, drawn.</div>
-</div>
+<!-- Street-view scroll section (drives the DOM crossfade above) -->
+<section id="streetTrack" class="track" aria-label="A walk through the community"></section>
+
+<!-- THE MASTER PLAN -->
+<section id="plan" class="sheet" aria-label="The master plan">
+  <div class="wrap">
+    <p class="eyebrow" data-reveal>The Master Plan</p>
+    <h2 data-reveal>Homes, open space, and a business park &mdash; <b>one plan.</b></h2>
+    <figure class="plan-fig" data-reveal>
+      <img src="assets/masterplan.jpg" alt="Freedom Estates concept master plan aerial" loading="lazy">
+    </figure>
+    <div class="legend" data-reveal>
+      <span class="lg"><i style="background:#d8b24a"></i>Residential lots</span>
+      <span class="lg"><i style="background:#8a5a3c"></i>Commercial / flex buildings</span>
+      <span class="lg"><i style="background:#6f8f5a"></i>Open space &amp; drainage</span>
+      <span class="lg"><i style="background:#b8923e"></i>Walking trail</span>
+      <span class="lg"><i style="background:#9aa7b4"></i>Future phases</span>
+    </div>
+    <p class="plan-cap" data-reveal>Concept master plan &mdash; final lot count subject to engineering and survey.</p>
+  </div>
+</section>
 
 <!-- THE NUMBERS -->
 <section id="numbers" class="sheet" aria-label="The opportunity">
   <div class="wrap grid">
     <div>
-      <p class="eyebrow" data-reveal>The Opportunity</p>
-      <h2 data-reveal>A <b>7.57-acre</b> commercial corner, hard on the interstate.</h2>
-      <p class="lede" data-reveal>Light-industrial and commercial land at Liberty Boulevard &amp; Highway&nbsp;1416, on the I-90 Exit&nbsp;67 interchange in Box Elder — the gateway parcel of the Freedom Estates master plan, and 1.8 miles from the gates of Ellsworth Air Force Base, the future home of the B-21 Raider.</p>
+      <p class="eyebrow" data-reveal>The Numbers</p>
+      <h2 data-reveal>Two tracts, <b>32 acres,</b> shovel-ready on the interchange.</h2>
+      <p class="lede" data-reveal>Freedom Estates fronts the I-90 Exit&nbsp;67 interchange at Liberty Boulevard &amp; Highway&nbsp;1416 in Box Elder &mdash; graded, flat and served, 1.8 miles from the gates of Ellsworth Air Force Base, the future home of the B-21 Raider.</p>
       <div class="chips" data-reveal>
-        <span class="chip"><b>I-90 Exit 67</b> interchange access</span>
-        <span class="chip"><b>34,600+</b> vehicles / day</span>
-        <span class="chip"><b>1.8 mi</b> to Ellsworth AFB</span>
-        <span class="chip"><b>Light Industrial</b> / Commercial</span>
+        <span class="chip"><b>Shovel ready</b></span>
+        <span class="chip"><b>Utilities</b> on site</span>
+        <span class="chip"><b>Graded &amp; flat</b></span>
+        <span class="chip"><b>I-90 Exit 67</b> access</span>
+        <span class="chip"><b>1.8 mi</b> to Ellsworth AFB (B-21 Raider)</span>
+        <span class="chip"><b>15 min</b> to Rapid City &amp; Regional Airport</span>
       </div>
     </div>
     <div class="stat-wrap" data-reveal>
-      <div class="stat-huge">7.57<span class="unit">ac</span></div>
-      <div class="stat-cap">Liberty Blvd &amp; Hwy 1416 &middot; Freedom Estates</div>
+      <div class="stat-huge">32<span class="unit">ac</span></div>
+      <div class="stat-cap">Total &middot; Freedom Estates &middot; Box Elder, SD</div>
+    </div>
+  </div>
+  <div class="wrap offers">
+    <div class="offer" data-reveal>
+      <div class="offer-tag">Freedom Tracts Subdivision</div>
+      <h3>Multi-Family Residential</h3>
+      <div class="offer-row"><span>24.76 ac</span><span class="price">$3,750,000</span></div>
+    </div>
+    <div class="offer" data-reveal>
+      <div class="offer-tag">Gateway Corner &middot; I-90 Exit 67</div>
+      <h3>Light Industrial / Commercial</h3>
+      <div class="offer-row"><span>7.30 ac</span><span class="price">$1,150,000</span></div>
     </div>
   </div>
 </section>
@@ -342,42 +422,42 @@ footer{
   <div class="wrap grid">
     <div>
       <p class="eyebrow" data-reveal>The Vision</p>
-      <h2 data-reveal>Two programs on <b>one interchange corner.</b></h2>
-      <p class="lede" data-reveal>A row of single-family homes lines the Highway&nbsp;1416 frontage while a brick-and-stone flex / garage-condo court fills the north yard — fed by a poured concrete entrance apron and spine straight off the Exit&nbsp;67 ramps.</p>
+      <h2 data-reveal>A neighborhood, and a <b>gateway business park.</b></h2>
+      <p class="lede" data-reveal>Single-family streets wrap a central park while a brick-and-steel flex court anchors the interchange corner &mdash; open space and drainage stitched through the middle.</p>
     </div>
     <div class="cards">
       <a class="vcard" href="#numbers" data-reveal>
         <div class="arrow">&rarr;</div>
-        <div><div class="no">01</div><h3>Highway-Frontage Homes</h3><p>A staggered row of ten single-family homes &mdash; gabled roofs, lawns and driveways &mdash; following the Hwy&nbsp;1416 diagonal, facing the traffic.</p></div>
+        <div><div class="no">01</div><h3>Residential Neighborhood</h3><p>Single-family lots arranged around a central park, laced with a walking trail.</p></div>
       </a>
       <a class="vcard" href="#numbers" data-reveal>
         <div class="arrow">&rarr;</div>
-        <div><div class="no">02</div><h3>North-Yard Flex / Garage Condos</h3><p>Four brick-and-limestone flex buildings — 25 roll-up bays in all — around a poured storage court at the back of the site.</p></div>
+        <div><div class="no">02</div><h3>Commercial / Flex Business Park</h3><p>Brick-and-steel garage-condo buildings on the gateway corner, hard on I-90 Exit&nbsp;67.</p></div>
       </a>
       <a class="vcard" href="#numbers" data-reveal>
         <div class="arrow">&rarr;</div>
-        <div><div class="no">03</div><h3>Interchange Access &amp; Sitework</h3><p>A flared concrete apron off the highway and a poured spine up through the yard, tying both programs to I-90 Exit&nbsp;67.</p></div>
+        <div><div class="no">03</div><h3>Open Space &amp; Drainage</h3><p>A creek corridor, stormwater basins and buffers threaded between the two programs.</p></div>
       </a>
     </div>
   </div>
 </section>
 
 <!-- Footer -->
-<footer aria-label="Exit 67 Commercial footer">
+<footer aria-label="Freedom Estates footer">
   <div class="marquee" aria-hidden="true">
     <div class="row">
-      <span>Exit 67</span><span class="dot">&bull;</span><span>Interstate Frontage</span><span class="dot">&bull;</span>
-      <span>Exit 67</span><span class="dot">&bull;</span><span>Interstate Frontage</span><span class="dot">&bull;</span>
+      <span>Freedom Estates</span><span class="dot">&bull;</span><span>Box Elder, SD</span><span class="dot">&bull;</span>
+      <span>Freedom Estates</span><span class="dot">&bull;</span><span>Box Elder, SD</span><span class="dot">&bull;</span>
     </div>
   </div>
   <div class="wrap foot-grid">
     <div class="foot-brand">
-      <div class="fmark">E<span class="six">67</span> Commercial</div>
-      <p>A 7.57-acre light-industrial / commercial corner on the I-90 Exit 67 interchange &mdash; Box Elder, South Dakota.</p>
+      <div class="fmark">Freedom <span class="six">Estates</span></div>
+      <p>A shovel-ready master-planned community on the I-90 Exit 67 interchange &mdash; Box Elder, South Dakota.</p>
     </div>
     <div class="foot-col">
       <h4>Quick Links</h4>
-      <a href="#top">The Site</a>
+      <a href="#plan">The Plan</a>
       <a href="#vision">The Vision</a>
       <a href="#numbers">The Numbers</a>
     </div>
@@ -385,13 +465,13 @@ footer{
       <h4>Get in Touch</h4>
       <p>Kevin Andreson, Realtor</p>
       <a href="tel:+16056465409">(605) 646-5409</a>
-      <a href="mailto:kandreson@kw.com?subject=Exit%2067%20Commercial%20—%20I-90%20Exit%2067">kandreson@kw.com</a>
+      <a href="mailto:kandreson@kw.com?subject=Freedom%20Estates%20—%20Box%20Elder%20SD">kandreson@kw.com</a>
       <p>Andreson Real Estate Co. &middot; Keller Williams Realty Black Hills</p>
     </div>
   </div>
   <div class="wrap legal">
-    Concept visualization &mdash; not an approved site plan. Building sizes, layout and program are conceptual and subject to change. Information deemed reliable but not guaranteed.<br>
-    &copy; 2026 Exit 67 Commercial &middot; Box Elder, SD
+    Concept visualization &mdash; not an approved site plan. Acreage, layout, lot count and program are conceptual and subject to engineering, survey and change. Information deemed reliable but not guaranteed.<br>
+    &copy; 2026 Freedom Estates &middot; Box Elder, SD
   </div>
 </footer>
 
@@ -404,448 +484,53 @@ footer{
   /* ---------------- math / easing ---------------- */
   const clamp=(v,a=0,b=1)=> v<a?a : v>b?b : v;
   const lerp=(a,b,t)=> a+(b-a)*t;
-  const easeOut=t=> 1-Math.pow(1-t,3);
   const easeInOut=t=> t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
-  const win=(t,s,e)=> clamp((t-s)/Math.max(1,e-s));
   const smooth=(x,a,b)=>{ const t=clamp((x-a)/Math.max(1e-6,b-a)); return t*t*(3-2*t); };
   const hx=h=>{ h=h.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; };
-  const mix=(a,b,t)=>{ a=hx(a); b=hx(b); return `rgb(${Math.round(lerp(a[0],b[0],t))},${Math.round(lerp(a[1],b[1],t))},${Math.round(lerp(a[2],b[2],t))})`; };
   const rgba=(h,al)=>{ const c=hx(h); return `rgba(${c[0]},${c[1]},${c[2]},${al})`; };
-  const mixRGBA=(a,b,t,al)=>{ a=hx(a); b=hx(b); return `rgba(${Math.round(lerp(a[0],b[0],t))},${Math.round(lerp(a[1],b[1],t))},${Math.round(lerp(a[2],b[2],t))},${al})`; };
   function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
-  const rnd=mulberry32(0x1416);
 
-  /* ======================================================================
-     TIMELINE constants (ms) — reused so the proven KF camera + assembly
-     windows keep their pacing. Scroll maps into this ms space.
-     ====================================================================== */
-  const DUR = { land:8500, site:8500, garage:10000, multi:10500, dusk:10000 };
-  const B = {};
-  { let acc=0; B.land=acc; acc+=DUR.land; B.site=acc; acc+=DUR.site; B.garage=acc; acc+=DUR.garage; B.multi=acc; acc+=DUR.multi; B.dusk=acc; acc+=DUR.dusk; B.end=acc; }
-  const T_BUILT = B.dusk;              // everything assembled by here (day)
+  /* ---------------- images (preloaded; counter drives the preloader) ---------------- */
+  const IMG_SRC={ aerial:"assets/aerial.jpg", plan:"assets/masterplan.jpg",
+    st1:"assets/street-entrance.jpg", st2:"assets/street-residential.jpg", st3:"assets/street-flex.jpg" };
+  const TOTAL=Object.keys(IMG_SRC).length;
+  const img={}; let loadedCount=0;
+  function preload(done){
+    for(const k in IMG_SRC){ const im=new Image(); img[k]=im;
+      const tick=()=>{ if(++loadedCount>=TOTAL && done) done(); };
+      im.onload=tick; im.onerror=tick; im.src=IMG_SRC[k];
+    }
+  }
 
-  /* ======================================================================
-     RENDER TARGET — retargetable so the same draw code serves the fixed
-     viewport canvas (normal) and a 1600x900 canvas (record mode).
-     ====================================================================== */
+  /* ---------------- render target (viewport canvas | 1600x900 record canvas) ---------------- */
   let canvas, ctx, W=0,H=0,DPR=1;
-  const IMG_ASPECT = 1800/1199;
-  let dw=0,dh=0, cam={cu:.5,cv:.5,z:1}, dwz=1,dhz=1, portrait=false;
-
-  const aerial = new Image();
-  let imgReady=false, imgBroken=false;
-
-  function fitCover(){
-    if(W/H > IMG_ASPECT){ dw=W; dh=W/IMG_ASPECT; } else { dh=H; dw=H*IMG_ASPECT; }
-    portrait = (W/H) < IMG_ASPECT;
-  }
-  function setTargetViewport(){
-    canvas=document.getElementById("scene"); ctx=canvas.getContext("2d");
-    resizeViewport();
-  }
+  function setTargetViewport(){ canvas=document.getElementById("scene"); ctx=canvas.getContext("2d"); resizeViewport(); }
   function resizeViewport(){
     DPR=Math.min(devicePixelRatio||1,2);
     W=Math.max(1,Math.round(innerWidth)); H=Math.max(1,Math.round(innerHeight));
     canvas.width=Math.round(W*DPR); canvas.height=Math.round(H*DPR);
     canvas.style.width=W+"px"; canvas.style.height=H+"px";
-    ctx.setTransform(DPR,0,0,DPR,0,0);
-    fitCover(); buildShadowSprites(); buildClouds();
+    ctx.setTransform(DPR,0,0,DPR,0,0); buildClouds();
   }
   function setTargetFixed(el,w,h){
     canvas=el; ctx=canvas.getContext("2d");
     DPR=1; W=w; H=h; canvas.width=w; canvas.height=h;
-    ctx.setTransform(1,0,0,1,0,0);
-    fitCover(); buildShadowSprites(); buildClouds();
+    ctx.setTransform(1,0,0,1,0,0); buildClouds();
   }
 
-  function setCam(c){ cam=c; dwz=dw*cam.z; dhz=dh*cam.z; }
-  const PX=u=> W/2 + (u-cam.cu)*dwz;
-  const PY=v=> H/2 + (v-cam.cv)*dhz;
-
-  /* ---- Ken-Burns keyframes (from the proven reel) ---- */
-  const KF=[
-    { t:0,             cu:.430, cv:.500, z:1.12 },
-    { t:B.site,        cu:.430, cv:.500, z:1.12 },
-    { t:B.site+1600,   cu:.360, cv:.560, z:1.24 },
-    { t:B.garage,      cu:.360, cv:.560, z:1.24 },
-    { t:B.garage+1600, cu:.470, cv:.455, z:1.46 },
-    { t:B.multi,       cu:.470, cv:.455, z:1.46 },
-    { t:B.multi+1600,  cu:.250, cv:.628, z:1.34 },
-    { t:B.dusk,        cu:.250, cv:.628, z:1.34 },
-    { t:B.dusk+1600,   cu:.360, cv:.560, z:1.16 },
-    { t:B.end,         cu:.360, cv:.560, z:1.12 },
-  ];
-  function camAt(t, noDrift){
-    let c;
-    if(t<=KF[0].t) c={cu:KF[0].cu,cv:KF[0].cv,z:KF[0].z};
-    else{
-      let i=0; while(i<KF.length-1 && t>KF[i+1].t) i++;
-      const a=KF[i], b=KF[Math.min(i+1,KF.length-1)];
-      const e=a.t===b.t?1:easeInOut(win(t,a.t,b.t));
-      c={ cu:lerp(a.cu,b.cu,e), cv:lerp(a.cv,b.cv,e), z:lerp(a.z,b.z,e) };
-    }
-    if(!reduceMotion && !noDrift){
-      const r=t/1000;
-      c.cu += Math.sin(r*0.28)*0.0022; c.cv += Math.cos(r*0.22)*0.0018; c.z += Math.sin(r*0.19)*0.006;
-    }
-    if(portrait){ c.z=clamp(1.02 + (c.z-1.12)*0.16, 1.015, 1.075); }
-    const hu=W/(2*dw*c.z), hv=H/(2*dh*c.z);
-    c.cu=clamp(c.cu, hu, 1-hu); c.cv=clamp(c.cv, hv, 1-hv);
-    return c;
+  /* cover-fit draw: image always covers the viewport (zoom>=1), centred with an
+     optional pan in [-1,1] of the overflow, so no edge ever shows (portrait too). */
+  function drawCover(im, zoom, alpha, px, py){
+    if(!im || !im.naturalWidth) return;
+    const ia=im.naturalWidth/im.naturalHeight; let w,h;
+    if(W/H > ia){ w=W*zoom; h=w/ia; } else { h=H*zoom; w=h*ia; }
+    const ox=(W-w)/2 + (px||0)*(w-W)/2, oy=(H-h)/2 + (py||0)*(h-H)/2;
+    ctx.globalAlpha=alpha; ctx.imageSmoothingQuality="high";
+    try{ ctx.drawImage(im, ox, oy, w, h); }catch(e){}
+    ctx.globalAlpha=1;
   }
 
-  /* ======================================================================
-     SITE GEOMETRY (image-space uv) — shared scene axes; every footprint
-     aligns to them so it sits in the photo's perspective.
-     ====================================================================== */
-  const AXA=[.3792,-.9253], AXP=[.9253,.3792];
-  const quadAt=(cu,cv,ha,hd)=>[
-    [cu-AXA[0]*ha-AXP[0]*hd, cv-AXA[1]*ha-AXP[1]*hd],
-    [cu+AXA[0]*ha-AXP[0]*hd, cv+AXA[1]*ha-AXP[1]*hd],
-    [cu+AXA[0]*ha+AXP[0]*hd, cv+AXA[1]*ha+AXP[1]*hd],
-    [cu-AXA[0]*ha+AXP[0]*hd, cv-AXA[1]*ha+AXP[1]*hd],
-  ];
-  const APRON=[[.118,.586],[.214,.612],[.198,.664],[.096,.634]];
-  const SPINE=[[.192,.610],[.452,.472],[.462,.488],[.202,.626]];
-  const COURT=quadAt(.455,.445,.060,.040);
-  const POLES=[[.205,.600],[.300,.556],[.386,.512],[.360,.470],[.500,.470],[.556,.505]];
-  const I90_V=.352, I90_U0=.360, I90_U1=.900;
-
-  const cars=[];
-  for(let i=0;i<12;i++){ cars.push({ x:rnd(), lane:rnd()<.5?0:1, v:.05+rnd()*.04 }); }
-  function updateCars(dt){ for(const c of cars){ const dir=c.lane?1:-1; c.x+=dir*c.v*dt; if(c.x>1.04)c.x=-.04; if(c.x<-.04)c.x=1.04; } }
-
-  /* ---- buildings (rotated-parallelogram massings) ---- */
-  const BUILDINGS=[];
-  const gRow=(a,d,hl,hd,ht,bays,d0)=>BUILDINGS.push({ kind:"garage",
-    u:.455+AXA[0]*a+AXP[0]*d, v:.445+AXA[1]*a+AXP[1]*d,
-    along:{u:AXA[0]*hl,v:AXA[1]*hl}, dep:{u:AXP[0]*hd,v:AXP[1]*hd}, ht, w:hl+hd, bays,
-    slab:B.garage+d0, frameA:B.garage+d0+400, frameB:B.garage+d0+1900, skinA:B.garage+d0+2100, skinB:B.garage+d0+3900 });
-  gRow(-.005,-.022,.046,.009,.013,9,300);
-  gRow( .005, .002,.040,.008,.012,8,1100);
-  gRow(-.036, .024,.018,.010,.015,4,2000);
-  gRow( .032, .024,.020,.010,.015,4,2700);
-  // Single-family homes along the Hwy 1416 frontage (replaces the multifamily row).
-  // Ridge runs along AXA (the row axis); the two roof planes face the frontage.
-  const HOUSE_ROW={ S:[.168,.792], N:[.292,.487] };
-  const SIDINGS=[
-    {wall:"#5c6b7b"}, // slate blue
-    {wall:"#8f4038"}, // barn red
-    {wall:"#c9b088"}, // warm tan
-    {wall:"#e6e3da"}, // white
-    {wall:"#9a9c99"}, // gray
-    {wall:"#7f8c6d"}, // sage green
-  ];
-  const rndH=mulberry32(0x40053);
-  (()=>{
-    const S=HOUSE_ROW.S, N=HOUSE_ROW.N, N_HOUSE=10;
-    const off=(a,d)=>[AXA[0]*a+AXP[0]*d, AXA[1]*a+AXP[1]*d];
-    // center-to-center spacing along the row (projected onto AXA) -> lot strip width
-    const dtt=0.88/(N_HOUSE-1), dU=(N[0]-S[0])*dtt, dV=(N[1]-S[1])*dtt;
-    const lotHalfA=Math.abs(dU*AXA[0]+dV*AXA[1])*0.5*0.96;   // 4% gap for the lot line
-    for(let i=0;i<N_HOUSE;i++){
-      const tt=0.06+i*(0.88/(N_HOUSE-1));
-      const bu=lerp(S[0],N[0],tt), bv=lerp(S[1],N[1],tt);
-      const stag=((i%2)?1:-1)*0.005 + (rndH()-0.5)*0.004;
-      const cu=bu+AXP[0]*stag, cv=bv+AXP[1]*stag;
-      const sizeF=lerp(1.16,0.82,tt), hl=0.0135*sizeF, hd=0.0110*sizeF;
-      const pal=SIDINGS[Math.floor(rndH()*SIDINGS.length)];
-      const g=B.multi+300+i*900;
-      // lot as a clean strip that tiles along the row (shared edges = lot lines);
-      // same quad drives the day-view lawn and the plan lot. Driveway stays inside it.
-      const lotFrontD=hd*2.6, lotBackD=hd*1.4;
-      const lawnPts=[ off(-lotHalfA,-lotBackD), off(lotHalfA,-lotBackD), off(lotHalfA,lotFrontD), off(-lotHalfA,lotFrontD) ];
-      const dwW=hl*0.4, d0=hd*1.02, d1=lotFrontD;
-      const drivePts=[ off(-dwW,d0), off(dwW,d0), off(dwW,d1), off(-dwW,d1) ];
-      BUILDINGS.push({ kind:"house", u:cu, v:cv,
-        along:{u:AXA[0]*hl,v:AXA[1]*hl}, dep:{u:AXP[0]*hd,v:AXP[1]*hd},
-        ht:0.020*sizeF, roofH:0.015*sizeF, w:hl+hd,
-        wall:pal.wall, lawnG:0.9+rndH()*0.2, lawnPts, drivePts,
-        garageSide:(rndH()<0.5), sizeF,
-        slab:g, frameA:g+450, frameB:g+2100, skinA:g+2300, skinB:g+4100 });
-    }
-  })();
-  BUILDINGS.sort((a,b)=> a.v-b.v);
-  BUILDINGS.forEach((b,i)=> b._idx=i);
-
-  const CONC=(()=>{ const rr=mulberry32(0xc047); const patches=[]; for(let i=0;i<7;i++) patches.push({u:lerp(.34,.58,rr()),v:lerp(.41,.51,rr()),r:lerp(.02,.05,rr()),warm:rr()<.5}); return {patches}; })();
-  const SHRUBS=(()=>{ const rr=mulberry32(0x5eed); const arr=[]; for(let i=0;i<9;i++){ const tt=rr(); arr.push({u:lerp(.205,.305,rr()),v:lerp(.52,.78,tt),r:lerp(.006,.013,rr()),big:rr()<.4}); } for(let i=0;i<3;i++) arr.push({u:lerp(.11,.20,rr()),v:lerp(.60,.67,rr()),r:lerp(.006,.011,rr()),big:rr()<.5}); return arr; })();
-  const CARS_PARKED=(()=>{ const rr=mulberry32(0xca75); const arr=[]; for(let i=0;i<7;i++) arr.push({u:lerp(.41,.50,rr()),v:lerp(.435,.485,rr()),w:lerp(.010,.014,rr())}); return arr; })();
-
-  /* ---- pre-blurred shadow sprites ---- */
-  let shadowSprites=null;
-  function buildShadowSprites(){
-    shadowSprites=BUILDINGS.map(b=>{
-      if(b.kind!=="garage") return null;   // houses use an inline contact shadow
-      const Wpx0=2*b.w*dw, Hpx0=b.ht*dh, shh=Hpx0*0.42, pad=14;
-      const spW=Math.ceil(Wpx0+shh+pad*2+8), spH=Math.ceil(shh*0.40+pad*2+8);
-      const c=document.createElement("canvas"); c.width=spW; c.height=spH;
-      const cx=c.getContext("2d");
-      const P=(x,y)=>[pad+x,pad+y];
-      const fillPoly=(pts,style)=>{ cx.fillStyle=style; cx.beginPath(); pts.forEach((p,i)=> i?cx.lineTo(p[0],p[1]):cx.moveTo(p[0],p[1])); cx.closePath(); cx.fill(); };
-      cx.filter="blur(7px)"; fillPoly([P(4,0),P(Wpx0+4,0),P(Wpx0+shh,shh*0.40),P(shh,shh*0.40)],"rgba(20,26,16,0.30)");
-      cx.filter="blur(2px)"; fillPoly([P(0,0),P(Wpx0,0),P(Wpx0+shh*.35,shh*.16),P(shh*.35,shh*.16)],"rgba(16,21,13,0.28)");
-      cx.filter="none";
-      return { canvas:c, pad, spW, spH };
-    });
-  }
-
-  /* ---- poly helpers ---- */
-  function poly(pts,fill,stroke,lw,alpha){
-    if(alpha!==undefined) ctx.globalAlpha=alpha;
-    ctx.beginPath(); for(let i=0;i<pts.length;i++){ const p=pts[i]; i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]); } ctx.closePath();
-    if(fill){ ctx.fillStyle=fill; ctx.fill(); }
-    if(stroke){ ctx.lineJoin="round"; ctx.strokeStyle=stroke; ctx.lineWidth=lw||1; ctx.stroke(); }
-    if(alpha!==undefined) ctx.globalAlpha=1;
-  }
-  const uvPoly=(pts,fill,stroke,lw,alpha)=> poly(pts.map(p=>[PX(p[0]),PY(p[1])]),fill,stroke,lw,alpha);
-  const uvPolyOff=(b,pts,fill,stroke,lw,alpha)=> poly(pts.map(o=>[PX(b.u+o[0]),PY(b.v+o[1])]),fill,stroke,lw,alpha);
-
-  /* ---- palettes ---- */
-  const PAL_STEEL={ frontTop:["#5a6067","#232a36"],frontMid:["#4c525a","#1d2430"],frontBot:["#3f454d","#171d28"],sideShade:["#363c44","#141a24"],sideShadeB:["#2b3138","#0f141d"],roofBack:["#b4b8bd","#2b3442"],roofFront:["#a2a7ad","#212a38"],eaveTrim:["#c8cdd3","#8fa0b5"],corner:["#aab0b7","#5d6b7e"],slab:["#c8c3b4","#2a3446"],slabEdge:["#8f8a7a","#1a2230"],frame:["#6a7078","#3a4450"],winFrame:["#23282e","#0d1218"],win:["#b9bec4","#ffd98a"],ao:["#0e1216","#05080e"] };
-
-  function drawMassing(b,t,dusk){
-    if(b.kind==="house"){ drawHouse(b,t,dusk); return; }
-    const P=PAL_STEEL;
-    const M=k=>mix(P[k][0],P[k][1],dusk), MA=(k,al)=>mixRGBA(P[k][0],P[k][1],dusk,al);
-    const slabP=easeOut(win(t,b.slab,b.slab+900)); if(slabP<=0) return;
-    const frameP=win(t,b.frameA,b.frameB), skinP=win(t,b.skinA,b.skinB);
-    const A=b.along,D=b.dep, uvC=(su,sv)=>[b.u+su,b.v+sv];
-    const uvBL=uvC(-A.u-D.u,-A.v-D.v),uvBR=uvC(A.u-D.u,A.v-D.v),uvFR=uvC(A.u+D.u,A.v+D.v),uvFL=uvC(-A.u+D.u,-A.v+D.v);
-    const S=uv=>[PX(uv[0]),PY(uv[1])];
-    const GBL=S(uvBL),GBR=S(uvBR),GFR=S(uvFR),GFL=S(uvFL);
-    poly([GBL,GBR,GFR,GFL],M("slab"),MA("slabEdge",.4),1,0.5*slabP);
-    if(frameP<=0) return;
-    const rise=skinP>0.02?1:easeOut(frameP), Hpx=b.ht*dhz*rise;
-    const Rf=g=>[g[0],g[1]-Hpx];
-    const RBL=Rf(GBL),RBR=Rf(GBR),RFR=Rf(GFR),RFL=Rf(GFL);
-    const sh=Hpx*0.30;
-    poly([GFL,GFR,GBR,GBL].map(p=>[p[0]+sh*0.5,p[1]+sh*0.18]),rgba("#0a0e08",0.16*clamp(rise)),null,0);
-    const a=skinP<=0.02?0.5*clamp(rise):clamp(0.5+0.5*win(t,b.skinA,b.skinA+700));
-    ctx.save(); ctx.globalAlpha=a;
-    const gEnd=ctx.createLinearGradient(0,GFL[1]-Hpx,0,GFL[1]);
-    gEnd.addColorStop(0,M("sideShade")); gEnd.addColorStop(1,M("sideShadeB"));
-    poly([GBL,GFL,RFL,RBL],gEnd,MA("ao",.4),1);
-    const gF=ctx.createLinearGradient(0,GFL[1]-Hpx,0,GFL[1]);
-    gF.addColorStop(0,M("frontTop")); gF.addColorStop(.6,M("frontMid")); gF.addColorStop(1,M("frontBot"));
-    poly([GFL,GFR,RFR,RFL],gF,MA("ao",.4),1);
-    const gR=ctx.createLinearGradient(0,RBL[1],0,RFL[1]);
-    gR.addColorStop(0,M("roofBack")); gR.addColorStop(1,M("roofFront"));
-    poly([RBL,RBR,RFR,RFL],gR,MA("ao",.3),1);
-    ctx.strokeStyle=M("eaveTrim"); ctx.lineWidth=1.4;
-    ctx.beginPath(); ctx.moveTo(RFL[0],RFL[1]); ctx.lineTo(RFR[0],RFR[1]); ctx.stroke();
-    ctx.strokeStyle=M("corner"); ctx.lineWidth=1.3;
-    for(const g of [GFL,GFR]){ ctx.beginPath(); ctx.moveTo(g[0],g[1]); ctx.lineTo(g[0],g[1]-Hpx); ctx.stroke(); }
-    ctx.strokeStyle=MA("ao",.4); ctx.lineWidth=2;
-    ctx.beginPath(); ctx.moveTo(GFL[0],GFL[1]); ctx.lineTo(GFR[0],GFR[1]); ctx.stroke();
-    ctx.restore();
-    if(skinP>0.32){
-      // Modern flex / garage-condo facade: alternating charcoal-brick + cream-limestone
-      // blocks, black roll-up doors, a glass entry, a clerestory strip, warm dusk lights.
-      const wa=clamp((skinP-0.32)/0.4);
-      const P2=(s,h)=>[lerp(GFL[0],GFR[0],s),lerp(GFL[1],GFR[1],s)-Hpx*h];
-      const nb=b.bays, grp=2;
-      const CHAR=mix("#3b3d42","#171b22",dusk), CREAM=mix("#e2d8c0","#3a3f4a",dusk);
-      ctx.save(); ctx.globalAlpha=wa;
-      // alternating material blocks + clerestory on the cream blocks
-      for(let g0=0;g0<nb;g0+=grp){
-        const g1=Math.min(g0+grp,nb), cream=((g0/grp)&1)===1;
-        poly([P2(g0/nb,0.02),P2(g1/nb,0.02),P2(g1/nb,0.98),P2(g0/nb,0.98)], cream?CREAM:CHAR, null,0);
-        if(cream){
-          ctx.save(); if(dusk>0.2){ ctx.shadowColor=rgba("#ffcf87",.55); ctx.shadowBlur=5*dusk; }
-          poly([P2((g0+0.12)/nb,0.82),P2((g1-0.12)/nb,0.82),P2((g1-0.12)/nb,0.90),P2((g0+0.12)/nb,0.90)],mix("#b9c6cf","#ffd98a",dusk),null,0); ctx.restore();
-        }
-      }
-      // tall near-black roll-up doors, slightly inset, with faint panel lines
-      const DOOR=mix("#17191e","#0a0d12",dusk), top=0.66;
-      for(let k=0;k<nb;k++){
-        const s0=(k+0.16)/nb,s1=(k+0.84)/nb;
-        poly([P2(s0,0.04),P2(s1,0.04),P2(s1,top),P2(s0,top)],DOOR,rgba("#0a0c10",.6),1);
-        ctx.strokeStyle=rgba("#000",0.32); ctx.lineWidth=1;
-        for(let l=1;l<5;l++){ const yy=0.04+l*((top-0.04)/5), p0=P2(s0,yy),p1=P2(s1,yy); ctx.beginPath(); ctx.moveTo(p0[0],p0[1]); ctx.lineTo(p1[0],p1[1]); ctx.stroke(); }
-        if(dusk>0.2){ const dl=P2((s0+s1)/2,0.02), rr=Math.max(6,dwz*0.005);
-          const g=ctx.createRadialGradient(dl[0],dl[1],0,dl[0],dl[1],rr*3);
-          g.addColorStop(0,rgba("#ffd9a0",0.3*dusk)); g.addColorStop(1,rgba("#ffd9a0",0));
-          ctx.fillStyle=g; ctx.beginPath(); ctx.arc(dl[0],dl[1],rr*3,0,7); ctx.fill(); }
-      }
-      // dark-glass entry + awning bar between the first two bay groups
-      if(nb>=4){
-        const es=2/nb, ew=0.55/nb;
-        ctx.save(); if(dusk>0.2){ ctx.shadowColor=rgba("#ffe0a8",.8); ctx.shadowBlur=8*dusk; }
-        poly([P2(es-ew,0.03),P2(es+ew,0.03),P2(es+ew,0.52),P2(es-ew,0.52)],mix("#1b2733","#243a52",dusk),rgba("#0a0c10",.5),1); ctx.restore();
-        poly([P2(es-ew*1.4,0.52),P2(es+ew*1.4,0.52),P2(es+ew*1.4,0.57),P2(es-ew*1.4,0.57)],mix("#2a2d33","#14171d",dusk),null,0);
-      }
-      // thin dark coping along the flat parapet
-      ctx.strokeStyle=mix("#101216","#05070c",dusk); ctx.lineWidth=1.6;
-      ctx.beginPath(); ctx.moveTo(RFL[0],RFL[1]); ctx.lineTo(RFR[0],RFR[1]); ctx.stroke();
-      ctx.restore();
-    }
-  }
-
-  /* ---- single-family home: gabled roof, muted siding, lawn + driveway ---- */
-  function drawHouse(b,t,dusk){
-    const slabP=easeOut(win(t,b.slab,b.slab+900)); if(slabP<=0) return;
-    const frameP=win(t,b.frameA,b.frameB), skinP=win(t,b.skinA,b.skinB);
-    const A=b.along,D=b.dep, uvC=(su,sv)=>[b.u+su,b.v+sv];
-    const S=uv=>[PX(uv[0]),PY(uv[1])];
-    const gBL=S(uvC(-A.u-D.u,-A.v-D.v)),gBR=S(uvC(A.u-D.u,A.v-D.v)),gFR=S(uvC(A.u+D.u,A.v+D.v)),gFL=S(uvC(-A.u+D.u,-A.v+D.v));
-
-    // lawn + driveway on the ground, appearing with the slab
-    const lawnDay=mix("#4e7a34","#66973f",clamp((b.lawnG-0.9)/0.2));
-    uvPolyOff(b,b.lawnPts, mix(lawnDay,"#243a1f",dusk*0.7), null,0,0.75*slabP);
-    uvPolyOff(b,b.drivePts, mix("#c8b79a","#2c2f3a",dusk*0.6), null,0,0.7*slabP);
-
-    // foundation slab
-    poly([gBL,gBR,gFR,gFL], mix("#c8c3b4","#2a3446",dusk), mixRGBA("#8f8a7a","#1a2230",dusk,.4),1,0.55*slabP);
-    if(frameP<=0) return;
-
-    const rise=skinP>0.02?1:easeOut(frameP);
-    const Hpx=b.ht*dhz*rise, roofPx=b.roofH*dhz*rise, se=1.14;
-    const Rf=(g,h)=>[g[0],g[1]-h];
-    const wBL=Rf(gBL,Hpx),wFR=Rf(gFR,Hpx),wFL=Rf(gFL,Hpx);
-    const eBL=Rf(S(uvC(-A.u*se-D.u*se,-A.v*se-D.v*se)),Hpx),
-          eBR=Rf(S(uvC(A.u*se-D.u*se,A.v*se-D.v*se)),Hpx),
-          eFR=Rf(S(uvC(A.u*se+D.u*se,A.v*se+D.v*se)),Hpx),
-          eFL=Rf(S(uvC(-A.u*se+D.u*se,-A.v*se+D.v*se)),Hpx);
-    const rdg0=Rf(S(uvC(-A.u*se,-A.v*se)),Hpx+roofPx),
-          rdg1=Rf(S(uvC(A.u*se,A.v*se)),Hpx+roofPx);
-
-    // contact shadow
-    poly([gFL,gFR,gBR,gBL].map(p=>[p[0]+Hpx*0.16,p[1]+Hpx*0.05]),rgba("#0a0e08",0.15*clamp(rise)),null,0);
-
-    const a=skinP<=0.02?0.6*clamp(rise):clamp(0.6+0.4*win(t,b.skinA,b.skinA+700));
-    ctx.save(); ctx.globalAlpha=a;
-    const wallF=mix(b.wall,"#26304a",dusk*0.45);
-    const wallS=mix(mix(b.wall,"#0c0e12",0.30),"#1c2440",dusk*0.45);
-    const rF=mix("#3a3d42","#12151c",dusk*0.55), rB=mix("#27292e","#0a0c11",dusk*0.55);
-    const trim=mix(b.wall==="#e6e3da"?"#c9c4b8":"#eef0ea","#243049",dusk*0.55);
-    // side gable-end wall (-A end) + its gable triangle, then the front wall
-    poly([gBL,gFL,wFL,wBL],wallS,null,0);
-    poly([wBL,wFL,rdg0],wallS,null,0);
-    poly([gFL,gFR,wFR,wFL],wallF,null,0);
-    // gabled roof: back plane (darker) then camera-facing front plane (lighter)
-    poly([eBL,eBR,rdg1,rdg0],rB,null,0);
-    poly([eFL,eFR,rdg1,rdg0],rF,null,0);
-    ctx.strokeStyle=mix("#0c0f14","#05070c",dusk); ctx.lineWidth=1.2;
-    ctx.beginPath(); ctx.moveTo(rdg0[0],rdg0[1]); ctx.lineTo(rdg1[0],rdg1[1]); ctx.stroke();
-    ctx.strokeStyle=trim; ctx.lineWidth=1.1;
-    ctx.beginPath(); ctx.moveTo(eFL[0],eFL[1]); ctx.lineTo(eFR[0],eFR[1]); ctx.stroke();
-    ctx.lineWidth=1;
-    for(const g of [[gFL,wFL],[gFR,wFR]]){ ctx.beginPath(); ctx.moveTo(g[0][0],g[0][1]); ctx.lineTo(g[1][0],g[1][1]); ctx.stroke(); }
-    ctx.restore();
-
-    // front-face openings during the skin phase: garage door + front door + windows
-    if(skinP>0.30){
-      const wa=clamp((skinP-0.30)/0.4);
-      const HP=(s,h)=>[lerp(gFL[0],gFR[0],s),lerp(gFL[1],gFR[1],s)-Hpx*h];
-      ctx.save(); ctx.globalAlpha=wa*a;
-      const gs=b.garageSide?[0.06,0.40]:[0.60,0.94];
-      const ds=b.garageSide?[0.52,0.62]:[0.38,0.48];
-      const wins=b.garageSide?[[0.66,0.76],[0.80,0.90]]:[[0.10,0.20],[0.24,0.34]];
-      // garage door
-      poly([HP(gs[0],0.03),HP(gs[1],0.03),HP(gs[1],0.58),HP(gs[0],0.58)],mix("#d7d2c6","#3a4150",dusk),trim,1.1);
-      for(let l=1;l<3;l++){ const yy=0.03+l*(0.55/3), p0=HP(gs[0],yy),p1=HP(gs[1],yy); ctx.strokeStyle=rgba("#8f8a7c",0.4); ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(p0[0],p0[1]); ctx.lineTo(p1[0],p1[1]); ctx.stroke(); }
-      // front door
-      ctx.save(); if(dusk>0.2){ ctx.shadowColor=rgba("#ffcf87",.8); ctx.shadowBlur=6*dusk; }
-      poly([HP(ds[0],0.02),HP(ds[1],0.02),HP(ds[1],0.52),HP(ds[0],0.52)],mix("#4a4038","#5a4a2a",dusk),trim,1); ctx.restore();
-      // windows (warm glow at dusk)
-      const winCol=mix("#cfe0ea","#ffe0a0",dusk);
-      for(const ws of wins){ ctx.save(); if(dusk>0.2){ ctx.shadowColor=rgba("#ffdf9a",.95); ctx.shadowBlur=11*dusk; }
-        poly([HP(ws[0],0.26),HP(ws[1],0.26),HP(ws[1],0.66),HP(ws[0],0.66)],winCol,trim,1.1); ctx.restore(); }
-      ctx.restore();
-    }
-  }
-
-  function drawPoles(t,dusk){
-    const vis=easeOut(clamp(dusk/0.35)); if(vis<=0.02) return;
-    for(const p of POLES){
-      const x=PX(p[0]),y=PY(p[1]),ph=Math.max(10,dhz*0.030)*vis;
-      ctx.save(); ctx.globalAlpha=vis;
-      ctx.strokeStyle=mix("#5f646b","#2b3340",dusk); ctx.lineWidth=Math.max(1.3,dwz*0.0013);
-      ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y-ph); ctx.stroke();
-      ctx.fillStyle="#ffe6a8"; ctx.shadowColor=rgba("#ffe6a8",.95); ctx.shadowBlur=14*dusk;
-      ctx.beginPath(); ctx.arc(x,y-ph,Math.max(2.0,dwz*0.0018),0,7); ctx.fill();
-      ctx.restore();
-      const g=ctx.createRadialGradient(x,y,0,x,y,ph*1.1);
-      g.addColorStop(0,rgba("#ffe6a8",0.18*dusk)); g.addColorStop(1,rgba("#ffe6a8",0));
-      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,ph*1.1,0,7); ctx.fill();
-    }
-  }
-
-  /* ======================================================================
-     SCENE — aerial under the camera, sitework, buildings, dusk grade.
-     Caller sets the camera first; draw() never moves it.
-     ====================================================================== */
-  function draw(t,dusk){
-    const x0=PX(0),y0=PY(0),x1=PX(1),y1=PY(1);
-    if(imgReady && !imgBroken){ ctx.imageSmoothingQuality="high"; try{ ctx.drawImage(aerial,x0,y0,x1-x0,y1-y0); }catch(e){ imgBroken=true; } }
-    if(imgBroken || !imgReady){
-      const gr=ctx.createLinearGradient(0,y0,0,y1);
-      gr.addColorStop(0,"#8fb0c9"); gr.addColorStop(.55,"#cfd9c6"); gr.addColorStop(1,"#b9c39a");
-      ctx.fillStyle=gr; ctx.fillRect(x0,y0,x1-x0,y1-y0);
-    }
-    if(dusk>0.001){
-      const g=ctx.createLinearGradient(0,0,0,H);
-      g.addColorStop(0,rgba("#0a1836",0.60*dusk)); g.addColorStop(0.44,rgba("#142149",0.48*dusk));
-      g.addColorStop(0.60,rgba("#c9702e",0.26*dusk)); g.addColorStop(1,rgba("#0b0f22",0.52*dusk));
-      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-    }
-    if(dusk>0.06){
-      for(const c of cars){
-        const u=I90_U0+c.x*(I90_U1-I90_U0), x=PX(u), y=PY(I90_V+(c.lane?0.004:-0.004));
-        if(x<-20||x>W+20) continue;
-        const col=c.lane===1?"#fff3c8":"#ff6a58", rad=Math.max(1.1,dwz*0.0011);
-        ctx.save(); ctx.shadowColor=col; ctx.shadowBlur=8*dusk; ctx.fillStyle=col; ctx.globalAlpha=0.8*dusk;
-        ctx.beginPath(); ctx.ellipse(x,y,rad*1.7,rad,0,0,7); ctx.fill(); ctx.restore();
-      }
-    }
-    const aprF=easeOut(win(t,B.site+900,B.site+3200)), spineF=easeOut(win(t,B.site+1500,B.site+3800)), courtF=easeOut(win(t,B.site+2200,B.site+4600));
-    const outline=win(t,B.site+200,B.site+2000);
-    const concFill=mix("#c6c2b5","#28313f",dusk), concEdge=mixRGBA("#9a9b94","#161d29",dusk,.55), jointCol=mixRGBA("#9a9b94","#10161f",dusk,.5);
-    const jointLine=(A0,A1,B0,B1,s)=>{ const a=[lerp(A0[0],A1[0],s),lerp(A0[1],A1[1],s)],b=[lerp(B0[0],B1[0],s),lerp(B0[1],B1[1],s)]; ctx.beginPath(); ctx.moveTo(PX(a[0]),PY(a[1])); ctx.lineTo(PX(b[0]),PY(b[1])); ctx.stroke(); };
-    if(aprF>0){ uvPoly(APRON,concFill,concEdge,1.4,0.55*aprF); ctx.save(); ctx.globalAlpha=aprF; ctx.strokeStyle=jointCol; ctx.lineWidth=1; for(let i=1;i<4;i++) jointLine(APRON[0],APRON[3],APRON[1],APRON[2],i/4); ctx.restore(); }
-    if(spineF>0){ uvPoly(SPINE,concFill,concEdge,1.4,0.55*spineF); ctx.save(); ctx.globalAlpha=spineF; ctx.strokeStyle=jointCol; ctx.lineWidth=1; jointLine(SPINE[0],SPINE[3],SPINE[1],SPINE[2],0.5); for(let i=1;i<9;i++) jointLine(SPINE[0],SPINE[1],SPINE[3],SPINE[2],i/9); ctx.restore(); }
-    if(courtF>0){
-      uvPoly(COURT,concFill,concEdge,1.4,0.48*courtF);
-      ctx.save(); ctx.globalAlpha=courtF;
-      ctx.beginPath(); COURT.forEach((p,i)=> i?ctx.lineTo(PX(p[0]),PY(p[1])):ctx.moveTo(PX(p[0]),PY(p[1]))); ctx.closePath(); ctx.clip();
-      const bx0=PX(.33),by0=PY(.40),bw=PX(.578)-PX(.33),bh=PY(.516)-PY(.40);
-      for(const p of CONC.patches){ const cx=PX(p.u),cy=PY(p.v),r=Math.max(8,p.r*dwz); const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r); g.addColorStop(0,mixRGBA(p.warm?"#d7d8d3":"#bcbdb7","#323b49",dusk,.16)); g.addColorStop(1,mixRGBA("#cdcec9","#28313f",dusk,0)); ctx.fillStyle=g; ctx.fillRect(bx0,by0,bw,bh); }
-      ctx.restore();
-      ctx.save(); ctx.globalAlpha=courtF; ctx.strokeStyle=jointCol; ctx.lineWidth=1;
-      for(let i=1;i<7;i++) jointLine(COURT[0],COURT[1],COURT[3],COURT[2],i/7);
-      for(let i=1;i<3;i++) jointLine(COURT[0],COURT[3],COURT[1],COURT[2],i/3);
-      ctx.restore();
-    }
-    if(outline>0 && courtF<0.98){
-      ctx.save(); ctx.setLineDash([7,6]); ctx.lineCap="round";
-      ctx.strokeStyle=mix("#8a6a2b","#d9b869",dusk); ctx.lineWidth=1.6; ctx.globalAlpha=outline*(1-courtF*0.6);
-      const P=COURT.map(p=>[PX(p[0]),PY(p[1])]);
-      ctx.beginPath(); P.forEach((p,i)=> i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.closePath(); ctx.stroke(); ctx.restore();
-    }
-    drawPoles(t,dusk);
-    const green=easeOut(win(t,B.multi+1500,B.multi+5000));
-    if(green>0){
-      for(const s of SHRUBS){
-        const x=PX(s.u),y=PY(s.v),r=Math.max(3,(s.big?1.5:1)*s.r*dwz)*green;
-        ctx.fillStyle=mixRGBA("#0e1a10","#05070c",dusk,.22); ctx.beginPath(); ctx.ellipse(x+r*0.3,y+r*0.28,r*0.95,r*0.45,0,0,7); ctx.fill();
-        const g=ctx.createRadialGradient(x-r*0.3,y-r*0.4,0,x,y,r); g.addColorStop(0,mix("#5f7f43","#324e35",dusk)); g.addColorStop(1,mix("#3c5a2c","#22371f",dusk));
-        ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill();
-        if(dusk>0.2){ ctx.fillStyle=rgba("#9ab8a6",0.12*dusk); ctx.beginPath(); ctx.ellipse(x-r*0.28,y-r*0.42,r*0.5,r*0.32,-0.5,0,7); ctx.fill(); }
-      }
-    }
-    for(const b of BUILDINGS) drawMassing(b,t,dusk);
-    if(dusk>0.25){
-      const ca=clamp((dusk-0.25)/0.5);
-      for(const c of CARS_PARKED){ const x=PX(c.u),y=PY(c.v),w=Math.max(4,c.w*dwz),h=w*0.5; ctx.save(); ctx.globalAlpha=ca; ctx.fillStyle=mixRGBA("#12161b","#05070c",dusk,.55); ctx.fillRect(x-w/2,y-h/2,w,h); ctx.fillStyle=rgba("#2b3340",.5); ctx.fillRect(x-w*0.3,y-h*0.42,w*0.6,h*0.42); ctx.restore(); }
-    }
-    if(dusk>0.5){ ctx.fillStyle=rgba("#050b14",(dusk-0.5)*0.45); ctx.fillRect(0,0,W,H); }
-  }
-
-  /* ======================================================================
-     PROCEDURAL GOLDEN-HOUR CLOUDS — pre-rendered offscreen layers, drifting
-     + scaling up as we descend through them (cloudP 1 -> 0).
-     ====================================================================== */
+  /* ---------------- procedural golden-hour clouds (pre-rendered offscreen) ---------------- */
   let cloudLayers=[];
   function buildClouds(){
     cloudLayers=[0,1,2].map(li=>{
@@ -853,7 +538,6 @@ footer{
       const x=c.getContext("2d"); const rr=mulberry32(0xC10D+li*97);
       const n=18-li*3;
       for(let i=0;i<n;i++){
-        // each cumulus = a cluster of small hard puffs: shaded belly first, bright sunlit tops
         const cx=rr()*1400, cy=(0.22+0.58*rr())*800, s=(55+rr()*115)*(1+li*0.22);
         const puffs=8+Math.floor(rr()*7);
         for(let p=0;p<puffs;p++){
@@ -878,18 +562,15 @@ footer{
   }
   function drawClouds(cp,time){
     if(cp<=0.001) return;
-    // golden-hour sky behind, fading as clouds part: cool haze up top -> amber horizon
     const sky=ctx.createLinearGradient(0,0,0,H);
     sky.addColorStop(0,"#cfd0c6"); sky.addColorStop(0.42,"#efd7a2"); sky.addColorStop(1,"#dfab6a");
     ctx.save(); ctx.globalAlpha=cp; ctx.fillStyle=sky; ctx.fillRect(0,0,W,H); ctx.restore();
-    // low sun glare upper-right + light shafts, thinning with cp
     const gr=ctx.createRadialGradient(W*0.72,H*0.10,0,W*0.72,H*0.10,Math.max(W,H)*0.9);
     gr.addColorStop(0,rgba("#fff6d8",0.85*cp)); gr.addColorStop(0.25,rgba("#ffe3a1",0.34*cp)); gr.addColorStop(1,rgba("#f4c877",0));
     ctx.fillStyle=gr; ctx.fillRect(0,0,W,H);
     ctx.save(); ctx.globalAlpha=cp*0.5; ctx.globalCompositeOperation="lighter";
     for(let s=0;s<4;s++){ const bx=W*(0.2+s*0.22); const g=ctx.createLinearGradient(bx,0,bx+W*0.16,H); g.addColorStop(0,rgba("#fff0c8",0.10)); g.addColorStop(1,rgba("#fff0c8",0)); ctx.fillStyle=g; ctx.beginPath(); ctx.moveTo(bx,0); ctx.lineTo(bx+W*0.1,0); ctx.lineTo(bx+W*0.28,H); ctx.lineTo(bx+W*0.12,H); ctx.closePath(); ctx.fill(); }
     ctx.restore();
-    // layers: parallax drift + scale up as we descend
     const t=time*0.001;
     cloudLayers.forEach((c,li)=>{
       const scale=lerp(1,1.9+li*0.6,1-cp), yoff=lerp(-H*0.05, H*0.55*(li+1), 1-cp);
@@ -901,76 +582,6 @@ footer{
       ctx.restore();
     });
   }
-
-  /* ======================================================================
-     MASTER-PLAN REVEAL — the photo washes to warm drafting paper and an
-     architect's site plan draws itself: dashed boundary, roads, one lot per
-     house (derived from BUILDINGS), footprints, trees, dimension marks. Then
-     it crossfades back to the dusk photo. bp in [0,1]. Camera held still.
-     ====================================================================== */
-  const PLAN_BOUND=quadAt(.325,.575,.225,.170);
-  const PLAN_INK="#2b2f36";
-  function planFootprint(b){
-    const A=b.along,D=b.dep, uv=(su,sv)=>[b.u+su,b.v+sv];
-    return [uv(-A.u-D.u,-A.v-D.v),uv(A.u-D.u,A.v-D.v),uv(A.u+D.u,A.v+D.v),uv(-A.u+D.u,-A.v+D.v)];
-  }
-  function drawPaperGrid(alpha){
-    ctx.save(); ctx.globalAlpha=alpha; ctx.strokeStyle="rgba(90,96,105,0.16)"; ctx.lineWidth=1;
-    const step=Math.max(26,W/46);
-    for(let x=step;x<W;x+=step){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
-    for(let y=step;y<H;y+=step){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
-    ctx.restore();
-  }
-  function planTree(u,v,r){
-    for(const o of [[0,0],[-0.5,-0.3],[0.5,-0.2]]){ const x=PX(u)+o[0]*r, y=PY(v)+o[1]*r;
-      ctx.beginPath(); ctx.arc(x,y,r*0.55,0,7); ctx.fill(); ctx.stroke(); }
-  }
-  function dimMark(a,b){
-    const x0=PX(a[0]),y0=PY(a[1]),x1=PX(b[0]),y1=PY(b[1]);
-    const mx=(x0+x1)/2,my=(y0+y1)/2, dx=x1-x0,dy=y1-y0, L=Math.hypot(dx,dy)||1, nx=-dy/L, ny=dx/L, tk=7;
-    for(const p of [[x0,y0],[mx,my],[x1,y1]]){ ctx.beginPath(); ctx.moveTo(p[0]+nx*tk,p[1]+ny*tk); ctx.lineTo(p[0]-nx*tk,p[1]-ny*tk); ctx.stroke(); }
-  }
-  function drawSitePlan(f,op){
-    const ink=PLAN_INK, seg=(a,b)=>smooth(f,a,b)*op;
-    // 1. dashed site boundary
-    const ba=seg(0.0,0.14);
-    if(ba>0.002){ ctx.save(); ctx.globalAlpha=ba; ctx.setLineDash([9,6]); ctx.lineCap="round"; ctx.strokeStyle=ink; ctx.lineWidth=1.4;
-      const P=PLAN_BOUND.map(p=>[PX(p[0]),PY(p[1])]); ctx.beginPath(); P.forEach((p,i)=> i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.closePath(); ctx.stroke(); ctx.restore(); }
-    // 2. roads: entrance apron + interior spine + frontage lane along the house row
-    const ra=seg(0.12,0.34);
-    if(ra>0.002){ for(const road of [APRON,SPINE]) uvPoly(road,"#efe7d6",ink,1.2,ra);
-      ctx.save(); ctx.globalAlpha=ra; ctx.strokeStyle=ink; ctx.lineWidth=1.3;
-      const fo=0.055, l0=[HOUSE_ROW.S[0]+AXP[0]*fo,HOUSE_ROW.S[1]+AXP[1]*fo], l1=[HOUSE_ROW.N[0]+AXP[0]*fo,HOUSE_ROW.N[1]+AXP[1]*fo];
-      ctx.beginPath(); ctx.moveTo(PX(l0[0]),PY(l0[1])); ctx.lineTo(PX(l1[0]),PY(l1[1])); ctx.stroke(); ctx.restore(); }
-    // 3. one lot per house (green) + orange driveway + gray-blue gabled roof footprint
-    const la=seg(0.28,0.72), fa=seg(0.50,0.90), ca=seg(0.45,0.80);
-    for(const b of BUILDINGS){
-      if(b.kind==="house"){
-        if(la>0.002){ uvPolyOff(b,b.lawnPts,"#cfe0b8",ink,1.1,la); uvPolyOff(b,b.drivePts,"#e0a860",ink,1,la); }
-        if(fa>0.002){ uvPoly(planFootprint(b),"#9aa7b4",ink,1.1,fa);
-          const A=b.along, r0=[b.u-A.u,b.v-A.v], r1=[b.u+A.u,b.v+A.v];
-          ctx.save(); ctx.globalAlpha=fa; ctx.strokeStyle=ink; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(PX(r0[0]),PY(r0[1])); ctx.lineTo(PX(r1[0]),PY(r1[1])); ctx.stroke(); ctx.restore(); }
-      } else if(fa>0.002){ uvPoly(planFootprint(b),"#aeb6bf",ink,1.1,fa); }
-    }
-    if(ca>0.002) uvPoly(COURT,"#e9e2d2",ink,1.1,ca);
-    // 4. tree symbols along boundaries
-    const ta=seg(0.78,1.0);
-    if(ta>0.002){ ctx.save(); ctx.globalAlpha=ta; ctx.fillStyle="rgba(150,190,130,0.55)"; ctx.strokeStyle="#3f6b39"; ctx.lineWidth=1;
-      for(const s of SHRUBS) planTree(s.u,s.v,Math.max(4,s.r*dwz*1.2)); ctx.restore(); }
-    // 5. a few dimension ticks along the boundary
-    const da=seg(0.82,1.0);
-    if(da>0.002){ ctx.save(); ctx.globalAlpha=da*0.9; ctx.strokeStyle=ink; ctx.lineWidth=1; dimMark(PLAN_BOUND[0],PLAN_BOUND[1]); dimMark(PLAN_BOUND[3],PLAN_BOUND[0]); ctx.restore(); }
-  }
-  function blueprintOverlay(bp){
-    // paper wash fades in, holds, then fades back out to reveal the dusk photo
-    const op = smooth(bp,0.04,0.30) * (1-smooth(bp,0.86,1.0));
-    if(op<=0.001) return;
-    ctx.save(); ctx.globalAlpha=op; ctx.fillStyle="#f7f4ec"; ctx.fillRect(0,0,W,H); ctx.restore();
-    drawPaperGrid(op*0.7);
-    drawSitePlan(smooth(bp,0.10,0.82), op);
-  }
-
-  /* ---- cinematic frame vignette ---- */
   function frameVignette(){
     const g=ctx.createRadialGradient(W/2,H*0.46,Math.min(W,H)*0.25,W/2,H*0.46,Math.max(W,H)*0.72);
     g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,"rgba(0,0,0,0.42)");
@@ -978,81 +589,75 @@ footer{
   }
 
   /* ======================================================================
-     STATE MODELS
+     CHOREOGRAPHY — one progress p in [0,1] drives the whole canvas scene:
+     clouds part -> aerial pushes in -> crossfade to master plan -> (record
+     only) crossfade through the three street views -> stats card.
      ====================================================================== */
-  // Normal mode: real scroll -> scene state (sections are real DOM)
-  function scrollState(){
-    const vh=innerHeight, y=scrollY;
-    const heroTrack=document.getElementById("heroTrack");
-    const bpTrack=document.getElementById("bpTrack");
-    const heroScrub=Math.max(1,heroTrack.offsetHeight-vh);
-    const heroProg=clamp(y/heroScrub);
-    const bpTop=bpTrack.offsetTop, bpScrub=Math.max(1,bpTrack.offsetHeight-vh);
-    const bpProg=clamp((y-bpTop)/bpScrub);
-    let cloudP,sceneT,dusk,bp,camT,frozen;
-    if(y < bpTop-1){
-      cloudP=1-smooth(heroProg,0.04,0.42);
-      sceneT=lerp(0,T_BUILT,smooth(heroProg,0.22,1.0));
-      dusk=0; bp=0; camT=sceneT; frozen=false;
-    } else {
-      cloudP=0; sceneT=T_BUILT; camT=T_BUILT; frozen=true;
-      bp=bpProg; dusk=smooth(bpProg,0.78,1.0);
-    }
-    return { cloudP,sceneT,dusk,bp,camT,frozen, heroProg,bpProg,y,bpTop };
+  function seg(p){
+    return {
+      cloudP: 1-smooth(p,0.04,0.34),
+      zoom:   lerp(1.14,1.30, easeInOut(clamp(p/0.45))),
+      zoomP:  lerp(1.05,1.20, smooth(p,0.24,0.92)),
+      planA:  smooth(p,0.24,0.52),
+      s1: smooth(p,0.60,0.70)*(1-smooth(p,0.76,0.82)),
+      s2: smooth(p,0.76,0.82)*(1-smooth(p,0.85,0.90)),
+      s3: smooth(p,0.85,0.90),
+      stats: smooth(p,0.90,0.94)*(1-smooth(p,0.985,1.0)),
+    };
   }
-  // Record / __drawAt: single progress pp -> full choreography incl. preloader + stats overlays
-  function choreoState(pp){
-    const pre = (1-smooth(pp,0.0,0.05)) + smooth(pp,0.94,1.0);
-    const cloudP = 1-smooth(pp,0.08,0.30);
-    const sceneT = lerp(0,T_BUILT,smooth(pp,0.12,0.46));
-    const bp = smooth(pp,0.46,0.68);
-    const dusk = clamp(smooth(pp,0.60,0.70));
-    const camT = pp<0.46 ? sceneT : T_BUILT;
-    const frozen = pp>=0.46;
-    const stats = smooth(pp,0.70,0.76)*(1-smooth(pp,0.88,0.93));
-    return { cloudP,sceneT,dusk,bp,camT,frozen, pre:clamp(pre), stats:clamp(stats) };
-  }
-
-  function renderScene(s,time){
-    setCam(camAt(s.camT,s.frozen));
+  function paintCanvas(s,time){
     ctx.clearRect(0,0,W,H);
-    draw(s.sceneT,s.dusk);
+    const dx=reduceMotion?0:Math.sin(time*0.00020)*0.05, dy=reduceMotion?0:Math.cos(time*0.00017)*0.04;
+    drawCover(img.aerial, s.zoom, 1, dx, dy);
+    if(s.planA>0.001) drawCover(img.plan, s.zoomP, s.planA, dx*0.6, dy*0.6);
+    if(s.s1>0.001) drawCover(img.st1, 1.06, s.s1);
+    if(s.s2>0.001) drawCover(img.st2, 1.06, s.s2);
+    if(s.s3>0.001) drawCover(img.st3, 1.06, s.s3);
     if(s.cloudP>0.001) drawClouds(s.cloudP,time);
-    if(s.bp>0.001) blueprintOverlay(s.bp);
     frameVignette();
   }
 
-  /* ---- record-mode canvas overlays (drawn after renderScene) ---- */
-  function drawStatsOverlay(a){
+  /* record / scrub overlays */
+  function drawStats(a){
     ctx.save(); ctx.globalAlpha=a;
-    const g=ctx.createLinearGradient(0,H*0.35,0,H); g.addColorStop(0,"rgba(10,13,18,0)"); g.addColorStop(1,"rgba(8,11,16,0.72)");
-    ctx.fillStyle=g; ctx.fillRect(0,H*0.35,W,H*0.65);
+    const g=ctx.createLinearGradient(0,H*0.4,0,H); g.addColorStop(0,"rgba(10,13,18,0)"); g.addColorStop(1,"rgba(8,11,16,0.75)");
+    ctx.fillStyle=g; ctx.fillRect(0,H*0.4,W,H*0.6);
     ctx.textAlign="left";
-    ctx.fillStyle="#c9a24a"; ctx.font="600 26px "+"system-ui,sans-serif";
-    ctx.fillText("THE OPPORTUNITY", W*0.08, H*0.62);
-    ctx.fillStyle="#f4ecdd"; ctx.font="300 190px system-ui,sans-serif";
-    ctx.fillText("7.57", W*0.075, H*0.85);
-    const tw=ctx.measureText("7.57").width;
-    ctx.fillStyle="#c9a24a"; ctx.font="600 40px system-ui,sans-serif";
-    ctx.fillText("ac", W*0.075+tw+18, H*0.72);
-    ctx.textAlign="right";
-    ctx.fillStyle="rgba(244,236,221,0.8)"; ctx.font="600 24px system-ui,sans-serif";
-    ctx.fillText("I-90 EXIT 67 · BOX ELDER, SD", W*0.92, H*0.82);
+    ctx.fillStyle="#c9a24a"; ctx.font="600 26px system-ui,sans-serif"; ctx.fillText("FREEDOM ESTATES", W*0.08, H*0.66);
+    ctx.fillStyle="#f4ecdd"; ctx.font="300 180px system-ui,sans-serif"; ctx.fillText("32", W*0.075, H*0.88);
+    const tw=ctx.measureText("32").width;
+    ctx.fillStyle="#c9a24a"; ctx.font="600 40px system-ui,sans-serif"; ctx.fillText("ac", W*0.075+tw+18, H*0.75);
+    ctx.textAlign="right"; ctx.fillStyle="rgba(244,236,221,0.85)"; ctx.font="600 24px system-ui,sans-serif";
+    ctx.fillText("BOX ELDER, SD · I-90 EXIT 67", W*0.92, H*0.85);
     ctx.restore();
   }
-  function drawPreloaderCanvas(a){
-    ctx.save(); ctx.globalAlpha=a;
-    ctx.fillStyle="#f4ecdd"; ctx.fillRect(0,0,W,H);
+  function drawPre(a){
+    ctx.save(); ctx.globalAlpha=a; ctx.fillStyle="#f4ecdd"; ctx.fillRect(0,0,W,H);
     ctx.textAlign="center"; ctx.textBaseline="middle";
-    ctx.font="800 140px system-ui,sans-serif";
-    const mono="E67", ex=ctx.measureText("E").width;
-    ctx.fillStyle="#15181d"; ctx.fillText("E", W/2-ex*0.85, H/2-24);
-    ctx.fillStyle="#c9a24a"; ctx.fillText("67", W/2+ex*0.55, H/2-24);
-    ctx.fillStyle="#15181d"; ctx.font="600 22px system-ui,sans-serif";
-    ctx.save(); ctx.translate(W/2,H/2+90);
-    ctx.fillText("E X I T   6 7   C O M M E R C I A L",0,0); ctx.restore();
-    ctx.restore();
+    ctx.fillStyle="#15181d"; ctx.font="800 92px system-ui,sans-serif"; ctx.fillText("Freedom", W/2, H/2-56);
+    ctx.fillStyle="#c9a24a"; ctx.fillText("Estates", W/2, H/2+50);
+    ctx.fillStyle="#15181d"; ctx.font="600 20px system-ui,sans-serif"; ctx.fillText("M A S T E R   P L A N", W/2, H/2+138);
+    ctx.restore(); ctx.textBaseline="alphabetic";
   }
+
+  /* ======================================================================
+     STATE MODELS
+     ====================================================================== */
+  // Normal scroll -> hero canvas p + street-view DOM crossfade progress
+  function scrollState(){
+    const vh=innerHeight, y=scrollY;
+    const heroTrack=document.getElementById("heroTrack");
+    const streetTrack=document.getElementById("streetTrack");
+    const heroScrub=Math.max(1,heroTrack.offsetHeight-vh);
+    const heroProg=clamp(y/heroScrub);
+    const stTop=streetTrack.offsetTop, stScrub=Math.max(1,streetTrack.offsetHeight-vh);
+    const stProg=clamp((y-stTop)/stScrub);
+    // hero canvas only runs clouds->masterplan (0..0.56); streets are DOM
+    const heroP = (y < stTop-1) ? heroProg*0.56 : 0.56;
+    return { heroP, heroProg, stProg, y, streetTrack };
+  }
+  // Record / __drawAt: single progress -> full choreography incl. streets, stats, preloader
+  function recSeg(pp){ const s=seg(pp); s.pre=clamp((1-smooth(pp,0.0,0.05))+smooth(pp,0.95,1.0)); return s; }
 
   /* ======================================================================
      HOOKS — __drawAt (scrub whole choreography), __cinescroll (auto-scroll)
@@ -1060,9 +665,9 @@ footer{
   let scrubbing=false, scrubP=0, rafId=0;
   window.__drawAt=(p)=>{
     scrubbing=true; scrubP=clamp(p);
-    const s=choreoState(scrubP); renderScene(s,performance.now());
-    if(s.stats>0) drawStatsOverlay(s.stats);
-    if(s.pre>0) drawPreloaderCanvas(s.pre);
+    const s=recSeg(scrubP); paintCanvas(s,performance.now());
+    if(s.stats>0) drawStats(s.stats);
+    if(s.pre>0) drawPre(s.pre);
     return scrubP;
   };
   function nextFrame(){ return new Promise(res=>{ let done=false; const f=()=>{ if(done)return; done=true; res(); }; requestAnimationFrame(f); setTimeout(f,40); }); }
@@ -1073,63 +678,59 @@ footer{
   };
 
   /* ======================================================================
-     NORMAL BOOT — preloader, scroll loop, IntersectionObserver, nav
+     NORMAL BOOT — preloader, scroll loop, IntersectionObserver, nav, streets
      ====================================================================== */
   function bootNormal(){
     setTargetViewport();
     addEventListener("resize", resizeViewport);
     addEventListener("scroll", ()=>{ scrubbing=false; }, {passive:true});
+    preload();
 
     const nav=document.getElementById("nav");
     const heroOverlay=document.getElementById("heroOverlay");
     const scrollCue=document.getElementById("scrollCue");
-    const bpOverlay=document.getElementById("bpOverlay");
-    const bpTrack=document.getElementById("bpTrack");
+    const streetOverlay=document.getElementById("streetOverlay");
+    const stImg=[document.getElementById("stImg1"),document.getElementById("stImg2"),document.getElementById("stImg3")];
+    const caps=[document.getElementById("cap1"),document.getElementById("cap2"),document.getElementById("cap3")];
 
-    // IntersectionObserver reveal
     const io=new IntersectionObserver((es)=>{ for(const e of es) if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } },{threshold:0.18});
     document.querySelectorAll("[data-reveal]").forEach(el=>io.observe(el));
 
-    let last=performance.now();
     function loop(now){
-      const dt=Math.min(0.05,(now-last)/1000); last=now;
-      if(!reduceMotion) updateCars(dt);
-      const s = scrubbing ? choreoState(scrubP) : scrollState();
-      // overlays (cheap, always)
       if(!scrubbing){
+        const s = scrollState();
         nav.classList.toggle("scrolled", s.y>innerHeight*0.55);
         heroOverlay.style.opacity = (1-smooth(s.heroProg,0.12,0.34)).toFixed(3);
         scrollCue.style.opacity = (1-smooth(s.heroProg,0.02,0.12)).toFixed(3);
-        const bpOn = smooth(s.bpProg,0.12,0.30)*(1-smooth(s.bpProg,0.70,0.9));
-        bpOverlay.style.opacity = bpOn.toFixed(3);
+        // three street images crossfade across the streetTrack
+        const o=[
+          smooth(s.stProg,0.02,0.14)*(1-smooth(s.stProg,0.30,0.40)),
+          smooth(s.stProg,0.32,0.42)*(1-smooth(s.stProg,0.58,0.68)),
+          smooth(s.stProg,0.60,0.70)*(1-smooth(s.stProg,0.88,0.96)),
+        ];
+        for(let i=0;i<3;i++){ stImg[i].style.opacity=o[i].toFixed(3); caps[i].style.opacity=o[i].toFixed(3); }
+        streetOverlay.style.opacity=Math.max(o[0],o[1],o[2]).toFixed(3);
+        // render canvas only while it's visible (before sheets cover it)
+        const covered = s.y > (s.streetTrack.offsetTop + s.streetTrack.offsetHeight - innerHeight*0.1);
+        if(!covered) paintCanvas(seg(s.heroP), now);
       }
-      // render scene only while the canvas is actually visible (before content sheets cover it)
-      const covered = !scrubbing && s.y > (bpTrack.offsetTop + bpTrack.offsetHeight - innerHeight*0.15);
-      if(!covered) renderScene(s, now);
       rafId=requestAnimationFrame(loop);
     }
 
-    // preloader counter tied to the real aerial preload
+    // preloader counter tied to the real image preloads (all 5)
     const plNum=document.getElementById("plNum"), plBar=document.getElementById("plBar"), pre=document.getElementById("preloader");
-    let loaded=0; const t0=performance.now();
-    function finishLoad(){ loaded=1; }
-    aerial.onload=()=>{ imgReady=true; finishLoad(); };
-    aerial.onerror=()=>{ imgBroken=true; finishLoad(); };
-    aerial.src="assets/aerial.jpg";
-    if(aerial.complete && aerial.naturalWidth>0){ imgReady=true; finishLoad(); }
+    const t0=performance.now();
     (function tick(){
-      const elapsed=performance.now()-t0;
-      const target=loaded?100:Math.min(88, elapsed/9); // creep to ~88 until the image lands
+      const elapsed=performance.now()-t0, ratio=loadedCount/TOTAL;
+      const target = ratio>=1 ? 100 : Math.min(90, Math.max(ratio*100, elapsed/12));
       const cur=Math.min(100, Math.max(parseFloat(plNum.textContent)||0, Math.round(target)));
       plNum.textContent=cur; plBar.style.width=cur+"%";
       if(cur>=100){ setTimeout(()=>pre.classList.add("done"), 240); return; }
-      nextFrame().then(tick); // guarded rAF: survives occluded-tab throttling
+      nextFrame().then(tick);
     })();
 
     if(reduceMotion){
-      // static built view; still show the money shot
-      imgReady = imgReady || (aerial.complete && aerial.naturalWidth>0);
-      const draw1=()=>{ if(!(imgReady||imgBroken)){ requestAnimationFrame(draw1); return; } setCam(camAt(T_BUILT,true)); ctx.clearRect(0,0,W,H); draw(T_BUILT,0.9); frameVignette(); };
+      const draw1=()=>{ if(loadedCount<TOTAL){ requestAnimationFrame(draw1); return; } paintCanvas(seg(0.56),0); };
       draw1();
     } else {
       rafId=requestAnimationFrame(loop);
@@ -1143,15 +744,11 @@ footer{
   function bootRecord(){
     document.getElementById("preloader").classList.add("done");
     document.getElementById("nav").style.display="none";
-    document.querySelectorAll(".track,.sheet,footer,.hero-overlay,.bp-overlay,.scroll-cue").forEach(el=>el.style.display="none");
+    document.querySelectorAll(".track,.sheet,footer,.hero-overlay,.scroll-cue,.street-stage,.street-overlay,.street-cap").forEach(el=>el.style.display="none");
     const rec=document.getElementById("scene");
     rec.style.position="fixed"; rec.style.inset="0"; rec.style.margin="auto"; rec.style.width="min(96vw,1600px)"; rec.style.height="auto"; rec.style.background="#f4ecdd";
     setTargetFixed(rec,1600,900);
-
-    aerial.onload=()=>{ imgReady=true; run(); };
-    aerial.onerror=()=>{ imgBroken=true; run(); };
-    aerial.src="assets/aerial.jpg";
-    if(aerial.complete && aerial.naturalWidth>0){ imgReady=true; }
+    preload(run);
 
     let started=false;
     function run(){
@@ -1163,16 +760,15 @@ footer{
         const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
         rec_ = new MediaRecorder(stream,{ mimeType:mime, videoBitsPerSecond:12000000 });
         rec_.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); };
-        rec_.onstop=()=>{ const blob=new Blob(chunks,{type:"video/webm"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="exit67-reel-raw.webm"; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},1000); };
+        rec_.onstop=()=>{ const blob=new Blob(chunks,{type:"video/webm"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="freedom-estates-reel-raw.webm"; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},1000); };
         rec_.start();
       }catch(err){ console.warn("MediaRecorder unavailable:",err); }
-      const t0=performance.now(); let last=t0;
+      const t0=performance.now();
       function frame(now){
-        const dt=Math.min(0.05,(now-last)/1000); last=now; updateCars(dt);
         const pp=clamp((now-t0)/DURATION);
-        const s=choreoState(pp); renderScene(s,now);
-        if(s.stats>0) drawStatsOverlay(s.stats);
-        if(s.pre>0) drawPreloaderCanvas(s.pre);
+        const s=recSeg(pp); paintCanvas(s,now);
+        if(s.stats>0) drawStats(s.stats);
+        if(s.pre>0) drawPre(s.pre);
         if(pp<1){ requestAnimationFrame(frame); }
         else { try{ rec_ && rec_.state!=="inactive" && rec_.stop(); }catch(e){} }
       }
