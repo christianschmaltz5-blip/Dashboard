@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <title>Exit 67 Commercial — I-90 Interchange · Box Elder, SD</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="A cinematic marketing page for Exit 67 Commercial — a 7.57-acre light-industrial / commercial corner on the I-90 Exit 67 interchange at Liberty Blvd & Hwy 1416, Box Elder, South Dakota. Highway-frontage multifamily and north-yard contractor garages.">
+<meta name="description" content="A cinematic marketing page for Exit 67 Commercial — a 7.57-acre light-industrial / commercial corner on the I-90 Exit 67 interchange at Liberty Blvd & Hwy 1416, Box Elder, South Dakota. Highway-frontage single-family homes and a brick-and-stone flex / garage-condo court.">
 
 <style>
 /* ============================================================
@@ -149,10 +149,10 @@ a{color:inherit; text-decoration:none}
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   text-align:center; padding:0 22px;
 }
-.bp-overlay .eyebrow{ color:#bfe0ff; text-shadow:0 0 24px rgba(120,190,255,.5); }
+.bp-overlay .eyebrow{ color:#8a6a2b; text-shadow:0 1px 10px rgba(247,244,236,.85); }
 .bp-title{
   margin:12px 0 0; font-size:clamp(28px,6vw,58px); font-weight:300;
-  letter-spacing:-.01em; color:#eaf4ff; text-shadow:0 0 40px rgba(120,190,255,.35);
+  letter-spacing:-.01em; color:#23282e; text-shadow:0 1px 14px rgba(247,244,236,.7);
 }
 
 /* ---------------- content sections (opaque, scroll over canvas) ---------------- */
@@ -312,8 +312,8 @@ footer{
 <!-- Blueprint reveal scroll section -->
 <section id="bpTrack" class="track" aria-label="From plans to reality"></section>
 <div class="bp-overlay" id="bpOverlay" aria-hidden="true">
-  <p class="eyebrow">Plans to reality</p>
-  <div class="bp-title">Drawn, then delivered.</div>
+  <p class="eyebrow">The Master Plan</p>
+  <div class="bp-title">Every lot, drawn.</div>
 </div>
 
 <!-- THE NUMBERS -->
@@ -343,16 +343,16 @@ footer{
     <div>
       <p class="eyebrow" data-reveal>The Vision</p>
       <h2 data-reveal>Two programs on <b>one interchange corner.</b></h2>
-      <p class="lede" data-reveal>A wheat-gold multifamily row lines the Highway&nbsp;1416 frontage while charcoal-steel contractor garages fill the north yard — fed by a poured concrete entrance apron and spine straight off the Exit&nbsp;67 ramps.</p>
+      <p class="lede" data-reveal>A row of single-family homes lines the Highway&nbsp;1416 frontage while a brick-and-stone flex / garage-condo court fills the north yard — fed by a poured concrete entrance apron and spine straight off the Exit&nbsp;67 ramps.</p>
     </div>
     <div class="cards">
       <a class="vcard" href="#numbers" data-reveal>
         <div class="arrow">&rarr;</div>
-        <div><div class="no">01</div><h3>Highway-Frontage Multifamily</h3><p>A staggered row of seven 2&ndash;3 story townhome buildings following the Hwy&nbsp;1416 diagonal, facing the traffic.</p></div>
+        <div><div class="no">01</div><h3>Highway-Frontage Homes</h3><p>A staggered row of ten single-family homes &mdash; gabled roofs, lawns and driveways &mdash; following the Hwy&nbsp;1416 diagonal, facing the traffic.</p></div>
       </a>
       <a class="vcard" href="#numbers" data-reveal>
         <div class="arrow">&rarr;</div>
-        <div><div class="no">02</div><h3>North-Yard Contractor Garages</h3><p>Four charcoal-steel flex buildings — 25 roll-up bays in all — around a poured storage court at the back of the site.</p></div>
+        <div><div class="no">02</div><h3>North-Yard Flex / Garage Condos</h3><p>Four brick-and-limestone flex buildings — 25 roll-up bays in all — around a poured storage court at the back of the site.</p></div>
       </a>
       <a class="vcard" href="#numbers" data-reveal>
         <div class="arrow">&rarr;</div>
@@ -525,18 +525,43 @@ footer{
   gRow( .005, .002,.040,.008,.012,8,1100);
   gRow(-.036, .024,.018,.010,.015,4,2000);
   gRow( .032, .024,.020,.010,.015,4,2700);
+  // Single-family homes along the Hwy 1416 frontage (replaces the multifamily row).
+  // Ridge runs along AXA (the row axis); the two roof planes face the frontage.
+  const HOUSE_ROW={ S:[.168,.792], N:[.292,.487] };
+  const SIDINGS=[
+    {wall:"#5c6b7b"}, // slate blue
+    {wall:"#8f4038"}, // barn red
+    {wall:"#c9b088"}, // warm tan
+    {wall:"#e6e3da"}, // white
+    {wall:"#9a9c99"}, // gray
+    {wall:"#7f8c6d"}, // sage green
+  ];
+  const rndH=mulberry32(0x40053);
   (()=>{
-    const S=[.168,.792], N=[.292,.487], N_MF=7;
-    for(let i=0;i<N_MF;i++){
-      const tt=0.09+i*(0.82/(N_MF-1));
+    const S=HOUSE_ROW.S, N=HOUSE_ROW.N, N_HOUSE=10;
+    const off=(a,d)=>[AXA[0]*a+AXP[0]*d, AXA[1]*a+AXP[1]*d];
+    // center-to-center spacing along the row (projected onto AXA) -> lot strip width
+    const dtt=0.88/(N_HOUSE-1), dU=(N[0]-S[0])*dtt, dV=(N[1]-S[1])*dtt;
+    const lotHalfA=Math.abs(dU*AXA[0]+dV*AXA[1])*0.5*0.96;   // 4% gap for the lot line
+    for(let i=0;i<N_HOUSE;i++){
+      const tt=0.06+i*(0.88/(N_HOUSE-1));
       const bu=lerp(S[0],N[0],tt), bv=lerp(S[1],N[1],tt);
-      const stag=((i%2)?1:-1)*0.004;
+      const stag=((i%2)?1:-1)*0.005 + (rndH()-0.5)*0.004;
       const cu=bu+AXP[0]*stag, cv=bv+AXP[1]*stag;
-      const sizeF=lerp(1.14,0.82,tt), hl=0.026*sizeF, hd=0.013*sizeF;
-      const g=B.multi+300+i*1000;
-      BUILDINGS.push({ kind:"multi", u:cu, v:cv,
+      const sizeF=lerp(1.16,0.82,tt), hl=0.0135*sizeF, hd=0.0110*sizeF;
+      const pal=SIDINGS[Math.floor(rndH()*SIDINGS.length)];
+      const g=B.multi+300+i*900;
+      // lot as a clean strip that tiles along the row (shared edges = lot lines);
+      // same quad drives the day-view lawn and the plan lot. Driveway stays inside it.
+      const lotFrontD=hd*2.6, lotBackD=hd*1.4;
+      const lawnPts=[ off(-lotHalfA,-lotBackD), off(lotHalfA,-lotBackD), off(lotHalfA,lotFrontD), off(-lotHalfA,lotFrontD) ];
+      const dwW=hl*0.4, d0=hd*1.02, d1=lotFrontD;
+      const drivePts=[ off(-dwW,d0), off(dwW,d0), off(dwW,d1), off(-dwW,d1) ];
+      BUILDINGS.push({ kind:"house", u:cu, v:cv,
         along:{u:AXA[0]*hl,v:AXA[1]*hl}, dep:{u:AXP[0]*hd,v:AXP[1]*hd},
-        ht:0.039*sizeF, w:hl+hd, stories:(tt<0.5?3:2), wcols:(sizeF>1?5:4),
+        ht:0.020*sizeF, roofH:0.015*sizeF, w:hl+hd,
+        wall:pal.wall, lawnG:0.9+rndH()*0.2, lawnPts, drivePts,
+        garageSide:(rndH()<0.5), sizeF,
         slab:g, frameA:g+450, frameB:g+2100, skinA:g+2300, skinB:g+4100 });
     }
   })();
@@ -551,7 +576,7 @@ footer{
   let shadowSprites=null;
   function buildShadowSprites(){
     shadowSprites=BUILDINGS.map(b=>{
-      if(b.kind==="multi") return null;
+      if(b.kind!=="garage") return null;   // houses use an inline contact shadow
       const Wpx0=2*b.w*dw, Hpx0=b.ht*dh, shh=Hpx0*0.42, pad=14;
       const spW=Math.ceil(Wpx0+shh+pad*2+8), spH=Math.ceil(shh*0.40+pad*2+8);
       const c=document.createElement("canvas"); c.width=spW; c.height=spH;
@@ -574,13 +599,14 @@ footer{
     if(alpha!==undefined) ctx.globalAlpha=1;
   }
   const uvPoly=(pts,fill,stroke,lw,alpha)=> poly(pts.map(p=>[PX(p[0]),PY(p[1])]),fill,stroke,lw,alpha);
+  const uvPolyOff=(b,pts,fill,stroke,lw,alpha)=> poly(pts.map(o=>[PX(b.u+o[0]),PY(b.v+o[1])]),fill,stroke,lw,alpha);
 
   /* ---- palettes ---- */
-  const PAL_MULTI={ frontTop:["#ecca6e","#b98a3a"],frontMid:["#e0bb54","#a5762c"],frontBot:["#d3a83c","#8f6320"],sideShade:["#c19a3e","#6f5220"],sideShadeB:["#ab8632","#5c421a"],roofBack:["#8e9297","#2b3442"],roofFront:["#7c8187","#212a38"],eaveTrim:["#f5edd8","#d8c9a0"],corner:["#f5edd8","#c9b98f"],slab:["#c8c3b4","#2a3446"],slabEdge:["#8f8a7a","#1a2230"],frame:["#b89a4a","#6f5a2a"],winFrame:["#f5edd8","#caa860"],win:["#cfe0ea","#ffd98a"],ao:["#241a08","#0a0a12"] };
-  const PAL_STEEL={ frontTop:["#5a6067","#232a36"],frontMid:["#4c525a","#1d2430"],frontBot:["#3f454d","#171d28"],sideShade:["#363c44","#141a24"],sideShadeB:["#2b3138","#0f141d"],roofBack:["#767c83","#2b3442"],roofFront:["#5f656d","#212a38"],eaveTrim:["#c8cdd3","#8fa0b5"],corner:["#aab0b7","#5d6b7e"],slab:["#c8c3b4","#2a3446"],slabEdge:["#8f8a7a","#1a2230"],frame:["#6a7078","#3a4450"],winFrame:["#23282e","#0d1218"],win:["#b9bec4","#ffd98a"],ao:["#0e1216","#05080e"] };
+  const PAL_STEEL={ frontTop:["#5a6067","#232a36"],frontMid:["#4c525a","#1d2430"],frontBot:["#3f454d","#171d28"],sideShade:["#363c44","#141a24"],sideShadeB:["#2b3138","#0f141d"],roofBack:["#b4b8bd","#2b3442"],roofFront:["#a2a7ad","#212a38"],eaveTrim:["#c8cdd3","#8fa0b5"],corner:["#aab0b7","#5d6b7e"],slab:["#c8c3b4","#2a3446"],slabEdge:["#8f8a7a","#1a2230"],frame:["#6a7078","#3a4450"],winFrame:["#23282e","#0d1218"],win:["#b9bec4","#ffd98a"],ao:["#0e1216","#05080e"] };
 
   function drawMassing(b,t,dusk){
-    const P=b.kind==="garage"?PAL_STEEL:PAL_MULTI;
+    if(b.kind==="house"){ drawHouse(b,t,dusk); return; }
+    const P=PAL_STEEL;
     const M=k=>mix(P[k][0],P[k][1],dusk), MA=(k,al)=>mixRGBA(P[k][0],P[k][1],dusk,al);
     const slabP=easeOut(win(t,b.slab,b.slab+900)); if(slabP<=0) return;
     const frameP=win(t,b.frameA,b.frameB), skinP=win(t,b.skinA,b.skinB);
@@ -614,28 +640,118 @@ footer{
     ctx.beginPath(); ctx.moveTo(GFL[0],GFL[1]); ctx.lineTo(GFR[0],GFR[1]); ctx.stroke();
     ctx.restore();
     if(skinP>0.32){
+      // Modern flex / garage-condo facade: alternating charcoal-brick + cream-limestone
+      // blocks, black roll-up doors, a glass entry, a clerestory strip, warm dusk lights.
       const wa=clamp((skinP-0.32)/0.4);
       const P2=(s,h)=>[lerp(GFL[0],GFR[0],s),lerp(GFL[1],GFR[1],s)-Hpx*h];
+      const nb=b.bays, grp=2;
+      const CHAR=mix("#3b3d42","#171b22",dusk), CREAM=mix("#e2d8c0","#3a3f4a",dusk);
       ctx.save(); ctx.globalAlpha=wa;
-      if(b.kind==="garage"){
-        for(let k=0;k<b.bays;k++){
-          const s0=(k+0.18)/b.bays,s1=(k+0.82)/b.bays,q=[P2(s0,0.05),P2(s1,0.05),P2(s1,0.68),P2(s0,0.68)];
-          ctx.save(); if(dusk>0.2){ ctx.shadowColor=rgba("#ffcf87",.85); ctx.shadowBlur=7*dusk; }
-          poly(q,mix(P.win[0],P.win[1],dusk),MA("winFrame",.6),1); ctx.restore();
-        }
-        ctx.strokeStyle=MA("eaveTrim",.45); ctx.lineWidth=1;
-        ctx.beginPath(); ctx.moveTo((RBL[0]+RFL[0])/2,(RBL[1]+RFL[1])/2); ctx.lineTo((RBR[0]+RFR[0])/2,(RBR[1]+RFR[1])/2); ctx.stroke();
-      } else {
-        const cols=b.wcols,rows=b.stories;
-        for(let r=0;r<rows;r++){
-          const hb=0.14+r*(0.80/rows), htp=hb+(0.80/rows)*0.60;
-          for(let k=0;k<cols;k++){
-            const s0=(k+0.28)/cols,s1=(k+0.72)/cols,q=[P2(s0,hb),P2(s1,hb),P2(s1,htp),P2(s0,htp)];
-            ctx.save(); if(dusk>0.2){ ctx.shadowColor=rgba("#ffcf87",.9); ctx.shadowBlur=8*dusk; }
-            poly(q,mix(P.win[0],P.win[1],dusk),MA("winFrame",.55),1); ctx.restore();
-          }
+      // alternating material blocks + clerestory on the cream blocks
+      for(let g0=0;g0<nb;g0+=grp){
+        const g1=Math.min(g0+grp,nb), cream=((g0/grp)&1)===1;
+        poly([P2(g0/nb,0.02),P2(g1/nb,0.02),P2(g1/nb,0.98),P2(g0/nb,0.98)], cream?CREAM:CHAR, null,0);
+        if(cream){
+          ctx.save(); if(dusk>0.2){ ctx.shadowColor=rgba("#ffcf87",.55); ctx.shadowBlur=5*dusk; }
+          poly([P2((g0+0.12)/nb,0.82),P2((g1-0.12)/nb,0.82),P2((g1-0.12)/nb,0.90),P2((g0+0.12)/nb,0.90)],mix("#b9c6cf","#ffd98a",dusk),null,0); ctx.restore();
         }
       }
+      // tall near-black roll-up doors, slightly inset, with faint panel lines
+      const DOOR=mix("#17191e","#0a0d12",dusk), top=0.66;
+      for(let k=0;k<nb;k++){
+        const s0=(k+0.16)/nb,s1=(k+0.84)/nb;
+        poly([P2(s0,0.04),P2(s1,0.04),P2(s1,top),P2(s0,top)],DOOR,rgba("#0a0c10",.6),1);
+        ctx.strokeStyle=rgba("#000",0.32); ctx.lineWidth=1;
+        for(let l=1;l<5;l++){ const yy=0.04+l*((top-0.04)/5), p0=P2(s0,yy),p1=P2(s1,yy); ctx.beginPath(); ctx.moveTo(p0[0],p0[1]); ctx.lineTo(p1[0],p1[1]); ctx.stroke(); }
+        if(dusk>0.2){ const dl=P2((s0+s1)/2,0.02), rr=Math.max(6,dwz*0.005);
+          const g=ctx.createRadialGradient(dl[0],dl[1],0,dl[0],dl[1],rr*3);
+          g.addColorStop(0,rgba("#ffd9a0",0.3*dusk)); g.addColorStop(1,rgba("#ffd9a0",0));
+          ctx.fillStyle=g; ctx.beginPath(); ctx.arc(dl[0],dl[1],rr*3,0,7); ctx.fill(); }
+      }
+      // dark-glass entry + awning bar between the first two bay groups
+      if(nb>=4){
+        const es=2/nb, ew=0.55/nb;
+        ctx.save(); if(dusk>0.2){ ctx.shadowColor=rgba("#ffe0a8",.8); ctx.shadowBlur=8*dusk; }
+        poly([P2(es-ew,0.03),P2(es+ew,0.03),P2(es+ew,0.52),P2(es-ew,0.52)],mix("#1b2733","#243a52",dusk),rgba("#0a0c10",.5),1); ctx.restore();
+        poly([P2(es-ew*1.4,0.52),P2(es+ew*1.4,0.52),P2(es+ew*1.4,0.57),P2(es-ew*1.4,0.57)],mix("#2a2d33","#14171d",dusk),null,0);
+      }
+      // thin dark coping along the flat parapet
+      ctx.strokeStyle=mix("#101216","#05070c",dusk); ctx.lineWidth=1.6;
+      ctx.beginPath(); ctx.moveTo(RFL[0],RFL[1]); ctx.lineTo(RFR[0],RFR[1]); ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  /* ---- single-family home: gabled roof, muted siding, lawn + driveway ---- */
+  function drawHouse(b,t,dusk){
+    const slabP=easeOut(win(t,b.slab,b.slab+900)); if(slabP<=0) return;
+    const frameP=win(t,b.frameA,b.frameB), skinP=win(t,b.skinA,b.skinB);
+    const A=b.along,D=b.dep, uvC=(su,sv)=>[b.u+su,b.v+sv];
+    const S=uv=>[PX(uv[0]),PY(uv[1])];
+    const gBL=S(uvC(-A.u-D.u,-A.v-D.v)),gBR=S(uvC(A.u-D.u,A.v-D.v)),gFR=S(uvC(A.u+D.u,A.v+D.v)),gFL=S(uvC(-A.u+D.u,-A.v+D.v));
+
+    // lawn + driveway on the ground, appearing with the slab
+    const lawnDay=mix("#4e7a34","#66973f",clamp((b.lawnG-0.9)/0.2));
+    uvPolyOff(b,b.lawnPts, mix(lawnDay,"#243a1f",dusk*0.7), null,0,0.75*slabP);
+    uvPolyOff(b,b.drivePts, mix("#c8b79a","#2c2f3a",dusk*0.6), null,0,0.7*slabP);
+
+    // foundation slab
+    poly([gBL,gBR,gFR,gFL], mix("#c8c3b4","#2a3446",dusk), mixRGBA("#8f8a7a","#1a2230",dusk,.4),1,0.55*slabP);
+    if(frameP<=0) return;
+
+    const rise=skinP>0.02?1:easeOut(frameP);
+    const Hpx=b.ht*dhz*rise, roofPx=b.roofH*dhz*rise, se=1.14;
+    const Rf=(g,h)=>[g[0],g[1]-h];
+    const wBL=Rf(gBL,Hpx),wFR=Rf(gFR,Hpx),wFL=Rf(gFL,Hpx);
+    const eBL=Rf(S(uvC(-A.u*se-D.u*se,-A.v*se-D.v*se)),Hpx),
+          eBR=Rf(S(uvC(A.u*se-D.u*se,A.v*se-D.v*se)),Hpx),
+          eFR=Rf(S(uvC(A.u*se+D.u*se,A.v*se+D.v*se)),Hpx),
+          eFL=Rf(S(uvC(-A.u*se+D.u*se,-A.v*se+D.v*se)),Hpx);
+    const rdg0=Rf(S(uvC(-A.u*se,-A.v*se)),Hpx+roofPx),
+          rdg1=Rf(S(uvC(A.u*se,A.v*se)),Hpx+roofPx);
+
+    // contact shadow
+    poly([gFL,gFR,gBR,gBL].map(p=>[p[0]+Hpx*0.16,p[1]+Hpx*0.05]),rgba("#0a0e08",0.15*clamp(rise)),null,0);
+
+    const a=skinP<=0.02?0.6*clamp(rise):clamp(0.6+0.4*win(t,b.skinA,b.skinA+700));
+    ctx.save(); ctx.globalAlpha=a;
+    const wallF=mix(b.wall,"#26304a",dusk*0.45);
+    const wallS=mix(mix(b.wall,"#0c0e12",0.30),"#1c2440",dusk*0.45);
+    const rF=mix("#3a3d42","#12151c",dusk*0.55), rB=mix("#27292e","#0a0c11",dusk*0.55);
+    const trim=mix(b.wall==="#e6e3da"?"#c9c4b8":"#eef0ea","#243049",dusk*0.55);
+    // side gable-end wall (-A end) + its gable triangle, then the front wall
+    poly([gBL,gFL,wFL,wBL],wallS,null,0);
+    poly([wBL,wFL,rdg0],wallS,null,0);
+    poly([gFL,gFR,wFR,wFL],wallF,null,0);
+    // gabled roof: back plane (darker) then camera-facing front plane (lighter)
+    poly([eBL,eBR,rdg1,rdg0],rB,null,0);
+    poly([eFL,eFR,rdg1,rdg0],rF,null,0);
+    ctx.strokeStyle=mix("#0c0f14","#05070c",dusk); ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(rdg0[0],rdg0[1]); ctx.lineTo(rdg1[0],rdg1[1]); ctx.stroke();
+    ctx.strokeStyle=trim; ctx.lineWidth=1.1;
+    ctx.beginPath(); ctx.moveTo(eFL[0],eFL[1]); ctx.lineTo(eFR[0],eFR[1]); ctx.stroke();
+    ctx.lineWidth=1;
+    for(const g of [[gFL,wFL],[gFR,wFR]]){ ctx.beginPath(); ctx.moveTo(g[0][0],g[0][1]); ctx.lineTo(g[1][0],g[1][1]); ctx.stroke(); }
+    ctx.restore();
+
+    // front-face openings during the skin phase: garage door + front door + windows
+    if(skinP>0.30){
+      const wa=clamp((skinP-0.30)/0.4);
+      const HP=(s,h)=>[lerp(gFL[0],gFR[0],s),lerp(gFL[1],gFR[1],s)-Hpx*h];
+      ctx.save(); ctx.globalAlpha=wa*a;
+      const gs=b.garageSide?[0.06,0.40]:[0.60,0.94];
+      const ds=b.garageSide?[0.52,0.62]:[0.38,0.48];
+      const wins=b.garageSide?[[0.66,0.76],[0.80,0.90]]:[[0.10,0.20],[0.24,0.34]];
+      // garage door
+      poly([HP(gs[0],0.03),HP(gs[1],0.03),HP(gs[1],0.58),HP(gs[0],0.58)],mix("#d7d2c6","#3a4150",dusk),trim,1.1);
+      for(let l=1;l<3;l++){ const yy=0.03+l*(0.55/3), p0=HP(gs[0],yy),p1=HP(gs[1],yy); ctx.strokeStyle=rgba("#8f8a7c",0.4); ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(p0[0],p0[1]); ctx.lineTo(p1[0],p1[1]); ctx.stroke(); }
+      // front door
+      ctx.save(); if(dusk>0.2){ ctx.shadowColor=rgba("#ffcf87",.8); ctx.shadowBlur=6*dusk; }
+      poly([HP(ds[0],0.02),HP(ds[1],0.02),HP(ds[1],0.52),HP(ds[0],0.52)],mix("#4a4038","#5a4a2a",dusk),trim,1); ctx.restore();
+      // windows (warm glow at dusk)
+      const winCol=mix("#cfe0ea","#ffe0a0",dusk);
+      for(const ws of wins){ ctx.save(); if(dusk>0.2){ ctx.shadowColor=rgba("#ffdf9a",.95); ctx.shadowBlur=11*dusk; }
+        poly([HP(ws[0],0.26),HP(ws[1],0.26),HP(ws[1],0.66),HP(ws[0],0.66)],winCol,trim,1.1); ctx.restore(); }
       ctx.restore();
     }
   }
@@ -787,50 +903,71 @@ footer{
   }
 
   /* ======================================================================
-     BLUEPRINT REVEAL — dim, glowing wireframe of the same massings on a
-     faint site grid, pulse, crossfade back. bp in [0,1]. Camera held still.
+     MASTER-PLAN REVEAL — the photo washes to warm drafting paper and an
+     architect's site plan draws itself: dashed boundary, roads, one lot per
+     house (derived from BUILDINGS), footprints, trees, dimension marks. Then
+     it crossfades back to the dusk photo. bp in [0,1]. Camera held still.
      ====================================================================== */
-  function boxPts(b){
+  const PLAN_BOUND=quadAt(.325,.575,.225,.170);
+  const PLAN_INK="#2b2f36";
+  function planFootprint(b){
     const A=b.along,D=b.dep, uv=(su,sv)=>[b.u+su,b.v+sv];
-    const gBL=uv(-A.u-D.u,-A.v-D.v),gBR=uv(A.u-D.u,A.v-D.v),gFR=uv(A.u+D.u,A.v+D.v),gFL=uv(-A.u+D.u,-A.v+D.v);
-    const S=p=>[PX(p[0]),PY(p[1])];
-    const G=[S(gBL),S(gBR),S(gFR),S(gFL)], Hpx=b.ht*dhz;
-    const R=G.map(p=>[p[0],p[1]-Hpx]);
-    return {G,R};
+    return [uv(-A.u-D.u,-A.v-D.v),uv(A.u-D.u,A.v-D.v),uv(A.u+D.u,A.v+D.v),uv(-A.u+D.u,-A.v+D.v)];
   }
-  function drawSiteGrid(alpha){
-    ctx.save(); ctx.strokeStyle=rgba("#8fcaff",alpha); ctx.lineWidth=1; ctx.shadowColor="rgba(120,190,255,0.55)"; ctx.shadowBlur=6;
-    const cx=.40,cy=.52,span=0.44,step=0.036;
-    for(let o=-span;o<=span+1e-6;o+=step){
-      let p0=[cx+AXP[0]*o-AXA[0]*span,cy+AXP[1]*o-AXA[1]*span], p1=[cx+AXP[0]*o+AXA[0]*span,cy+AXP[1]*o+AXA[1]*span];
-      ctx.beginPath(); ctx.moveTo(PX(p0[0]),PY(p0[1])); ctx.lineTo(PX(p1[0]),PY(p1[1])); ctx.stroke();
-      let q0=[cx+AXA[0]*o-AXP[0]*span,cy+AXA[1]*o-AXP[1]*span], q1=[cx+AXA[0]*o+AXP[0]*span,cy+AXA[1]*o+AXP[1]*span];
-      ctx.beginPath(); ctx.moveTo(PX(q0[0]),PY(q0[1])); ctx.lineTo(PX(q1[0]),PY(q1[1])); ctx.stroke();
-    }
+  function drawPaperGrid(alpha){
+    ctx.save(); ctx.globalAlpha=alpha; ctx.strokeStyle="rgba(90,96,105,0.16)"; ctx.lineWidth=1;
+    const step=Math.max(26,W/46);
+    for(let x=step;x<W;x+=step){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+    for(let y=step;y<H;y+=step){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
     ctx.restore();
+  }
+  function planTree(u,v,r){
+    for(const o of [[0,0],[-0.5,-0.3],[0.5,-0.2]]){ const x=PX(u)+o[0]*r, y=PY(v)+o[1]*r;
+      ctx.beginPath(); ctx.arc(x,y,r*0.55,0,7); ctx.fill(); ctx.stroke(); }
+  }
+  function dimMark(a,b){
+    const x0=PX(a[0]),y0=PY(a[1]),x1=PX(b[0]),y1=PY(b[1]);
+    const mx=(x0+x1)/2,my=(y0+y1)/2, dx=x1-x0,dy=y1-y0, L=Math.hypot(dx,dy)||1, nx=-dy/L, ny=dx/L, tk=7;
+    for(const p of [[x0,y0],[mx,my],[x1,y1]]){ ctx.beginPath(); ctx.moveTo(p[0]+nx*tk,p[1]+ny*tk); ctx.lineTo(p[0]-nx*tk,p[1]-ny*tk); ctx.stroke(); }
+  }
+  function drawSitePlan(f,op){
+    const ink=PLAN_INK, seg=(a,b)=>smooth(f,a,b)*op;
+    // 1. dashed site boundary
+    const ba=seg(0.0,0.14);
+    if(ba>0.002){ ctx.save(); ctx.globalAlpha=ba; ctx.setLineDash([9,6]); ctx.lineCap="round"; ctx.strokeStyle=ink; ctx.lineWidth=1.4;
+      const P=PLAN_BOUND.map(p=>[PX(p[0]),PY(p[1])]); ctx.beginPath(); P.forEach((p,i)=> i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.closePath(); ctx.stroke(); ctx.restore(); }
+    // 2. roads: entrance apron + interior spine + frontage lane along the house row
+    const ra=seg(0.12,0.34);
+    if(ra>0.002){ for(const road of [APRON,SPINE]) uvPoly(road,"#efe7d6",ink,1.2,ra);
+      ctx.save(); ctx.globalAlpha=ra; ctx.strokeStyle=ink; ctx.lineWidth=1.3;
+      const fo=0.055, l0=[HOUSE_ROW.S[0]+AXP[0]*fo,HOUSE_ROW.S[1]+AXP[1]*fo], l1=[HOUSE_ROW.N[0]+AXP[0]*fo,HOUSE_ROW.N[1]+AXP[1]*fo];
+      ctx.beginPath(); ctx.moveTo(PX(l0[0]),PY(l0[1])); ctx.lineTo(PX(l1[0]),PY(l1[1])); ctx.stroke(); ctx.restore(); }
+    // 3. one lot per house (green) + orange driveway + gray-blue gabled roof footprint
+    const la=seg(0.28,0.72), fa=seg(0.50,0.90), ca=seg(0.45,0.80);
+    for(const b of BUILDINGS){
+      if(b.kind==="house"){
+        if(la>0.002){ uvPolyOff(b,b.lawnPts,"#cfe0b8",ink,1.1,la); uvPolyOff(b,b.drivePts,"#e0a860",ink,1,la); }
+        if(fa>0.002){ uvPoly(planFootprint(b),"#9aa7b4",ink,1.1,fa);
+          const A=b.along, r0=[b.u-A.u,b.v-A.v], r1=[b.u+A.u,b.v+A.v];
+          ctx.save(); ctx.globalAlpha=fa; ctx.strokeStyle=ink; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(PX(r0[0]),PY(r0[1])); ctx.lineTo(PX(r1[0]),PY(r1[1])); ctx.stroke(); ctx.restore(); }
+      } else if(fa>0.002){ uvPoly(planFootprint(b),"#aeb6bf",ink,1.1,fa); }
+    }
+    if(ca>0.002) uvPoly(COURT,"#e9e2d2",ink,1.1,ca);
+    // 4. tree symbols along boundaries
+    const ta=seg(0.78,1.0);
+    if(ta>0.002){ ctx.save(); ctx.globalAlpha=ta; ctx.fillStyle="rgba(150,190,130,0.55)"; ctx.strokeStyle="#3f6b39"; ctx.lineWidth=1;
+      for(const s of SHRUBS) planTree(s.u,s.v,Math.max(4,s.r*dwz*1.2)); ctx.restore(); }
+    // 5. a few dimension ticks along the boundary
+    const da=seg(0.82,1.0);
+    if(da>0.002){ ctx.save(); ctx.globalAlpha=da*0.9; ctx.strokeStyle=ink; ctx.lineWidth=1; dimMark(PLAN_BOUND[0],PLAN_BOUND[1]); dimMark(PLAN_BOUND[3],PLAN_BOUND[0]); ctx.restore(); }
   }
   function blueprintOverlay(bp){
-    const dim = bp<0.72 ? smooth(bp,0,0.30)*0.74 : lerp(0.74,0,smooth(bp,0.80,1.0));
-    if(dim>0.001){ ctx.fillStyle=rgba("#060a12",dim); ctx.fillRect(0,0,W,H); }
-    const wf = smooth(bp,0.16,0.34) * (1-smooth(bp,0.86,1.0));
-    if(wf<=0.001) return;
-    drawSiteGrid(wf*0.42);
-    const drawFrac=smooth(bp,0.20,0.70);
-    const pulse = (bp>0.68 && bp<0.82) ? 1+0.6*Math.sin((bp-0.68)/0.14*Math.PI) : 1;
-    // collect edges: roof loop, verticals, ground loop (roofline draws first)
-    const edges=[];
-    for(const b of BUILDINGS){
-      const {G,R}=boxPts(b);
-      for(let i=0;i<4;i++) edges.push([R[i],R[(i+1)%4]]);
-      for(let i=0;i<4;i++) edges.push([G[i],R[i]]);
-      for(let i=0;i<4;i++) edges.push([G[i],G[(i+1)%4]]);
-    }
-    const n=Math.floor(drawFrac*edges.length);
-    ctx.save();
-    ctx.globalAlpha=wf; ctx.strokeStyle="rgba(233,245,255,0.95)"; ctx.lineWidth=1.7; ctx.lineCap="round";
-    ctx.shadowColor="rgba(140,200,255,0.95)"; ctx.shadowBlur=11*pulse;
-    for(let i=0;i<n;i++){ const e=edges[i]; ctx.beginPath(); ctx.moveTo(e[0][0],e[0][1]); ctx.lineTo(e[1][0],e[1][1]); ctx.stroke(); }
-    ctx.restore();
+    // paper wash fades in, holds, then fades back out to reveal the dusk photo
+    const op = smooth(bp,0.04,0.30) * (1-smooth(bp,0.86,1.0));
+    if(op<=0.001) return;
+    ctx.save(); ctx.globalAlpha=op; ctx.fillStyle="#f7f4ec"; ctx.fillRect(0,0,W,H); ctx.restore();
+    drawPaperGrid(op*0.7);
+    drawSitePlan(smooth(bp,0.10,0.82), op);
   }
 
   /* ---- cinematic frame vignette ---- */
