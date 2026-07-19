@@ -115,7 +115,7 @@ a{color:inherit; text-decoration:none}
 
 /* ---------------- hero + street scroll tracks ---------------- */
 .track{ position:relative; z-index:5; }
-#heroTrack{ height:640vh; }
+#heroTrack{ height:400vh; }
 #streetTrack{ height:320vh; }
 
 .hero-overlay{
@@ -482,11 +482,6 @@ footer{
   const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const RECORD = new URLSearchParams(location.search).has("record");
 
-  /* canvas fonts + parcel geometry (u,v fractions of assets/aerial.jpg) */
-  const SANS='"Neue Haas Grotesk","Inter",system-ui,sans-serif';
-  const MONO='ui-monospace,"SF Mono",Menlo,Consolas,monospace';
-  const PARCEL=[[.082,.719],[.253,.302],[.568,.431],[.397,.848]];
-
   /* ---------------- math / easing ---------------- */
   const clamp=(v,a=0,b=1)=> v<a?a : v>b?b : v;
   const lerp=(a,b,t)=> a+(b-a)*t;
@@ -534,127 +529,6 @@ footer{
     ctx.globalAlpha=alpha; ctx.imageSmoothingQuality="high";
     try{ ctx.drawImage(im, ox, oy, w, h); }catch(e){}
     ctx.globalAlpha=1;
-  }
-
-  /* project an aerial (u,v) point to screen px using drawCover's exact math,
-     with the SAME zoom/pan the aerial was drawn with this frame — so overlays
-     stick to the ground through the Ken Burns push. */
-  function uvToScreen(u,v,zoom,px,py){
-    const im=img.aerial; if(!im || !im.naturalWidth) return [W*u,H*v];
-    const ia=im.naturalWidth/im.naturalHeight; let w,h;
-    if(W/H > ia){ w=W*zoom; h=w/ia; } else { h=H*zoom; w=h*ia; }
-    const ox=(W-w)/2 + (px||0)*(w-W)/2, oy=(H-h)/2 + (py||0)*(h-H)/2;
-    return [ox+u*w, oy+v*h];
-  }
-  const polyLen=pts=>{ let L=0; for(let i=1;i<pts.length;i++) L+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]); return L; };
-  function pointAt(pts,frac){
-    const L=polyLen(pts)*clamp(frac); let acc=0;
-    for(let i=1;i<pts.length;i++){ const d=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);
-      if(acc+d>=L){ const t=(L-acc)/Math.max(1e-6,d); return [lerp(pts[i-1][0],pts[i][0],t),lerp(pts[i-1][1],pts[i][1],t)]; } acc+=d; }
-    return pts[pts.length-1];
-  }
-  /* dark rounded pill with stacked text lines. align: left|center|right anchored at (ax,ay midline). */
-  function labelPill(ax,ay,lines,align,alpha){
-    if(alpha<=0.003) return;
-    ctx.save(); ctx.globalAlpha=alpha;
-    let maxw=0,total=0;
-    for(const ln of lines){ ctx.font=`${ln.weight||600} ${ln.size}px ${ln.mono?MONO:SANS}`; ctx.letterSpacing=`${ln.ls||0}px`;
-      maxw=Math.max(maxw,ctx.measureText(ln.text).width); total+=ln.size*1.35; }
-    const padX=Math.max(10,maxw*0.11), padY=Math.max(6,total*0.14);
-    const boxW=maxw+padX*2, boxH=total+padY*2;
-    const bx = align==="right" ? ax-boxW : align==="center" ? ax-boxW/2 : ax;
-    const by = ay-boxH/2;
-    ctx.fillStyle="rgba(8,11,16,0.55)"; ctx.beginPath(); ctx.roundRect(bx,by,boxW,boxH,8); ctx.fill();
-    ctx.textBaseline="top"; let ty=by+padY;
-    for(const ln of lines){ ctx.font=`${ln.weight||600} ${ln.size}px ${ln.mono?MONO:SANS}`; ctx.letterSpacing=`${ln.ls||0}px`; ctx.fillStyle=ln.color;
-      if(align==="right"){ ctx.textAlign="right"; ctx.fillText(ln.text,bx+boxW-padX,ty); }
-      else if(align==="center"){ ctx.textAlign="center"; ctx.fillText(ln.text,bx+boxW/2,ty); }
-      else { ctx.textAlign="left"; ctx.fillText(ln.text,bx+padX,ty); }
-      ty+=ln.size*1.35; }
-    ctx.letterSpacing="0px"; ctx.textBaseline="alphabetic"; ctx.restore();
-  }
-
-  /* BEAT A — glowing parcel boundary draws on, dims the surrounds, chips a label. */
-  function drawBoundary(s,dx,dy){
-    const pts=PARCEL.map(([u,v])=>uvToScreen(u,v,s.zoom,dx,dy));
-    const M=Math.min(W,H);
-    const trace=()=>{ ctx.beginPath(); ctx.moveTo(pts[0][0],pts[0][1]); for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0],pts[i][1]); ctx.closePath(); };
-    // 1. dim outside the parcel (evenodd: rect minus parcel)
-    ctx.save(); ctx.fillStyle=`rgba(6,9,14,${(0.38*s.bdA).toFixed(3)})`;
-    ctx.beginPath(); ctx.rect(0,0,W,H); ctx.moveTo(pts[0][0],pts[0][1]); for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0],pts[i][1]); ctx.closePath();
-    ctx.fill("evenodd"); ctx.restore();
-    // 2. glowing boundary with draw-on
-    const per=polyLen([...pts,pts[0]]);
-    ctx.save(); ctx.globalAlpha=s.bdA; ctx.lineJoin="round"; ctx.lineCap="round";
-    ctx.setLineDash([per]); ctx.lineDashOffset=(1-s.bdDraw)*per;
-    trace(); ctx.lineWidth=7; ctx.strokeStyle="rgba(255,238,190,0.35)"; ctx.shadowColor="#ffdf9a"; ctx.shadowBlur=18; ctx.stroke();
-    ctx.shadowBlur=0; trace(); ctx.lineWidth=2; ctx.strokeStyle="#ffe9b8"; ctx.stroke();
-    ctx.setLineDash([]); ctx.restore();
-    // 3. corner ticks
-    ctx.save(); ctx.globalAlpha=s.bdA*s.bdDraw; ctx.fillStyle="#c9a24a";
-    for(const p of pts){ ctx.beginPath(); ctx.arc(p[0],p[1],4,0,7); ctx.fill(); } ctx.restore();
-    // 4. centroid label chip
-    const chipA=s.bdA*smooth(s.bdDraw,0.8,1);
-    if(chipA>0.01){
-      const cx=(pts[0][0]+pts[1][0]+pts[2][0]+pts[3][0])/4, cy=(pts[0][1]+pts[1][1]+pts[2][1]+pts[3][1])/4;
-      const f1=Math.max(13,M*0.026), f2=Math.max(10,M*0.017);
-      labelPill(cx,cy,[
-        {text:"FREEDOM ESTATES", color:"#c9a24a", size:f1, weight:600, ls:f1*0.08},
-        {text:"32 ACRES · TWO TRACTS", color:"#f4ecdd", size:f2, weight:500, ls:f2*0.04},
-      ],"center",chipA);
-    }
-  }
-
-  /* BEAT B — road billboard labels pinned to the photo. */
-  function drawLabels(s,dx,dy){
-    const M=Math.min(W,H), base=clamp(M*0.018,12,20);
-    const billboard=(text,u,v,color,size,pw,rot)=>{
-      const [x,y]=uvToScreen(u,v,s.zoom,dx,dy);
-      ctx.save(); ctx.globalAlpha=Math.pow(s.lblA,pw);
-      ctx.translate(x,y); if(rot) ctx.rotate(rot);
-      // gold tick along the road
-      ctx.strokeStyle="#c9a24a"; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(0,7); ctx.lineTo(18,7); ctx.stroke();
-      // label
-      ctx.font=`600 ${size}px ${SANS}`; ctx.letterSpacing=`${size*0.12}px`;
-      ctx.textAlign="left"; ctx.textBaseline="bottom"; ctx.fillStyle=color;
-      ctx.shadowColor="rgba(0,0,0,0.8)"; ctx.shadowBlur=12; ctx.fillText(text,0,2);
-      ctx.letterSpacing="0px"; ctx.restore();
-    };
-    // Highway 1416 rotation = screen direction of the left-edge road (lower->upper, readable)
-    const a=uvToScreen(.10,.78,s.zoom,dx,dy), b=uvToScreen(.24,.50,s.zoom,dx,dy);
-    const rot=Math.atan2(b[1]-a[1], b[0]-a[0]);
-    billboard("INTERSTATE 90", .55,.345, "#fff",     base,       0.7, 0);
-    billboard("EXIT 67",       .72,.378, "#c9a24a",  base*1.15,  1.0, 0);
-    billboard("HIGHWAY 1416",  .175,.635,"#fff",     base,       1.4, rot);
-  }
-
-  /* BEAT C — amber drive-time routes off the Exit 67 interchange. */
-  function drawRoutes(s,dx,dy,time){
-    const proj=arr=>arr.map(([u,v])=>uvToScreen(u,v,s.zoom,dx,dy));
-    const ell=proj([[.73,.385],[.84,.381]]);
-    const rap=proj([[.70,.368],[.52,.352],[.36,.348]]);
-    const route=(pts,prog)=>{
-      const L=polyLen(pts);
-      const trace=()=>{ ctx.beginPath(); ctx.moveTo(pts[0][0],pts[0][1]); for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0],pts[i][1]); };
-      ctx.save(); ctx.globalAlpha=s.rtA; ctx.lineJoin="round"; ctx.lineCap="round";
-      ctx.setLineDash([L]); ctx.lineDashOffset=(1-prog)*L;
-      trace(); ctx.lineWidth=6; ctx.strokeStyle="rgba(255,196,90,0.4)"; ctx.shadowColor="#ffb347"; ctx.shadowBlur=16; ctx.stroke();
-      ctx.shadowBlur=0; trace(); ctx.lineWidth=2.5; ctx.strokeStyle="#ffd98a"; ctx.stroke();
-      ctx.setLineDash([]);
-      if(prog>0.01 && prog<0.999){ const e=pointAt(pts,prog), r=3+Math.abs(Math.sin(time*0.004))*2;
-        ctx.fillStyle="#ffe1a0"; ctx.shadowColor="#ffb347"; ctx.shadowBlur=12; ctx.beginPath(); ctx.arc(e[0],e[1],r,0,7); ctx.fill(); }
-      ctx.restore();
-    };
-    route(ell,s.rtE); route(rap,s.rtR);
-    const M=Math.min(W,H), f1=Math.max(12,M*0.02), f2=Math.max(10,M*0.015);
-    labelPill(ell[ell.length-1][0], ell[ell.length-1][1]+M*0.045, [
-      {text:"ELLSWORTH AFB", color:"#c9a24a", size:f1, weight:600, ls:f1*0.06},
-      {text:"1.8 MILES", color:"#f4ecdd", size:f2, weight:500, mono:true, ls:f2*0.04},
-    ],"right", s.rtA*smooth(s.rtE,0.7,1));
-    labelPill(rap[rap.length-1][0], rap[rap.length-1][1]-M*0.07, [
-      {text:"RAPID CITY", color:"#c9a24a", size:f1, weight:600, ls:f1*0.06},
-      {text:"15 MINUTES", color:"#f4ecdd", size:f2, weight:500, mono:true, ls:f2*0.04},
-    ],"center", s.rtA*smooth(s.rtR,0.7,1));
   }
 
   /* ---------------- procedural golden-hour clouds (pre-rendered offscreen) ---------------- */
@@ -722,34 +596,20 @@ footer{
      ====================================================================== */
   function seg(p){
     return {
-      cloudP: 1-smooth(p,0.03,0.20),
-      zoom:   lerp(1.14,1.30, easeInOut(clamp(p/0.60))),
-      zoomP:  lerp(1.05,1.20, smooth(p,0.56,0.92)),
-      planA:  smooth(p,0.56,0.68),
-      // BEAT A — parcel boundary
-      bdDraw: smooth(p,0.16,0.28),
-      bdA:    smooth(p,0.16,0.22)*(1-smooth(p,0.50,0.56)),
-      // BEAT B — road labels
-      lblA:   smooth(p,0.27,0.33)*(1-smooth(p,0.47,0.53)),
-      // BEAT C — drive-time routes
-      rtE:    smooth(p,0.33,0.41),
-      rtR:    smooth(p,0.39,0.47),
-      rtA:    smooth(p,0.33,0.39)*(1-smooth(p,0.50,0.56)),
-      // streets & stats (record/scrub only) — tail
-      s1: smooth(p,0.70,0.76)*(1-smooth(p,0.79,0.82)),
-      s2: smooth(p,0.82,0.85)*(1-smooth(p,0.87,0.89)),
-      s3: smooth(p,0.89,0.92),
-      stats: smooth(p,0.93,0.96)*(1-smooth(p,0.985,1.0)),
+      cloudP: 1-smooth(p,0.04,0.34),
+      zoom:   lerp(1.14,1.30, easeInOut(clamp(p/0.45))),
+      zoomP:  lerp(1.05,1.20, smooth(p,0.24,0.92)),
+      planA:  smooth(p,0.24,0.52),
+      s1: smooth(p,0.60,0.70)*(1-smooth(p,0.76,0.82)),
+      s2: smooth(p,0.76,0.82)*(1-smooth(p,0.85,0.90)),
+      s3: smooth(p,0.85,0.90),
+      stats: smooth(p,0.90,0.94)*(1-smooth(p,0.985,1.0)),
     };
   }
   function paintCanvas(s,time){
     ctx.clearRect(0,0,W,H);
     const dx=reduceMotion?0:Math.sin(time*0.00020)*0.05, dy=reduceMotion?0:Math.cos(time*0.00017)*0.04;
     drawCover(img.aerial, s.zoom, 1, dx, dy);
-    // land-marketing beats project through the aerial's SAME zoom/pan
-    if(s.bdA>0.003) drawBoundary(s,dx,dy);
-    if(s.lblA>0.003) drawLabels(s,dx,dy);
-    if(s.rtA>0.003) drawRoutes(s,dx,dy,time);
     if(s.planA>0.001) drawCover(img.plan, s.zoomP, s.planA, dx*0.6, dy*0.6);
     if(s.s1>0.001) drawCover(img.st1, 1.06, s.s1);
     if(s.s2>0.001) drawCover(img.st2, 1.06, s.s2);
@@ -793,8 +653,8 @@ footer{
     const heroProg=clamp(y/heroScrub);
     const stTop=streetTrack.offsetTop, stScrub=Math.max(1,streetTrack.offsetHeight-vh);
     const stProg=clamp((y-stTop)/stScrub);
-    // hero canvas runs clouds->beats->masterplan (0..0.68); streets are DOM
-    const heroP = (y < stTop-1) ? heroProg*0.68 : 0.68;
+    // hero canvas only runs clouds->masterplan (0..0.56); streets are DOM
+    const heroP = (y < stTop-1) ? heroProg*0.56 : 0.56;
     return { heroP, heroProg, stProg, y, streetTrack };
   }
   // Record / __drawAt: single progress -> full choreography incl. streets, stats, preloader
@@ -871,7 +731,7 @@ footer{
     })();
 
     if(reduceMotion){
-      const draw1=()=>{ if(loadedCount<TOTAL){ requestAnimationFrame(draw1); return; } paintCanvas(seg(0.68),0); };
+      const draw1=()=>{ if(loadedCount<TOTAL){ requestAnimationFrame(draw1); return; } paintCanvas(seg(0.56),0); };
       draw1();
     } else {
       rafId=requestAnimationFrame(loop);
@@ -894,7 +754,7 @@ footer{
     let started=false;
     function run(){
       if(started) return; started=true;
-      const DURATION=23000;
+      const DURATION=17000;
       let chunks=[], rec_;
       try{
         const stream=rec.captureStream(60);
