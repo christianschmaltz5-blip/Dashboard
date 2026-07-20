@@ -9,8 +9,10 @@
 <style>
 /* ============================================================
    FREEDOM ESTATES — cinematic master-plan landing page
-   Single self-contained file. No photo assets — hero is a
-   procedural (canvas-drawn) golden-hour sky. Palette: golden
+   Single self-contained file. Assets: four images in assets/.
+   Hero paints procedural golden-hour clouds over a fixed canvas,
+   then descends onto the real drone aerial under a slow Ken Burns
+   push. Street views are DOM <img> crossfades. Palette: golden
    amber + cream + charcoal.
    ============================================================ */
 :root{
@@ -111,9 +113,10 @@ a{color:inherit; text-decoration:none}
 .nav-cta:active{ transform:translateY(1px); }
 @media (max-width:720px){ .nav-links .link{ display:none; } }
 
-/* ---------------- hero scroll track ---------------- */
+/* ---------------- hero + street scroll tracks ---------------- */
 .track{ position:relative; z-index:5; }
-#heroTrack{ height:160vh; }
+#heroTrack{ height:400vh; }
+#streetTrack{ height:320vh; }
 
 .hero-overlay{
   position:fixed; inset:0; z-index:12; pointer-events:none;
@@ -140,6 +143,28 @@ a{color:inherit; text-decoration:none}
   animation:cuepulse 2.2s ease-in-out infinite;
 }
 @keyframes cuepulse{ 0%,100%{opacity:.35;transform:scaleY(.7)} 50%{opacity:1;transform:scaleY(1)} }
+
+/* ---------------- street-view crossfade (DOM images over canvas) ---------------- */
+.street-stage{ position:fixed; inset:0; z-index:10; pointer-events:none; }
+.street-img{
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; opacity:0; will-change:opacity, clip-path;
+  clip-path:inset(100% 0 0 0);
+}
+.street-overlay{
+  position:fixed; inset:0; z-index:12; pointer-events:none;
+  background:linear-gradient(180deg,rgba(8,10,14,.28) 0%,rgba(8,10,14,0) 32%,rgba(8,10,14,.55) 100%);
+  opacity:0;
+}
+.street-cap{
+  position:fixed; left:0; right:0; bottom:clamp(64px,14vh,140px); z-index:13;
+  text-align:center; padding:0 22px; pointer-events:none; opacity:0;
+}
+.street-cap .eyebrow{ text-shadow:0 2px 18px rgba(0,0,0,.6); }
+.street-cap .st-line{
+  margin:12px 0 0; font-size:clamp(26px,5.4vw,52px); font-weight:300;
+  letter-spacing:-.01em; color:#fff; text-shadow:0 3px 30px rgba(0,0,0,.5);
+}
 
 /* ---------------- content sections (opaque, scroll over canvas) ---------------- */
 .sheet{ position:relative; z-index:20; }
@@ -292,6 +317,17 @@ footer{
 <!-- ONE fixed cinematic canvas under everything -->
 <canvas id="scene" aria-hidden="true"></canvas>
 
+<!-- Street-view crossfade layers (DOM images over the canvas) -->
+<div class="street-stage" id="streetStage" aria-hidden="true">
+  <img class="street-img" id="stImg1" src="assets/street-entrance.jpg" alt="">
+  <img class="street-img" id="stImg2" src="assets/street-residential.jpg" alt="">
+  <img class="street-img" id="stImg3" src="assets/street-flex.jpg" alt="">
+</div>
+<div class="street-overlay" id="streetOverlay" aria-hidden="true"></div>
+<div class="street-cap" id="cap1" aria-hidden="true"><p class="eyebrow">The Entrance</p><div class="st-line">In off Highway&nbsp;1416.</div></div>
+<div class="street-cap" id="cap2" aria-hidden="true"><p class="eyebrow">Residential Streets</p><div class="st-line">Homes around a park.</div></div>
+<div class="street-cap" id="cap3" aria-hidden="true"><p class="eyebrow">Commercial / Flex Court</p><div class="st-line">A gateway business park.</div></div>
+
 <!-- Preloader (also the ad's loop shot) -->
 <div id="preloader" role="status" aria-label="Loading Freedom Estates">
   <div class="pl-mark">Freedom<br><span class="six">Estates</span></div>
@@ -311,15 +347,18 @@ footer{
   </div>
 </nav>
 
-<!-- Hero: procedural golden-hour sky, no photo assets -->
+<!-- Hero scroll-driven descent: clouds -> real aerial -->
 <a id="top"></a>
-<section id="heroTrack" class="track" aria-label="Freedom Estates"></section>
+<section id="heroTrack" class="track" aria-label="Aerial descent onto Freedom Estates"></section>
 
 <div class="hero-overlay" id="heroOverlay" aria-hidden="true">
   <p class="eyebrow">I-90 Exit 67 &middot; Box Elder, South Dakota</p>
   <h1 class="hero-title">A community,<br><b>planned.</b></h1>
 </div>
 <div class="scroll-cue" id="scrollCue" aria-hidden="true">Scroll<i></i></div>
+
+<!-- Street-view scroll section (drives the DOM crossfade above) -->
+<section id="streetTrack" class="track" aria-label="A walk through the community"></section>
 
 <!-- THE MASTER PLAN -->
 <section id="plan" class="sheet" aria-label="The master plan">
@@ -439,10 +478,23 @@ footer{
   /* ---------------- math / easing ---------------- */
   const clamp=(v,a=0,b=1)=> v<a?a : v>b?b : v;
   const lerp=(a,b,t)=> a+(b-a)*t;
+  const easeInOut=t=> t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
   const smooth=(x,a,b)=>{ const t=clamp((x-a)/Math.max(1e-6,b-a)); return t*t*(3-2*t); };
   const hx=h=>{ h=h.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; };
   const rgba=(h,al)=>{ const c=hx(h); return `rgba(${c[0]},${c[1]},${c[2]},${al})`; };
   function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+
+  /* ---------------- images (preloaded; counter drives the preloader) ---------------- */
+  const IMG_SRC={ aerial:"assets/aerial.jpg",
+    st1:"assets/street-entrance.jpg", st2:"assets/street-residential.jpg", st3:"assets/street-flex.jpg" };
+  const TOTAL=Object.keys(IMG_SRC).length;
+  const img={}; let loadedCount=0;
+  function preload(done){
+    for(const k in IMG_SRC){ const im=new Image(); img[k]=im;
+      const tick=()=>{ if(++loadedCount>=TOTAL && done) done(); };
+      im.onload=tick; im.onerror=tick; im.src=IMG_SRC[k];
+    }
+  }
 
   /* ---------------- render target (viewport canvas | 1600x900 record canvas) ---------------- */
   let canvas, ctx, W=0,H=0,DPR=1;
@@ -458,6 +510,22 @@ footer{
     canvas=el; ctx=canvas.getContext("2d");
     DPR=1; W=w; H=h; canvas.width=w; canvas.height=h;
     ctx.setTransform(1,0,0,1,0,0); buildClouds();
+  }
+
+  /* cover-fit draw: image always covers the viewport (zoom>=1), centred with an
+     optional pan in [-1,1] of the overflow, so no edge ever shows (portrait too).
+     Optional `rise` in [0,1] clips the draw to the bottom rise-fraction of the
+     frame, so the image appears to build up from the ground rather than pop in. */
+  function drawCover(im, zoom, alpha, px, py, rise){
+    if(!im || !im.naturalWidth) return;
+    const ia=im.naturalWidth/im.naturalHeight; let w,h;
+    if(W/H > ia){ w=W*zoom; h=w/ia; } else { h=H*zoom; w=h*ia; }
+    const ox=(W-w)/2 + (px||0)*(w-W)/2, oy=(H-h)/2 + (py||0)*(h-H)/2;
+    ctx.save();
+    if(rise!=null && rise<0.999){ const revealH=H*clamp(rise); ctx.beginPath(); ctx.rect(0,H-revealH,W,revealH); ctx.clip(); }
+    ctx.globalAlpha=alpha; ctx.imageSmoothingQuality="high";
+    try{ ctx.drawImage(im, ox, oy, w, h); }catch(e){}
+    ctx.restore();
   }
 
   /* ---------------- procedural golden-hour clouds (pre-rendered offscreen) ---------------- */
@@ -519,12 +587,29 @@ footer{
   }
 
   /* ======================================================================
-     Hero canvas: procedural golden-hour sky + clouds, no photo assets.
-     Runs continuously (time-driven), independent of scroll.
+     CHOREOGRAPHY — one progress p in [0,1] drives the whole canvas scene:
+     clouds part -> aerial pushes in -> (record only) crossfade through
+     the three street views -> stats card.
      ====================================================================== */
-  function paintCanvas(time){
+  function seg(p){
+    const r1=smooth(p,0.60,0.70), r2=smooth(p,0.76,0.82), r3=smooth(p,0.85,0.90);
+    return {
+      cloudP: 1-smooth(p,0.04,0.34),
+      zoom:   lerp(1.14,1.30, easeInOut(clamp(p/0.45))),
+      s1: r1*(1-smooth(p,0.76,0.82)), r1,
+      s2: r2*(1-smooth(p,0.85,0.90)), r2,
+      s3: r3, r3,
+      stats: smooth(p,0.90,0.94)*(1-smooth(p,0.985,1.0)),
+    };
+  }
+  function paintCanvas(s,time){
     ctx.clearRect(0,0,W,H);
-    drawClouds(1,time);
+    const dx=reduceMotion?0:Math.sin(time*0.00020)*0.05, dy=reduceMotion?0:Math.cos(time*0.00017)*0.04;
+    drawCover(img.aerial, s.zoom, 1, dx, dy);
+    if(s.s1>0.001) drawCover(img.st1, 1.06, s.s1, 0, 0, s.r1);
+    if(s.s2>0.001) drawCover(img.st2, 1.06, s.s2, 0, 0, s.r2);
+    if(s.s3>0.001) drawCover(img.st3, 1.06, s.s3, 0, 0, s.r3);
+    if(s.cloudP>0.001) drawClouds(s.cloudP,time);
     frameVignette();
   }
 
@@ -554,21 +639,21 @@ footer{
   /* ======================================================================
      STATE MODELS
      ====================================================================== */
-  // Normal scroll -> hero title/scroll-cue fade progress
+  // Normal scroll -> hero canvas p + street-view DOM crossfade progress
   function scrollState(){
-    const y=scrollY, vh=innerHeight;
+    const vh=innerHeight, y=scrollY;
     const heroTrack=document.getElementById("heroTrack");
+    const streetTrack=document.getElementById("streetTrack");
     const heroScrub=Math.max(1,heroTrack.offsetHeight-vh);
     const heroProg=clamp(y/heroScrub);
-    return { heroProg, y, heroTrack };
+    const stTop=streetTrack.offsetTop, stScrub=Math.max(1,streetTrack.offsetHeight-vh);
+    const stProg=clamp((y-stTop)/stScrub);
+    // hero canvas only runs clouds->aerial push-in (0..0.56); streets are DOM
+    const heroP = (y < stTop-1) ? heroProg*0.56 : 0.56;
+    return { heroP, heroProg, stProg, y, streetTrack };
   }
-  // Record / __drawAt: single progress -> stats card + preloader-style intro/outro
-  function recSeg(pp){
-    return {
-      stats: smooth(pp,0.55,0.62)*(1-smooth(pp,0.92,1.0)),
-      pre: clamp((1-smooth(pp,0.0,0.05))+smooth(pp,0.95,1.0)),
-    };
-  }
+  // Record / __drawAt: single progress -> full choreography incl. streets, stats, preloader
+  function recSeg(pp){ const s=seg(pp); s.pre=clamp((1-smooth(pp,0.0,0.05))+smooth(pp,0.95,1.0)); return s; }
 
   /* ======================================================================
      HOOKS — __drawAt (scrub whole choreography), __cinescroll (auto-scroll)
@@ -576,7 +661,7 @@ footer{
   let scrubbing=false, scrubP=0, rafId=0;
   window.__drawAt=(p)=>{
     scrubbing=true; scrubP=clamp(p);
-    const s=recSeg(scrubP); paintCanvas(performance.now());
+    const s=recSeg(scrubP); paintCanvas(s,performance.now());
     if(s.stats>0) drawStats(s.stats);
     if(s.pre>0) drawPre(s.pre);
     return scrubP;
@@ -589,17 +674,20 @@ footer{
   };
 
   /* ======================================================================
-     NORMAL BOOT — preloader (fixed-timer, no assets to wait on), scroll
-     loop, IntersectionObserver, nav
+     NORMAL BOOT — preloader, scroll loop, IntersectionObserver, nav, streets
      ====================================================================== */
   function bootNormal(){
     setTargetViewport();
     addEventListener("resize", resizeViewport);
     addEventListener("scroll", ()=>{ scrubbing=false; }, {passive:true});
+    preload();
 
     const nav=document.getElementById("nav");
     const heroOverlay=document.getElementById("heroOverlay");
     const scrollCue=document.getElementById("scrollCue");
+    const streetOverlay=document.getElementById("streetOverlay");
+    const stImg=[document.getElementById("stImg1"),document.getElementById("stImg2"),document.getElementById("stImg3")];
+    const caps=[document.getElementById("cap1"),document.getElementById("cap2"),document.getElementById("cap3")];
 
     const io=new IntersectionObserver((es)=>{ for(const e of es) if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } },{threshold:0.18});
     document.querySelectorAll("[data-reveal]").forEach(el=>io.observe(el));
@@ -610,60 +698,88 @@ footer{
         nav.classList.toggle("scrolled", s.y>innerHeight*0.55);
         heroOverlay.style.opacity = (1-smooth(s.heroProg,0.12,0.34)).toFixed(3);
         scrollCue.style.opacity = (1-smooth(s.heroProg,0.02,0.12)).toFixed(3);
+        // three street images crossfade across the streetTrack, each one
+        // rising into place from the ground (clip-path reveal) as it builds
+        const rise=[
+          smooth(s.stProg,0.02,0.14),
+          smooth(s.stProg,0.32,0.42),
+          smooth(s.stProg,0.60,0.70),
+        ];
+        const o=[
+          rise[0]*(1-smooth(s.stProg,0.30,0.40)),
+          rise[1]*(1-smooth(s.stProg,0.58,0.68)),
+          rise[2]*(1-smooth(s.stProg,0.88,0.96)),
+        ];
+        for(let i=0;i<3;i++){
+          stImg[i].style.opacity=o[i].toFixed(3);
+          stImg[i].style.clipPath=`inset(${((1-rise[i])*100).toFixed(2)}% 0 0 0)`;
+          caps[i].style.opacity=o[i].toFixed(3);
+        }
+        streetOverlay.style.opacity=Math.max(o[0],o[1],o[2]).toFixed(3);
         // render canvas only while it's visible (before sheets cover it)
-        const covered = s.y > (s.heroTrack.offsetTop + s.heroTrack.offsetHeight - innerHeight*0.1);
-        if(!covered) paintCanvas(now);
+        const covered = s.y > (s.streetTrack.offsetTop + s.streetTrack.offsetHeight - innerHeight*0.1);
+        if(!covered) paintCanvas(seg(s.heroP), now);
       }
       rafId=requestAnimationFrame(loop);
     }
 
-    // preloader: no assets to wait on, just a quick fixed-timer fill
+    // preloader counter tied to the real image preloads
     const plNum=document.getElementById("plNum"), plBar=document.getElementById("plBar"), pre=document.getElementById("preloader");
-    let pct=0;
+    const t0=performance.now();
     (function tick(){
-      pct=Math.min(100,pct+9);
-      plNum.textContent=pct; plBar.style.width=pct+"%";
-      if(pct>=100){ setTimeout(()=>pre.classList.add("done"), 240); return; }
+      const elapsed=performance.now()-t0, ratio=loadedCount/TOTAL;
+      const target = ratio>=1 ? 100 : Math.min(90, Math.max(ratio*100, elapsed/12));
+      const cur=Math.min(100, Math.max(parseFloat(plNum.textContent)||0, Math.round(target)));
+      plNum.textContent=cur; plBar.style.width=cur+"%";
+      if(cur>=100){ setTimeout(()=>pre.classList.add("done"), 240); return; }
       nextFrame().then(tick);
     })();
 
-    if(reduceMotion){ paintCanvas(0); } else { rafId=requestAnimationFrame(loop); }
+    if(reduceMotion){
+      const draw1=()=>{ if(loadedCount<TOTAL){ requestAnimationFrame(draw1); return; } paintCanvas(seg(0.56),0); };
+      draw1();
+    } else {
+      rafId=requestAnimationFrame(loop);
+    }
   }
 
   /* ======================================================================
-     RECORD BOOT — ?record=1 : clouds + stats card into one 1600x900
-     canvas, captured to webm and auto-downloaded. Normal visitors never
-     see this.
+     RECORD BOOT — ?record=1 : full choreography into one 1600x900 canvas,
+     captured to webm and auto-downloaded. Normal visitors never see this.
      ====================================================================== */
   function bootRecord(){
     document.getElementById("preloader").classList.add("done");
     document.getElementById("nav").style.display="none";
-    document.querySelectorAll(".track,.sheet,footer,.hero-overlay,.scroll-cue").forEach(el=>el.style.display="none");
+    document.querySelectorAll(".track,.sheet,footer,.hero-overlay,.scroll-cue,.street-stage,.street-overlay,.street-cap").forEach(el=>el.style.display="none");
     const rec=document.getElementById("scene");
     rec.style.position="fixed"; rec.style.inset="0"; rec.style.margin="auto"; rec.style.width="min(96vw,1600px)"; rec.style.height="auto"; rec.style.background="#f4ecdd";
     setTargetFixed(rec,1600,900);
+    preload(run);
 
-    const DURATION=7000;
-    let chunks=[], rec_;
-    try{
-      const stream=rec.captureStream(60);
-      const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
-      rec_ = new MediaRecorder(stream,{ mimeType:mime, videoBitsPerSecond:12000000 });
-      rec_.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); };
-      rec_.onstop=()=>{ const blob=new Blob(chunks,{type:"video/webm"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="freedom-estates-reel-raw.webm"; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},1000); };
-      rec_.start();
-    }catch(err){ console.warn("MediaRecorder unavailable:",err); }
-    const t0=performance.now();
-    function frame(now){
-      const pp=clamp((now-t0)/DURATION);
-      paintCanvas(now);
-      const s=recSeg(pp);
-      if(s.stats>0) drawStats(s.stats);
-      if(s.pre>0) drawPre(s.pre);
-      if(pp<1){ requestAnimationFrame(frame); }
-      else { try{ rec_ && rec_.state!=="inactive" && rec_.stop(); }catch(e){} }
+    let started=false;
+    function run(){
+      if(started) return; started=true;
+      const DURATION=17000;
+      let chunks=[], rec_;
+      try{
+        const stream=rec.captureStream(60);
+        const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
+        rec_ = new MediaRecorder(stream,{ mimeType:mime, videoBitsPerSecond:12000000 });
+        rec_.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); };
+        rec_.onstop=()=>{ const blob=new Blob(chunks,{type:"video/webm"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="freedom-estates-reel-raw.webm"; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},1000); };
+        rec_.start();
+      }catch(err){ console.warn("MediaRecorder unavailable:",err); }
+      const t0=performance.now();
+      function frame(now){
+        const pp=clamp((now-t0)/DURATION);
+        const s=recSeg(pp); paintCanvas(s,now);
+        if(s.stats>0) drawStats(s.stats);
+        if(s.pre>0) drawPre(s.pre);
+        if(pp<1){ requestAnimationFrame(frame); }
+        else { try{ rec_ && rec_.state!=="inactive" && rec_.stop(); }catch(e){} }
+      }
+      requestAnimationFrame(frame);
     }
-    requestAnimationFrame(frame);
   }
 
   if(RECORD) bootRecord(); else bootNormal();
