@@ -113,9 +113,10 @@ a{color:inherit; text-decoration:none}
 .nav-cta:active{ transform:translateY(1px); }
 @media (max-width:720px){ .nav-links .link{ display:none; } }
 
-/* ---------------- hero + street scroll tracks ---------------- */
+/* ---------------- hero + build + street scroll tracks ---------------- */
 .track{ position:relative; z-index:5; }
 #heroTrack{ height:400vh; }
+#buildTrack{ height:260vh; }
 #streetTrack{ height:320vh; }
 
 .hero-overlay{
@@ -151,6 +152,7 @@ a{color:inherit; text-decoration:none}
   object-fit:cover; opacity:0; will-change:opacity, clip-path;
   clip-path:inset(100% 0 0 0);
 }
+.street-img.night{ filter:brightness(.42) saturate(1.3) hue-rotate(-10deg) contrast(1.2); }
 .street-overlay{
   position:fixed; inset:0; z-index:12; pointer-events:none;
   background:linear-gradient(180deg,rgba(8,10,14,.28) 0%,rgba(8,10,14,0) 32%,rgba(8,10,14,.55) 100%);
@@ -165,6 +167,33 @@ a{color:inherit; text-decoration:none}
   margin:12px 0 0; font-size:clamp(26px,5.4vw,52px); font-weight:300;
   letter-spacing:-.01em; color:#fff; text-shadow:0 3px 30px rgba(0,0,0,.5);
 }
+
+/* fake night sky (real photo is shot in daylight) + scattered window/lot lights */
+.night-sky{
+  position:fixed; inset:0; z-index:11; pointer-events:none; opacity:0;
+  background:linear-gradient(180deg,#050710 0%,#0b1120 24%,rgba(10,16,30,.55) 40%,rgba(10,16,30,0) 55%);
+}
+.night-lights{ position:fixed; inset:0; z-index:11; pointer-events:none; opacity:0; }
+.night-lights i{
+  position:absolute; width:5px; height:5px; border-radius:50%; background:#ffdb92;
+  transform:translate(-50%,-50%);
+  box-shadow:0 0 6px 2px rgba(255,216,137,.95), 0 0 16px 6px rgba(255,176,86,.4);
+}
+
+/* ---------------- the build: schematic construction sequence ---------------- */
+.build-stage{
+  position:fixed; inset:0; z-index:11; pointer-events:none;
+  display:flex; align-items:center; justify-content:center; opacity:0;
+}
+.build-card{
+  width:min(520px,84vw); background:rgba(10,13,18,.62); backdrop-filter:blur(8px);
+  border:1px solid rgba(201,162,74,.28); border-radius:20px;
+  padding:clamp(22px,4vw,36px) clamp(22px,4vw,36px) clamp(26px,4.4vw,40px);
+  box-shadow:0 30px 90px rgba(0,0,0,.45);
+}
+.build-card svg{ width:100%; height:auto; display:block; overflow:visible; }
+.build-cap{ margin-top:20px; text-align:center; }
+.build-cap .st-line{ margin:8px 0 0; font-size:clamp(17px,2.8vw,24px); font-weight:300; color:#fff; }
 
 /* ---------------- content sections (opaque, scroll over canvas) ---------------- */
 .sheet{ position:relative; z-index:20; }
@@ -319,14 +348,22 @@ footer{
 
 <!-- Street-view crossfade layers (DOM images over the canvas) -->
 <div class="street-stage" id="streetStage" aria-hidden="true">
-  <img class="street-img" id="stImg1" src="assets/street-entrance.jpg" alt="">
-  <img class="street-img" id="stImg2" src="assets/street-residential.jpg" alt="">
-  <img class="street-img" id="stImg3" src="assets/street-flex.jpg" alt="">
+  <img class="street-img" id="stImg1" src="assets/street-residential.jpg" alt="">
+  <img class="street-img" id="stImg2" src="assets/street-flex.jpg" alt="">
+  <img class="street-img night" id="stImg3" src="assets/street-flex.jpg" alt="">
 </div>
 <div class="street-overlay" id="streetOverlay" aria-hidden="true"></div>
-<div class="street-cap" id="cap1" aria-hidden="true"><p class="eyebrow">The Entrance</p><div class="st-line">In off Highway&nbsp;1416.</div></div>
-<div class="street-cap" id="cap2" aria-hidden="true"><p class="eyebrow">Residential Streets</p><div class="st-line">Homes around a park.</div></div>
-<div class="street-cap" id="cap3" aria-hidden="true"><p class="eyebrow">Commercial / Flex Court</p><div class="st-line">A gateway business park.</div></div>
+<div class="night-sky" id="nightSky" aria-hidden="true"></div>
+<div class="night-lights" id="nightLights" aria-hidden="true">
+  <i style="left:42%;top:27%"></i><i style="left:47%;top:23%"></i><i style="left:52%;top:30%"></i>
+  <i style="left:58%;top:25%"></i><i style="left:63%;top:33%"></i><i style="left:68%;top:22%"></i>
+  <i style="left:74%;top:29%"></i><i style="left:79%;top:24%"></i><i style="left:85%;top:31%"></i>
+  <i style="left:90%;top:26%"></i><i style="left:94%;top:34%"></i><i style="left:57%;top:36%"></i>
+  <i style="left:65%;top:38%"></i>
+</div>
+<div class="street-cap" id="cap1" aria-hidden="true"><p class="eyebrow">Residential Streets</p><div class="st-line">Homes around a park.</div></div>
+<div class="street-cap" id="cap2" aria-hidden="true"><p class="eyebrow">Commercial / Flex Court</p><div class="st-line">A gateway business park.</div></div>
+<div class="street-cap" id="cap3" aria-hidden="true"><p class="eyebrow">After Dark</p><div class="st-line">Freedom Estates, lit up at night.</div></div>
 
 <!-- Preloader (also the ad's loop shot) -->
 <div id="preloader" role="status" aria-label="Loading Freedom Estates">
@@ -356,6 +393,48 @@ footer{
   <h1 class="hero-title">A community,<br><b>planned.</b></h1>
 </div>
 <div class="scroll-cue" id="scrollCue" aria-hidden="true">Scroll<i></i></div>
+
+<!-- The Build: schematic scroll section (drives the SVG overlay below) -->
+<section id="buildTrack" class="track" aria-label="How Freedom Estates gets built"></section>
+
+<div class="build-stage" id="buildStage" aria-hidden="true">
+  <div class="build-card">
+    <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+      <line x1="14" y1="176" x2="286" y2="176" stroke="rgba(201,162,74,.35)" stroke-width="2"/>
+      <g id="bgGrade">
+        <ellipse cx="150" cy="172" rx="115" ry="14" fill="#6b4d33"/>
+        <ellipse cx="108" cy="174" rx="32" ry="6" fill="#5a3f29"/>
+        <ellipse cx="196" cy="174" rx="28" ry="6" fill="#5a3f29"/>
+      </g>
+      <g id="bgFound">
+        <rect x="75" y="154" width="150" height="22" rx="2" fill="#9a9a94"/>
+        <rect x="75" y="154" width="150" height="5" fill="#b3b3ac"/>
+      </g>
+      <g id="bgFrame" stroke="#c9a24a" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M85,154 L85,66"/>
+        <path d="M113,154 L113,66"/>
+        <path d="M141,154 L141,66"/>
+        <path d="M169,154 L169,66"/>
+        <path d="M197,154 L197,66"/>
+        <path d="M215,154 L215,66"/>
+        <path d="M75,66 L225,66"/>
+        <path d="M75,66 L150,20"/>
+        <path d="M150,20 L225,66"/>
+      </g>
+      <g id="bgDone">
+        <polygon points="72,66 150,18 228,66" fill="#5c4a34"/>
+        <rect x="80" y="66" width="140" height="88" fill="#cbb98a"/>
+        <rect x="100" y="98" width="26" height="26" fill="#f4ecdd" opacity=".85"/>
+        <rect x="174" y="98" width="26" height="26" fill="#f4ecdd" opacity=".85"/>
+        <rect x="138" y="120" width="24" height="34" fill="#3a2c1c"/>
+      </g>
+    </svg>
+    <div class="build-cap">
+      <p class="eyebrow">The Build</p>
+      <div class="st-line" id="buildLine">Grading &amp; dirt work.</div>
+    </div>
+  </div>
+</div>
 
 <!-- Street-view scroll section (drives the DOM crossfade above) -->
 <section id="streetTrack" class="track" aria-label="A walk through the community"></section>
@@ -486,7 +565,7 @@ footer{
 
   /* ---------------- images (preloaded; counter drives the preloader) ---------------- */
   const IMG_SRC={ aerial:"assets/aerial.jpg",
-    st1:"assets/street-entrance.jpg", st2:"assets/street-residential.jpg", st3:"assets/street-flex.jpg" };
+    st1:"assets/street-residential.jpg", st2:"assets/street-flex.jpg" };
   const TOTAL=Object.keys(IMG_SRC).length;
   const img={}; let loadedCount=0;
   function preload(done){
@@ -602,13 +681,40 @@ footer{
       stats: smooth(p,0.90,0.94)*(1-smooth(p,0.985,1.0)),
     };
   }
+  /* "night" beat reuses the commercial photo (img.st2) under a night grade +
+     a fake dark sky + a scatter of warm window/lot lights, since we don't
+     have an actual night photo. */
+  function drawNight(alpha, rise){
+    if(!img.st2 || !img.st2.naturalWidth || alpha<=0.001) return;
+    const zoom=1.06;
+    ctx.save();
+    if(rise!=null && rise<0.999){ const revealH=H*clamp(rise); ctx.beginPath(); ctx.rect(0,H-revealH,W,revealH); ctx.clip(); }
+    ctx.globalAlpha=alpha;
+    ctx.filter="brightness(0.42) saturate(1.3) hue-rotate(-10deg) contrast(1.2)";
+    const ia=img.st2.naturalWidth/img.st2.naturalHeight; let w,h;
+    if(W/H>ia){ w=W*zoom; h=w/ia; } else { h=H*zoom; w=h*ia; }
+    try{ ctx.drawImage(img.st2, (W-w)/2, (H-h)/2, w, h); }catch(e){}
+    ctx.filter="none";
+    const sky=ctx.createLinearGradient(0,0,0,H*0.55);
+    sky.addColorStop(0,"rgba(5,7,16,0.95)"); sky.addColorStop(0.42,"rgba(11,17,32,0.5)"); sky.addColorStop(1,"rgba(11,17,32,0)");
+    ctx.fillStyle=sky; ctx.fillRect(0,0,W,H*0.55);
+    const dots=[[42,27],[47,23],[52,30],[58,25],[63,33],[68,22],[74,29],[79,24],[85,31],[90,26],[94,34],[57,36],[65,38]];
+    dots.forEach(([px,py])=>{
+      const x=W*px/100, y=H*py/100;
+      const g=ctx.createRadialGradient(x,y,0,x,y,14);
+      g.addColorStop(0,"rgba(255,219,146,0.95)"); g.addColorStop(0.4,"rgba(255,180,90,0.4)"); g.addColorStop(1,"rgba(255,180,90,0)");
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,14,0,7); ctx.fill();
+      ctx.fillStyle="#ffe3ae"; ctx.beginPath(); ctx.arc(x,y,2,0,7); ctx.fill();
+    });
+    ctx.restore();
+  }
   function paintCanvas(s,time){
     ctx.clearRect(0,0,W,H);
     const dx=reduceMotion?0:Math.sin(time*0.00020)*0.05, dy=reduceMotion?0:Math.cos(time*0.00017)*0.04;
     drawCover(img.aerial, s.zoom, 1, dx, dy);
     if(s.s1>0.001) drawCover(img.st1, 1.06, s.s1, 0, 0, s.r1);
     if(s.s2>0.001) drawCover(img.st2, 1.06, s.s2, 0, 0, s.r2);
-    if(s.s3>0.001) drawCover(img.st3, 1.06, s.s3, 0, 0, s.r3);
+    if(s.s3>0.001) drawNight(s.s3, s.r3);
     if(s.cloudP>0.001) drawClouds(s.cloudP,time);
     frameVignette();
   }
@@ -639,18 +745,22 @@ footer{
   /* ======================================================================
      STATE MODELS
      ====================================================================== */
-  // Normal scroll -> hero canvas p + street-view DOM crossfade progress
+  // Normal scroll -> hero canvas p + build-schematic + street-view DOM progress
   function scrollState(){
     const vh=innerHeight, y=scrollY;
     const heroTrack=document.getElementById("heroTrack");
+    const buildTrack=document.getElementById("buildTrack");
     const streetTrack=document.getElementById("streetTrack");
     const heroScrub=Math.max(1,heroTrack.offsetHeight-vh);
     const heroProg=clamp(y/heroScrub);
+    const bTop=buildTrack.offsetTop, bScrub=Math.max(1,buildTrack.offsetHeight-vh);
+    const buildProg=clamp((y-bTop)/bScrub);
     const stTop=streetTrack.offsetTop, stScrub=Math.max(1,streetTrack.offsetHeight-vh);
     const stProg=clamp((y-stTop)/stScrub);
-    // hero canvas only runs clouds->aerial push-in (0..0.56); streets are DOM
-    const heroP = (y < stTop-1) ? heroProg*0.56 : 0.56;
-    return { heroP, heroProg, stProg, y, streetTrack };
+    // hero canvas runs clouds->aerial push-in (0..0.56), then holds while the
+    // build schematic and street photos (both DOM) play over the frozen aerial
+    const heroP = (y < bTop-1) ? heroProg*0.56 : 0.56;
+    return { heroP, heroProg, buildProg, stProg, y, streetTrack };
   }
   // Record / __drawAt: single progress -> full choreography incl. streets, stats, preloader
   function recSeg(pp){ const s=seg(pp); s.pre=clamp((1-smooth(pp,0.0,0.05))+smooth(pp,0.95,1.0)); return s; }
@@ -686,8 +796,20 @@ footer{
     const heroOverlay=document.getElementById("heroOverlay");
     const scrollCue=document.getElementById("scrollCue");
     const streetOverlay=document.getElementById("streetOverlay");
+    const nightSky=document.getElementById("nightSky");
+    const nightLights=document.getElementById("nightLights");
     const stImg=[document.getElementById("stImg1"),document.getElementById("stImg2"),document.getElementById("stImg3")];
     const caps=[document.getElementById("cap1"),document.getElementById("cap2"),document.getElementById("cap3")];
+
+    // "The Build" schematic: 4 SVG groups (grade/foundation/framing/complete)
+    // scrubbed by buildProg; framing studs draw on via stroke-dashoffset.
+    const buildStage=document.getElementById("buildStage");
+    const buildLine=document.getElementById("buildLine");
+    const bgGrade=document.getElementById("bgGrade"), bgFound=document.getElementById("bgFound");
+    const bgFrame=document.getElementById("bgFrame"), bgDone=document.getElementById("bgDone");
+    const studEls=Array.from(bgFrame.querySelectorAll("path"));
+    const studLens=studEls.map(el=>{ const len=el.getTotalLength(); el.style.strokeDasharray=len; el.style.strokeDashoffset=len; return len; });
+    const buildStages=["Grading & dirt work.","Foundation poured.","Framing goes up.","Move-in ready."];
 
     const io=new IntersectionObserver((es)=>{ for(const e of es) if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } },{threshold:0.18});
     document.querySelectorAll("[data-reveal]").forEach(el=>io.observe(el));
@@ -698,8 +820,28 @@ footer{
         nav.classList.toggle("scrolled", s.y>innerHeight*0.55);
         heroOverlay.style.opacity = (1-smooth(s.heroProg,0.12,0.34)).toFixed(3);
         scrollCue.style.opacity = (1-smooth(s.heroProg,0.02,0.12)).toFixed(3);
+
+        // The Build: grading -> foundation -> framing (draw-on studs) -> complete
+        const bp=s.buildProg;
+        buildStage.style.opacity=(smooth(bp,0.0,0.06)*(1-smooth(bp,0.94,1.0))).toFixed(3);
+        const bo=[
+          1-smooth(bp,0.14,0.24),
+          smooth(bp,0.14,0.24)*(1-smooth(bp,0.40,0.50)),
+          smooth(bp,0.40,0.50)*(1-smooth(bp,0.66,0.76)),
+          smooth(bp,0.66,0.76),
+        ];
+        bgGrade.style.opacity=bo[0].toFixed(3);
+        bgFound.style.opacity=bo[1].toFixed(3);
+        bgFrame.style.opacity=bo[2].toFixed(3);
+        bgDone.style.opacity=bo[3].toFixed(3);
+        const drawT=smooth(bp,0.42,0.64);
+        studEls.forEach((el,i)=>{ const stagger=clamp(drawT*1.35-i*0.10); el.style.strokeDashoffset=((1-stagger)*studLens[i]).toFixed(1); });
+        let mi=0; for(let i=1;i<4;i++) if(bo[i]>bo[mi]) mi=i;
+        buildLine.textContent=buildStages[mi];
+
         // three street images crossfade across the streetTrack, each one
-        // rising into place from the ground (clip-path reveal) as it builds
+        // rising into place from the ground (clip-path reveal) as it builds;
+        // beat 3 reuses the commercial photo under a night grade
         const rise=[
           smooth(s.stProg,0.02,0.14),
           smooth(s.stProg,0.32,0.42),
@@ -716,6 +858,8 @@ footer{
           caps[i].style.opacity=o[i].toFixed(3);
         }
         streetOverlay.style.opacity=Math.max(o[0],o[1],o[2]).toFixed(3);
+        nightSky.style.opacity=o[2].toFixed(3);
+        nightLights.style.opacity=o[2].toFixed(3);
         // render canvas only while it's visible (before sheets cover it)
         const covered = s.y > (s.streetTrack.offsetTop + s.streetTrack.offsetHeight - innerHeight*0.1);
         if(!covered) paintCanvas(seg(s.heroP), now);
@@ -750,7 +894,7 @@ footer{
   function bootRecord(){
     document.getElementById("preloader").classList.add("done");
     document.getElementById("nav").style.display="none";
-    document.querySelectorAll(".track,.sheet,footer,.hero-overlay,.scroll-cue,.street-stage,.street-overlay,.street-cap").forEach(el=>el.style.display="none");
+    document.querySelectorAll(".track,.sheet,footer,.hero-overlay,.scroll-cue,.build-stage,.street-stage,.street-overlay,.street-cap").forEach(el=>el.style.display="none");
     const rec=document.getElementById("scene");
     rec.style.position="fixed"; rec.style.inset="0"; rec.style.margin="auto"; rec.style.width="min(96vw,1600px)"; rec.style.height="auto"; rec.style.background="#f4ecdd";
     setTargetFixed(rec,1600,900);
