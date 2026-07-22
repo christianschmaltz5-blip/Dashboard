@@ -698,6 +698,61 @@
       padding-left: 9px;
     }
 
+    /* ── START HERE (plain-English onboarding, for anyone new to the dashboard) ── */
+    .start-here {
+      position: relative; z-index: 10;
+      max-width: 720px; margin: 0 auto; padding: 2rem 2rem 0;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .start-here h2 {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 15px; font-weight: 600; letter-spacing: 0.04em;
+      color: rgba(255,255,255,0.85); margin-bottom: 10px;
+    }
+    .start-here p {
+      font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.5);
+      margin-bottom: 14px;
+    }
+    .start-here .legend { display: flex; gap: 20px; flex-wrap: wrap; }
+    .start-here .legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: rgba(255,255,255,0.55); }
+    .start-here .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── SIMPLE AGENT LIST (grouped, plain-English, for Kevin) ── */
+    .simple-list { position: relative; z-index: 10; max-width: 880px; margin: 1.75rem auto 0; padding: 0 2rem; }
+    .simple-group { margin-bottom: 22px; }
+    .simple-group-title {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+      color: rgba(255,255,255,0.3); margin-bottom: 8px;
+    }
+    .simple-card {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; margin-bottom: 6px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .simple-card:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.2); }
+    .simple-card .ql-dot { width: 8px; height: 8px; }
+    .simple-card-text { flex: 1; min-width: 0; }
+    .simple-card-name {
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.9);
+    }
+    .simple-card-desc {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px;
+    }
+    .simple-card-status {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .simple-card-status.status-live { color: #34D399; }
+    .simple-card-status.status-building { color: #60A5FA; }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition: none !important; }
     }
@@ -744,6 +799,17 @@
 <div class="scroll-hint">
   <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
 </div>
+
+<div class="start-here">
+  <h2>Start here</h2>
+  <p>This dashboard runs a set of automated tools ("agents") for the business — some run on a schedule with no input from anyone, some you run yourself when you need them. Click any name below to open that tool. The colored dot tells you its status:</p>
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot" style="background:#34D399;box-shadow:0 0 5px #34D399;"></span>Live &mdash; running normally</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#60A5FA;box-shadow:0 0 5px #60A5FA;"></span>Setting up &mdash; not fully automated yet</div>
+  </div>
+</div>
+
+<div class="simple-list" id="simple-list"></div>
 
 <div class="quicklaunch-section">
   <div class="ql-label">Agent Quick Access</div>
@@ -1073,6 +1139,41 @@ NODES.forEach(makeNode);
       <span class="ql-name">${item.title}</span>
       <span class="ql-freq">${item.date}</span>`;
     grid.appendChild(a);
+  });
+})();
+
+// Plain-English grouped list, aimed at someone new to the dashboard
+const SIMPLE_GROUPS = [
+  { title: "Leads & Prospecting", ids: [6, 10, 11, 9] },
+  { title: "Listings & Market",   ids: [1, 14] },
+  { title: "Zoning & Site Review", ids: [2, 5] },
+  { title: "Marketing",           ids: [7, 8, 15] },
+  { title: "Documents & CRM",     ids: [3, 4, 12, 13] },
+];
+const STATUS_WORD = { live: "Live", building: "Setting Up", pending: "Pending" };
+(function buildSimpleList() {
+  const root = document.getElementById('simple-list');
+  const byId = Object.fromEntries(NODES.map(n => [n.id, n]));
+  SIMPLE_GROUPS.forEach(group => {
+    const items = group.ids.map(id => byId[id]).filter(Boolean);
+    if (!items.length) return;
+    const section = document.createElement('div');
+    section.className = 'simple-group';
+    section.innerHTML = `<div class="simple-group-title">${group.title}</div>`;
+    items.forEach(item => {
+      const a = document.createElement('a');
+      a.className = 'simple-card';
+      a.href = item.page;
+      a.innerHTML = `
+        <span class="ql-dot ql-dot-${item.status}"></span>
+        <span class="simple-card-text">
+          <div class="simple-card-name">${item.title}</div>
+          <div class="simple-card-desc">${item.body}</div>
+        </span>
+        <span class="simple-card-status status-${item.status}">${STATUS_WORD[item.status] || item.status}</span>`;
+      section.appendChild(a);
+    });
+    root.appendChild(section);
   });
 })();
 
