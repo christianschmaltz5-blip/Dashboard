@@ -24,9 +24,17 @@ VER=$(date '+%Y%m%d')
 sed -i '' "s/paragon-listings\.js?v=[0-9]*/paragon-listings.js?v=$VER/g" "$REPO/pages/paragon-listings.html"
 sed -i '' "s/market-data\.js?v=[0-9]*/market-data.js?v=$VER/g" "$REPO/pages/paragon-listings.html"
 
-# 4. Commit and push
+# 4. Record freshness for the dashboard, then commit and push
 cd "$REPO"
-git add js/paragon-listings.js js/market-data.js pages/paragon-listings.html img/listings/ >> "$LOG" 2>&1
+$PYTHON - "market_report" <<'PYEOF' >> "$LOG" 2>&1
+import json, sys, datetime, pathlib
+key = sys.argv[1]
+path = pathlib.Path("js/agent-status.json")
+data = json.loads(path.read_text()) if path.exists() else {}
+data[key] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
+PYEOF
+git add js/paragon-listings.js js/market-data.js pages/paragon-listings.html img/listings/ js/agent-status.json >> "$LOG" 2>&1
 git diff --cached --quiet || git commit -m "Auto-update: MLS listings + market data $(date '+%Y-%m-%d')" >> "$LOG" 2>&1
 git push origin main >> "$LOG" 2>&1
 

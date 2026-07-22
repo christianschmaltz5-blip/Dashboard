@@ -752,6 +752,10 @@
     }
     .simple-card-status.status-live { color: #34D399; }
     .simple-card-status.status-building { color: #60A5FA; }
+    .simple-card-updated {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 9px; color: rgba(255,255,255,0.28); margin-top: 2px;
+    }
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -761,6 +765,14 @@
       .m-metrics { grid-template-columns: repeat(2, 1fr); }
       .m-rates   { max-width: 100%; }
       .m-bottom-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      nav { padding: 0 1rem; }
+      .nav-name { font-size: 9px; }
+      .nav-pill { display: none; }
+      .nav-date { font-size: 9px; }
+      #scene { transform: scale(0.6); transform-origin: center 40%; }
     }
   </style>
 </head>
@@ -1151,29 +1163,45 @@ const SIMPLE_GROUPS = [
   { title: "Documents & CRM",     ids: [3, 4, 12, 13] },
 ];
 const STATUS_WORD = { live: "Live", building: "Setting Up", pending: "Pending" };
+// Maps a node id to its key in js/agent-status.json — only scheduled agents have one.
+const STATUS_KEY_BY_ID = { 1: "market_report", 2: "zoning_monitor", 6: "box_elder_prospects", 7: "hwy1416_dev_watch" };
+function timeAgo(iso) {
+  const ms = Date.now() - new Date(iso).getTime();
+  const hrs = ms / 3600000;
+  if (hrs < 1) return "updated <1h ago";
+  if (hrs < 24) return `updated ${Math.round(hrs)}h ago`;
+  return `updated ${Math.round(hrs / 24)}d ago`;
+}
 (function buildSimpleList() {
   const root = document.getElementById('simple-list');
   const byId = Object.fromEntries(NODES.map(n => [n.id, n]));
-  SIMPLE_GROUPS.forEach(group => {
-    const items = group.ids.map(id => byId[id]).filter(Boolean);
-    if (!items.length) return;
-    const section = document.createElement('div');
-    section.className = 'simple-group';
-    section.innerHTML = `<div class="simple-group-title">${group.title}</div>`;
-    items.forEach(item => {
-      const a = document.createElement('a');
-      a.className = 'simple-card';
-      a.href = item.page;
-      a.innerHTML = `
-        <span class="ql-dot ql-dot-${item.status}"></span>
-        <span class="simple-card-text">
-          <div class="simple-card-name">${item.title}</div>
-          <div class="simple-card-desc">${item.body}</div>
-        </span>
-        <span class="simple-card-status status-${item.status}">${STATUS_WORD[item.status] || item.status}</span>`;
-      section.appendChild(a);
+  fetch('js/agent-status.json').then(r => r.ok ? r.json() : {}).catch(() => ({})).then(agentStatus => {
+    SIMPLE_GROUPS.forEach(group => {
+      const items = group.ids.map(id => byId[id]).filter(Boolean);
+      if (!items.length) return;
+      const section = document.createElement('div');
+      section.className = 'simple-group';
+      section.innerHTML = `<div class="simple-group-title">${group.title}</div>`;
+      items.forEach(item => {
+        const a = document.createElement('a');
+        a.className = 'simple-card';
+        a.href = item.page;
+        const statusKey = STATUS_KEY_BY_ID[item.id];
+        const iso = statusKey && agentStatus[statusKey];
+        a.innerHTML = `
+          <span class="ql-dot ql-dot-${item.status}"></span>
+          <span class="simple-card-text">
+            <div class="simple-card-name">${item.title}</div>
+            <div class="simple-card-desc">${item.body}</div>
+          </span>
+          <span class="simple-card-text" style="flex:0 0 auto;text-align:right;">
+            <div class="simple-card-status status-${item.status}">${STATUS_WORD[item.status] || item.status}</div>
+            ${iso ? `<div class="simple-card-updated">${timeAgo(iso)}</div>` : ''}
+          </span>`;
+        section.appendChild(a);
+      });
+      root.appendChild(section);
     });
-    root.appendChild(section);
   });
 })();
 
