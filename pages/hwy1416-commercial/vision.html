@@ -152,6 +152,10 @@ a{color:inherit; text-decoration:none}
   object-fit:cover; opacity:1; will-change:clip-path;
   clip-path:inset(100% 0 0 0);
 }
+/* image 4 (labeled site-plan overview) has its own callout boxes near the
+   top edge — nudge it down/zoomed so they clear the fixed nav bar instead
+   of sitting underneath it. */
+#stImg2{ transform:scale(1.18) translateY(6%); }
 .street-overlay{
   position:fixed; inset:0; z-index:12; pointer-events:none;
   background:linear-gradient(180deg,rgba(8,10,14,.28) 0%,rgba(8,10,14,0) 32%,rgba(8,10,14,.55) 100%);
@@ -736,13 +740,13 @@ footer{
         // double-exposure ghosting at any point, including the transition
         // between beat 1 and beat 2 (beat 2 just wipes up over beat 1).
         const rise=[
-          smooth(s.stProg,0.04,0.16),
-          smooth(s.stProg,0.50,0.64),
+          smooth(s.stProg,0.04,0.34),
+          smooth(s.stProg,0.50,0.82),
         ];
         stImg[0].style.clipPath=`inset(${((1-rise[0])*100).toFixed(2)}% 0 0 0)`;
         stImg[1].style.clipPath=`inset(${((1-rise[1])*100).toFixed(2)}% 0 0 0)`;
         // captions still crossfade (text-over-text overlap reads fine, unlike photos)
-        caps[0].style.opacity=(rise[0]*(1-smooth(s.stProg,0.50,0.56))).toFixed(3);
+        caps[0].style.opacity=(rise[0]*(1-smooth(s.stProg,0.50,0.64))).toFixed(3);
         caps[1].style.opacity=rise[1].toFixed(3);
         streetOverlay.style.opacity=Math.max(rise[0],rise[1]).toFixed(3);
         // build-beat caption fades in early, out before the street beats take over
