@@ -538,16 +538,20 @@ footer{
   /* ---------------- procedural golden-hour clouds (pre-rendered offscreen) ---------------- */
   let cloudLayers=[];
   function buildClouds(){
+    const CW=1400, CH=800;
+    // raster density only — geometry below stays in the fixed CWxCH logical space,
+    // so a wide/retina viewport gets a sharper source instead of a stretched one
+    const RES=Math.min(5,Math.max(1.5,(W/1200)*(DPR||1)*1.15));
     cloudLayers=[0,1,2].map(li=>{
-      const c=document.createElement("canvas"); c.width=1400; c.height=800;
-      const x=c.getContext("2d"); const rr=mulberry32(0xC10D+li*97);
+      const c=document.createElement("canvas"); c.width=Math.round(CW*RES); c.height=Math.round(CH*RES);
+      const x=c.getContext("2d"); x.scale(RES,RES); const rr=mulberry32(0xC10D+li*97);
       const n=18-li*3;
       for(let i=0;i<n;i++){
-        const cx=rr()*1400, cy=(0.22+0.58*rr())*800, s=(55+rr()*115)*(1+li*0.22);
+        const cx=rr()*CW, cy=(0.22+0.58*rr())*CH, s=(55+rr()*115)*(1+li*0.22);
         const puffs=8+Math.floor(rr()*7);
         for(let p=0;p<puffs;p++){
           const px=cx+(rr()-0.5)*s*3.0, py=cy+rr()*s*0.55+s*0.30, pr=s*(0.38+rr()*0.42);
-          for(const wx of [px-1400,px,px+1400]){
+          for(const wx of [px-CW,px,px+CW]){
             const g=x.createRadialGradient(wx,py,0,wx,py,pr);
             g.addColorStop(0,"rgba(140,116,96,0.50)"); g.addColorStop(0.55,"rgba(140,116,96,0.22)"); g.addColorStop(1,"rgba(140,116,96,0)");
             x.fillStyle=g; x.beginPath(); x.arc(wx,py,pr,0,7); x.fill();
@@ -555,9 +559,19 @@ footer{
         }
         for(let p=0;p<puffs;p++){
           const px=cx+(rr()-0.5)*s*2.8, py=cy-rr()*s*0.6, pr=s*(0.34+rr()*0.4);
-          for(const wx of [px-1400,px,px+1400]){
+          for(const wx of [px-CW,px,px+CW]){
             const g=x.createRadialGradient(wx,py-pr*0.3,pr*0.08,wx,py,pr);
             g.addColorStop(0,"rgba(255,252,242,0.98)"); g.addColorStop(0.45,"rgba(255,244,216,0.55)"); g.addColorStop(0.8,"rgba(255,235,198,0.14)"); g.addColorStop(1,"rgba(255,235,198,0)");
+            x.fillStyle=g; x.beginPath(); x.arc(wx,py,pr,0,7); x.fill();
+          }
+        }
+        // fine wisp detail — smaller, sharper-edged puffs for texture at close range
+        const wisps=6+Math.floor(rr()*6);
+        for(let p=0;p<wisps;p++){
+          const px=cx+(rr()-0.5)*s*3.2, py=cy+(rr()-0.5)*s*0.9, pr=s*(0.10+rr()*0.16);
+          for(const wx of [px-CW,px,px+CW]){
+            const g=x.createRadialGradient(wx,py,0,wx,py,pr);
+            g.addColorStop(0,"rgba(255,250,238,0.55)"); g.addColorStop(0.6,"rgba(255,244,220,0.22)"); g.addColorStop(1,"rgba(255,244,220,0)");
             x.fillStyle=g; x.beginPath(); x.arc(wx,py,pr,0,7); x.fill();
           }
         }
@@ -580,7 +594,7 @@ footer{
     cloudLayers.forEach((c,li)=>{
       const scale=lerp(1,1.9+li*0.6,1-cp), yoff=lerp(-H*0.05, H*0.55*(li+1), 1-cp);
       const alpha=cp*(0.95-li*0.16); if(alpha<=0.003) return;
-      const w=c.width*scale*(W/1200), h=c.height*scale*(H/760);
+      const w=1400*scale*(W/1200), h=800*scale*(H/760);
       const drift=(t*(14+li*22))% w;
       ctx.save(); ctx.globalAlpha=alpha;
       for(let x=-drift-w; x<W+w; x+=w){ ctx.drawImage(c, x, H*0.04+yoff-h*0.25, w, h); }
@@ -820,6 +834,28 @@ footer{
   }
 
   if(RECORD) bootRecord(); else bootNormal();
+})();
+</script>
+<script>
+(function(){
+  // ponytail: fire-and-forget image beacon, no consent/CORS handling — investor-link tracking only
+  var ENDPOINT = 'PASTE_APPS_SCRIPT_EXEC_URL_HERE';
+  if(ENDPOINT.indexOf('PASTE_')===0) return;
+  var inv = new URLSearchParams(location.search).get('inv') || 'anon';
+  function beacon(event, pct){
+    new Image().src = ENDPOINT + '?inv=' + encodeURIComponent(inv) + '&event=' + event + (pct!=null ? '&pct='+pct : '') + '&t=' + Date.now();
+  }
+  beacon('view');
+  var sent = {}, maxPct = 0;
+  window.addEventListener('scroll', function(){
+    var h = document.documentElement;
+    var pct = Math.min(100, Math.round((h.scrollTop + h.clientHeight) / h.scrollHeight * 100));
+    maxPct = Math.max(maxPct, pct);
+    [25,50,75,100].forEach(function(m){ if(pct>=m && !sent[m]){ sent[m]=true; beacon('scroll', m); } });
+  }, {passive:true});
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState==='hidden') beacon('exit', maxPct);
+  });
 })();
 </script>
 </body>

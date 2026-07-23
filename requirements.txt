@@ -1,0 +1,5 @@
+anthropic
+cloudscraper
+pandas
+pdfplumber
+requests
