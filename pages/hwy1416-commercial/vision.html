@@ -663,10 +663,10 @@ footer{
   function paintCanvas(s,time){
     ctx.clearRect(0,0,W,H);
     const dx=reduceMotion?0:Math.sin(time*0.00020)*0.05, dy=reduceMotion?0:Math.cos(time*0.00017)*0.04;
-    // aerial has label callouts near the top of the frame — bias the cover-fit
-    // crop upward (toward py=+1, i.e. oy->0) so they stay in view instead of
-    // being cropped off by a centered vertical crop.
-    drawCover(img.aerial, s.zoom, 1, dx, clamp(dy+0.85,-1,1));
+    // aerial has label callouts near the top AND a stats panel at the
+    // bottom — a mild upward bias keeps the top callouts fully in frame
+    // without pushing the bottom panel out of view like a hard +0.85 did.
+    drawCover(img.aerial, s.zoom, 1, dx, clamp(dy+0.3,-1,1));
     if(s.r1>0.001) drawCover(img.st1, 1.06, 1, 0, 0, s.r1);
     if(s.r2>0.001) drawCover(img.st2, 1.06, 1, 0, 0, s.r2);
     if(s.cloudP>0.001) drawClouds(s.cloudP,time);
