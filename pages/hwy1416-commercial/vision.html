@@ -19,9 +19,22 @@
 <script>
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 if (location.hash) {
-  window.scrollTo(0,0);
-  window.addEventListener('load', function(){ window.scrollTo(0,0); });
-  window.addEventListener('load', function(){ setTimeout(function(){ window.scrollTo(0,0); }, 0); });
+  var __entryHash = location.hash;
+  var __lockUntil = Date.now() + 1500;
+  var __prevBehavior = document.documentElement.style.scrollBehavior;
+  document.documentElement.style.scrollBehavior = 'auto';
+  function __forceTop(){
+    window.scrollTo(0,0);
+    if (Date.now() < __lockUntil) {
+      requestAnimationFrame(__forceTop);
+    } else {
+      document.documentElement.style.scrollBehavior = __prevBehavior;
+    }
+  }
+  __forceTop();
+  if (history.replaceState) {
+    history.replaceState(null, '', location.pathname + location.search);
+  }
 }
 </script>
 
