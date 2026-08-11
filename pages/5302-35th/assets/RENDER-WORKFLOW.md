@@ -45,19 +45,26 @@ surrounding houses, the GCU parking garage, road geometry, sidewalks,
 utility poles, and lot boundaries. Only replace the development parcel.
 
 ## Building spec (locked — paste into every prompt)
-30–32 apartment units, three stories, compact urban infill footprint,
-L-shaped or U-shaped building, small central courtyard, small resort-style
-pool, covered parking, modern Spanish/Mediterranean architecture, white
-smooth stucco, limestone accents, terracotta roof tiles, black aluminum
-windows, black metal balconies, warm architectural lighting, native Arizona
-landscaping. Realistic density for a 0.75-acre site — never redesign the
-building once established.
+30–32 apartment units, three stories, ONE single rectangular or simple
+L-shaped building — not a multi-building complex, not multiple wings.
+Footprint no larger than roughly 130ft x 60ft. Surface parking only (no
+pool, no resort courtyard — those don't fit alongside a 32-unit building
+and required parking on 0.75 acres). A small landscaped entry strip is
+fine; no large central courtyard. Modern Spanish/Mediterranean
+architecture, white smooth stucco, limestone accents, terracotta roof
+tiles, black aluminum windows, black metal balconies, warm architectural
+lighting, native Arizona landscaping. Never redesign the building once
+established.
 
-**Density guardrail (append to every prompt):** "The completed development
-must realistically fit on a 0.75-acre urban infill site. Do not create
-oversized buildings, oversized courtyards, excessive landscaping, or
-resort-scale amenities. Prioritize realistic density, parking, setbacks,
-and circulation that could plausibly receive planning approval in Phoenix."
+**Density guardrail (append to every prompt):** "This is a SINGLE
+three-story apartment building with exactly 30-32 units total, on a
+0.75-acre urban infill lot (roughly 130ft x 250ft). Do not render multiple
+buildings, multiple wings, a large courtyard, or a pool — there is not
+enough room. Count visible unit entries/balconies before finishing: if it
+reads as more than about 32 units or more than one building, it is wrong.
+Most of the site is surface parking and required setbacks, not amenity
+space. This must look buildable and plausible for city planning approval
+on this specific lot size — not a resort or luxury complex."
 
 ## Camera rule
 Maintain the exact camera position wherever possible within a sequence
@@ -67,24 +74,24 @@ Maintain the exact camera position wherever possible within a sequence
 
 | # | File | Upload | What changes |
 |---|------|--------|---------------|
-| 01 | hero-existing.jpg | real Google Street View | clean lighting/litter only, no redesign |
-| 02 | build-prep.jpg | hero-existing.jpg | demo, grading, excavator, fencing, dust |
-| 03 | build-foundation.jpg | build-prep.jpg | slab, stem walls, rebar, concrete trucks |
-| 04 | build-framing.jpg | build-foundation.jpg | 3-story wood framing, trusses, crane |
-| 05 | build-shell.jpg | build-framing.jpg | windows, stucco, tile roof, balconies |
-| 06 | build-finished.jpg | build-shell.jpg | fully landscaped, pool, courtyard, evening |
+| 01 | hero-existing.jpg | DONE (2026-08-11, native 1536x1024) | — |
+| 02 | build-prep.jpg | DONE (2026-08-11, native 1536x1024) | — |
+| 03 | build-foundation.jpg | DONE (2026-08-11, native 1536x1024, via ChatGPT browser automation) | — |
+| 04 | build-framing.jpg | DONE (2026-08-11, native 1536x1024, via ChatGPT browser automation) | — |
+| 05 | build-shell.jpg | DONE (2026-08-11, native 1536x1024, via ChatGPT browser automation) | — |
+| 06 | build-finished.jpg | DONE (2026-08-11, native 1536x1024, via ChatGPT browser automation, master reference) | — |
 
 ## Gallery — every image starts from build-finished.jpg (the master reference), camera moves only
 
 | File | Camera |
 |------|--------|
 | gallery-front.jpg | Street-level, golden hour, entrance monument "5302" |
-| gallery-corner.jpg | Corner of Georgia Ave & 35th Ave, full massing |
-| gallery-courtyard.jpg | Inside courtyard, pool visible, seating |
-| gallery-pool.jpg | Pool deck, cabanas, string lighting |
+| gallery-corner.jpg | Corner of Georgia Ave & 35th Ave, full massing, single building visible |
+| gallery-courtyard.jpg | Entry walkway/landscaped strip, no pool, no large courtyard |
+| gallery-pool.jpg | Repurposed: elevation/detail shot — stucco, tile roof, balconies close-up |
 | gallery-lobby.jpg | Interior lobby/leasing office, arches, wood beams |
-| gallery-parking.jpg | Covered parking, rear elevation, EV charging |
-| gallery-aerial.jpg | Low-altitude drone, full 0.75-acre parcel, neighborhood preserved |
+| gallery-parking.jpg | Surface parking lot, rear elevation, EV charging |
+| gallery-aerial.jpg | Low-altitude drone, full 0.75-acre parcel, neighborhood preserved, confirms single-building scale |
 | gallery-night.jpg | Same camera as gallery-front, night, warm glow |
 
 ## Final rule
