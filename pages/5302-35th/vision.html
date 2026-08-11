@@ -149,7 +149,7 @@ a{color:inherit; text-decoration:none}
 /* ---------------- hero + street scroll tracks ---------------- */
 .track{ position:relative; z-index:5; }
 #heroTrack{ height:400vh; }
-#buildTrack{ height:240vh; }
+#buildTrack{ height:400vh; }
 #streetTrack{ height:320vh; }
 
 .hero-overlay{
@@ -263,6 +263,27 @@ a{color:inherit; text-decoration:none}
 .vcard p{ margin:0; font-size:14.5px; color:rgba(245,236,221,.66); }
 @media (min-width:860px){ #vision .grid{ grid-template-columns:1fr 1.15fr; } }
 
+/* WALK-AROUND GALLERY — click-swap finished-building stills (not a true 3D orbit) */
+.gallery{ margin-top:clamp(38px,6vw,64px); }
+.gallery-main{
+  position:relative; width:100%; aspect-ratio:16/9; border-radius:20px; overflow:hidden;
+  background:rgba(255,255,255,.03); border:1px solid rgba(245,236,221,.1);
+}
+.gallery-main img{
+  position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+  opacity:0; transition:opacity .5s ease;
+}
+.gallery-main img.active{ opacity:1; }
+.gallery-thumbs{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:14px; }
+.gthumb{
+  font-size:12.5px; letter-spacing:.06em; font-weight:600; text-align:left;
+  padding:13px 16px; border-radius:12px; cursor:pointer;
+  background:rgba(255,255,255,.03); border:1px solid rgba(245,236,221,.12);
+  color:rgba(245,236,221,.7); transition:border-color .25s, background .25s, color .25s;
+}
+.gthumb.active{ border-color:var(--gold); background:rgba(193,101,47,.12); color:var(--cream); }
+@media (min-width:640px){ .gallery-thumbs{ grid-template-columns:repeat(4,1fr); } }
+
 /* reveal-on-scroll */
 [data-reveal]{ opacity:0; transform:translateY(26px); transition:opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1); }
 [data-reveal].in{ opacity:1; transform:none; }
@@ -365,6 +386,9 @@ footer{
       <span class="chip">Currently <b>vacant</b> &middot; fenced</span>
       <span class="chip">Small existing <b>flat-roof structure</b> on site</span>
       <span class="chip">1 block from <b>Grand Canyon University</b></span>
+      <span class="chip"><b>0.75 ac</b> proposed site</span>
+      <span class="chip"><b>~30&ndash;32</b> proposed units</span>
+      <span class="chip">Proposed <b>three stories</b></span>
     </div>
     <p class="plan-cap" data-reveal>This page is a visual concept only. Full underwriting, unit-count analysis and buy/no-buy verdict live at <a href="https://christianschmaltz5-blip.github.io/hq/feasibility.html">the feasibility study</a>.</p>
   </div>
@@ -391,6 +415,21 @@ footer{
         <div class="arrow">&rarr;</div>
         <div><div class="no">03</div><h3>Site Plan</h3><p>The finished aerial view of the built parcel &mdash; see it above by scrolling back to the top.</p></div>
       </a>
+    </div>
+  </div>
+  <div class="wrap gallery" data-reveal>
+    <p class="eyebrow" style="margin-bottom:14px">Walk Around the Finished Development</p>
+    <div class="gallery-main" id="galleryMain">
+      <img data-key="front" class="active" src="assets/street-front.jpg" alt="Street frontage">
+      <img data-key="corner" src="assets/street-corner.jpg" alt="Corner entrance">
+      <img data-key="courtyard" src="assets/street-courtyard.jpg" alt="Courtyard and pool">
+      <img data-key="parking" src="assets/street-parking.jpg" alt="Covered parking">
+    </div>
+    <div class="gallery-thumbs" id="galleryThumbs">
+      <button class="gthumb active" data-key="front" type="button">Street Frontage</button>
+      <button class="gthumb" data-key="corner" type="button">Corner &amp; Entrance</button>
+      <button class="gthumb" data-key="courtyard" type="button">Courtyard &amp; Pool</button>
+      <button class="gthumb" data-key="parking" type="button">Covered Parking</button>
     </div>
   </div>
 </section>
@@ -446,7 +485,8 @@ footer{
 
   /* ---------------- images (preloaded; counter drives the preloader) ---------------- */
   const IMG_SRC={ aerial:"assets/aerial.jpg",
-    buildFraming:"assets/build-framing.jpg", buildRoofed:"assets/build-roofed.jpg", buildFinished:"assets/build-finished.jpg",
+    buildPrep:"assets/build-prep.jpg", buildFoundation:"assets/build-foundation.jpg",
+    buildFraming:"assets/build-framing.jpg", buildShell:"assets/build-shell.jpg", buildFinished:"assets/build-finished.jpg",
     st1:"assets/street-front.jpg", st2:"assets/street-courtyard.jpg" };
   const TOTAL=Object.keys(IMG_SRC).length;
   const img={}; let loadedCount=0;
@@ -590,7 +630,7 @@ footer{
      same place as the hero aerial.
      ====================================================================== */
   function drawBuild(bp, zoom, time){
-    const stages=[img.aerial, img.buildFraming, img.buildRoofed, img.buildFinished];
+    const stages=[img.aerial, img.buildPrep, img.buildFoundation, img.buildFraming, img.buildShell, img.buildFinished];
     const segs=stages.length-1, pos=clamp(bp)*segs;
     const i=Math.min(segs-1, Math.floor(pos)), t=clamp(pos-i);
     const dx=reduceMotion?0:Math.sin(time*0.00020)*0.05, dy=reduceMotion?0:Math.cos(time*0.00017)*0.04;
@@ -673,11 +713,21 @@ footer{
     const caps=[document.getElementById("cap1"),document.getElementById("cap2")];
     const buildCap=document.getElementById("buildCap");
     const buildCapLine=document.getElementById("buildCapLine");
-    const BUILD_LINES=["Framing rises on the fenced lot.","Stucco, tile roofs, balconies going in.","Landscaped courtyard, pool, move-in ready."];
+    const BUILD_LINES=["Demolition, grading, utility trenches.","Footings, slab, rebar poured.","Framing rises, floor by floor.","Stucco, tile roofs, balconies going in.","Landscaped courtyard, pool, move-in ready."];
     let buildLineShown=-1;
 
     const io=new IntersectionObserver((es)=>{ for(const e of es) if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } },{threshold:0.18});
     document.querySelectorAll("[data-reveal]").forEach(el=>io.observe(el));
+
+    const galleryThumbs=document.getElementById("galleryThumbs");
+    if(galleryThumbs){
+      galleryThumbs.addEventListener("click",(e)=>{
+        const btn=e.target.closest(".gthumb"); if(!btn) return;
+        const key=btn.dataset.key;
+        galleryThumbs.querySelectorAll(".gthumb").forEach(b=>b.classList.toggle("active", b===btn));
+        document.querySelectorAll("#galleryMain img").forEach(im=>im.classList.toggle("active", im.dataset.key===key));
+      });
+    }
 
     function loop(now){
       if(!scrubbing){
