@@ -85,14 +85,18 @@ Maintain the exact camera position wherever possible within a sequence
 
 | File | Camera |
 |------|--------|
-| gallery-front.jpg | Street-level, golden hour, entrance monument "5302" |
-| gallery-corner.jpg | Corner of Georgia Ave & 35th Ave, full massing, single building visible |
-| gallery-courtyard.jpg | Entry walkway/landscaped strip, no pool, no large courtyard |
-| gallery-pool.jpg | Repurposed: elevation/detail shot — stucco, tile roof, balconies close-up |
-| gallery-lobby.jpg | Interior lobby/leasing office, arches, wood beams |
-| gallery-parking.jpg | Surface parking lot, rear elevation, EV charging |
-| gallery-aerial.jpg | Low-altitude drone, full 0.75-acre parcel, neighborhood preserved, confirms single-building scale |
-| gallery-night.jpg | Same camera as gallery-front, night, warm glow |
+| gallery-front.jpg | DONE — copy of build-finished.jpg (already the ideal front/entrance shot) |
+| gallery-corner.jpg | DONE (2026-08-11, via ChatGPT browser automation) |
+| gallery-courtyard.jpg | DONE — repurposed as entry walkway shot, no pool/courtyard |
+| gallery-pool.jpg | DONE — repurposed as close-up elevation/material detail shot |
+| gallery-lobby.jpg | DONE — small leasing lounge, matches exterior materials |
+| gallery-parking.jpg | DONE — rear elevation + surface parking + EV charger |
+| gallery-aerial.jpg | DONE — low-altitude drone, confirms single-building scale on the lot |
+| gallery-night.jpg | DONE — same camera as gallery-front, night lighting |
+
+All 8 gallery images generated 2026-08-11 from build-finished.jpg as the
+master reference (fresh upload each time, not chained from each other),
+native 1536x1024 resolution.
 
 ## Final rule
 Not concept art — an architect's investor-presentation render. Everything
