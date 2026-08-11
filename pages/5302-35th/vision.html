@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>5302 N 35th Ave — Vision · Phoenix, AZ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="5302 N 35th Ave, Phoenix, AZ — an in-place redevelopment vision for a vacant infill lot into a Spanish Mediterranean multifamily community. Full underwriting at /hq/feasibility.html.">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="5302 N 35th Ave — Vision · Phoenix, AZ">
+<meta property="og:description" content="An in-place redevelopment vision for a vacant infill lot on N 35th Ave, Phoenix — Spanish Mediterranean stucco-and-tile multifamily, courtyard pool, arched entries.">
+<meta property="og:image" content="https://christianschmaltz5-blip.github.io/Dashboard/pages/5302-35th/assets/aerial.jpg">
+<meta property="og:url" content="https://christianschmaltz5-blip.github.io/Dashboard/pages/5302-35th/vision.html">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="5302 N 35th Ave — Vision · Phoenix, AZ">
+<meta name="twitter:image" content="https://christianschmaltz5-blip.github.io/Dashboard/pages/5302-35th/assets/aerial.jpg">
+
+<script>
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+if (location.hash) {
+  var __entryHash = location.hash;
+  var __lockUntil = Date.now() + 1500;
+  var __prevBehavior = document.documentElement.style.scrollBehavior;
+  document.documentElement.style.scrollBehavior = 'auto';
+  function __forceTop(){
+    window.scrollTo(0,0);
+    if (Date.now() < __lockUntil) {
+      requestAnimationFrame(__forceTop);
+    } else {
+      document.documentElement.style.scrollBehavior = __prevBehavior;
+    }
+  }
+  __forceTop();
+  if (history.replaceState) {
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+}
+</script>
+
+<style>
+/* ============================================================
+   5302 N 35TH AVE — cinematic redevelopment-vision page
+   Single self-contained file. Assets: six images in assets/.
+   Hero paints procedural desert-dusk sky over a fixed canvas,
+   then descends onto the real site aerial under a slow Ken Burns
+   push. Street views are DOM <img> crossfades. Palette: Sonoran
+   terracotta + stucco cream + sage, adapted from the Freedom
+   Estates / hwy1416-commercial template (golden amber -> terracotta).
+   ============================================================ */
+:root{
+  --gold:#c1652f; --gold-2:#a8542a; --gold-dk:#7d3e1f;
+  --char:#211c17; --char-2:#181410; --char-3:#231e19;
+  --cream:#f5ecdd; --cream-2:#ebdfc8; --cream-3:#dcc9a8;
+  --sage:#7c8a5e;
+  --ink:#100d0a;
+  --sans:"Neue Haas Grotesk","Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","Menlo","Consolas",monospace;
+  --maxw:1180px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%; scroll-behavior:smooth}
+body{
+  background:var(--char-2); color:var(--cream);
+  font-family:var(--sans); line-height:1.55; overflow-x:hidden;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+img{max-width:100%; display:block}
+a{color:inherit; text-decoration:none}
+.eyebrow{
+  font-size:12px; letter-spacing:.32em; text-transform:uppercase;
+  font-weight:600; color:var(--gold); margin:0;
+}
+
+/* ---------------- fixed cinematic canvas ---------------- */
+#scene{
+  position:fixed; inset:0; width:100vw; height:100svh;
+  display:block; z-index:0; background:#e9c793;
+}
+
+/* ---------------- preloader ---------------- */
+#preloader{
+  position:fixed; inset:0; z-index:100;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background:var(--cream); color:var(--char);
+  transition:opacity 1s ease .1s, visibility 1s;
+}
+#preloader.done{ opacity:0; visibility:hidden; pointer-events:none; }
+.pl-mark{
+  font-family:var(--sans); font-weight:800; letter-spacing:-.01em;
+  font-size:clamp(38px,9vw,84px); line-height:.92; color:var(--char);
+  text-align:center;
+}
+.pl-mark .six{ color:var(--gold); }
+.pl-word{
+  margin-top:18px; font-size:clamp(11px,3.2vw,16px);
+  letter-spacing:.42em; text-transform:uppercase; font-weight:600;
+  color:var(--char); padding-left:.42em; text-align:center;
+}
+.pl-count{
+  position:absolute; bottom:max(env(safe-area-inset-bottom),34px);
+  left:0; right:0; text-align:center;
+  font-family:var(--mono); font-variant-numeric:tabular-nums;
+  font-size:13px; letter-spacing:.24em; color:var(--gold-dk);
+}
+.pl-bar{
+  position:absolute; bottom:0; left:0; height:2px; width:0%;
+  background:linear-gradient(90deg,var(--gold),var(--gold-2));
+}
+
+/* ---------------- nav ---------------- */
+#nav{
+  position:fixed; top:0; left:0; right:0; z-index:60;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:16px; padding:20px clamp(18px,4vw,44px);
+  transition:background .5s ease, backdrop-filter .5s ease, border-color .5s ease, padding .4s ease;
+  border-bottom:1px solid transparent;
+}
+#nav.scrolled{
+  background:rgba(24,20,16,.82); backdrop-filter:blur(12px) saturate(1.2);
+  border-bottom-color:rgba(193,101,47,.18); padding-top:14px; padding-bottom:14px;
+}
+.nav-mark{
+  font-weight:800; font-size:18px; letter-spacing:.01em; color:var(--cream);
+  display:flex; align-items:baseline; gap:.28em;
+}
+.nav-mark .six{ color:var(--gold); }
+.nav-links{ display:flex; align-items:center; gap:clamp(14px,3vw,34px); }
+.nav-links a.link{
+  font-size:12px; letter-spacing:.2em; text-transform:uppercase; font-weight:600;
+  color:rgba(245,236,221,.82); position:relative; padding:6px 0;
+}
+.nav-links a.link::after{
+  content:""; position:absolute; left:0; bottom:0; height:1px; width:0;
+  background:var(--gold); transition:width .35s ease;
+}
+.nav-links a.link:hover{ color:var(--cream); }
+.nav-links a.link:hover::after{ width:100%; }
+.nav-cta{
+  font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700;
+  color:#2c1608; background:linear-gradient(180deg,var(--gold),var(--gold-2));
+  padding:11px 20px; border-radius:999px; white-space:nowrap;
+  box-shadow:0 6px 22px rgba(193,101,47,.28); transition:filter .2s, transform .12s;
+}
+.nav-cta:hover{ filter:brightness(1.06); }
+.nav-cta:active{ transform:translateY(1px); }
+@media (max-width:720px){ .nav-links .link{ display:none; } }
+
+/* ---------------- hero + street scroll tracks ---------------- */
+.track{ position:relative; z-index:5; }
+#heroTrack{ height:400vh; }
+#buildTrack{ height:240vh; }
+#streetTrack{ height:320vh; }
+
+.hero-overlay{
+  position:fixed; inset:0; z-index:12; pointer-events:none;
+  display:flex; flex-direction:column; justify-content:flex-end;
+  padding:0 clamp(20px,5vw,64px) clamp(64px,12vh,120px);
+}
+.hero-overlay .eyebrow{ text-shadow:0 2px 18px rgba(0,0,0,.6); }
+.hero-title{
+  margin:14px 0 0; max-width:15ch;
+  font-size:clamp(38px,8.6vw,104px); line-height:.98; font-weight:300;
+  letter-spacing:-.02em; color:var(--cream);
+  text-shadow:0 4px 40px rgba(0,0,0,.55);
+}
+.hero-title b{ font-weight:600; color:#fff; }
+.scroll-cue{
+  position:fixed; left:50%; bottom:64px; transform:translateX(-50%);
+  z-index:12; pointer-events:none; text-align:center;
+  font-size:18px; font-weight:600; letter-spacing:.36em; text-transform:uppercase;
+  color:#fff;
+  text-shadow:0 2px 16px rgba(0,0,0,.75);
+}
+.scroll-cue i{
+  display:block; width:64px; height:64px; margin:14px auto 0;
+  border-right:5px solid var(--gold); border-bottom:5px solid var(--gold);
+  transform:rotate(45deg);
+  filter:drop-shadow(0 2px 14px rgba(0,0,0,.6));
+  animation:cuebounce 1.6s ease-in-out infinite;
+}
+@keyframes cuebounce{
+  0%,100%{ transform:rotate(45deg) translate(0,0); opacity:.55; }
+  50%{ transform:rotate(45deg) translate(10px,10px); opacity:1; }
+}
+
+/* ---------------- street-view crossfade (DOM images over canvas) ---------------- */
+.street-stage{ position:fixed; inset:0; z-index:10; pointer-events:none; }
+.street-img{
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; opacity:1; will-change:clip-path;
+  clip-path:inset(100% 0 0 0);
+}
+.street-overlay{
+  position:fixed; inset:0; z-index:12; pointer-events:none;
+  background:linear-gradient(180deg,rgba(16,13,10,.28) 0%,rgba(16,13,10,0) 32%,rgba(16,13,10,.55) 100%);
+  opacity:0;
+}
+.street-cap{
+  position:fixed; left:0; right:0; bottom:clamp(64px,14vh,140px); z-index:13;
+  text-align:center; padding:0 22px; pointer-events:none; opacity:0;
+}
+.street-cap .eyebrow{ text-shadow:0 2px 18px rgba(0,0,0,.6); }
+.street-cap .st-line{
+  margin:12px 0 0; font-size:clamp(26px,5.4vw,52px); font-weight:300;
+  letter-spacing:-.01em; color:#fff; text-shadow:0 3px 30px rgba(0,0,0,.5);
+}
+
+/* ---------------- content sections (opaque, scroll over canvas) ---------------- */
+.sheet{ position:relative; z-index:20; }
+.wrap{ max-width:var(--maxw); margin:0 auto; padding:0 clamp(20px,5vw,44px); }
+
+/* THE SITE — light */
+#site{
+  background:linear-gradient(180deg,#f7f0e2 0%, #f0e5d0 100%); color:var(--char);
+  padding:clamp(72px,13vw,150px) 0;
+}
+#site h2{
+  font-size:clamp(30px,5.4vw,56px); font-weight:300; letter-spacing:-.02em;
+  line-height:1.04; margin:16px 0 0; max-width:20ch;
+}
+#site h2 b{ font-weight:600; }
+#site .lede{ margin:24px 0 0; font-size:clamp(15px,2.3vw,18px); color:#4a4033; max-width:56ch; }
+.chips{ display:flex; flex-wrap:wrap; gap:10px; margin-top:30px; }
+.chip{
+  font-size:13px; letter-spacing:.01em; padding:9px 15px; border-radius:999px;
+  background:rgba(33,28,23,.05); border:1px solid rgba(33,28,23,.12); color:#332b21;
+}
+.chip b{ color:var(--gold-dk); font-weight:700; }
+.plan-cap{ margin:26px 0 0; font-size:13px; letter-spacing:.01em; color:#6a5f4d; font-style:italic; }
+.plan-cap a{ color:var(--gold-dk); text-decoration:underline; font-style:normal; }
+
+/* THE VISION — dark */
+#vision{
+  background:radial-gradient(130% 100% at 80% -10%, #29221a 0%, var(--char-2) 62%);
+  color:var(--cream); padding:clamp(72px,13vw,150px) 0;
+  border-top:1px solid rgba(193,101,47,.12);
+}
+#vision .grid{ display:grid; grid-template-columns:1fr; gap:clamp(38px,6vw,64px); align-items:start; }
+#vision h2{
+  font-size:clamp(30px,5.4vw,56px); font-weight:300; letter-spacing:-.02em;
+  line-height:1.05; margin:16px 0 0; max-width:15ch;
+}
+#vision h2 b{ font-weight:600; color:#fff; }
+#vision .lede{ margin:24px 0 0; font-size:clamp(15px,2.3vw,18px); color:rgba(245,236,221,.72); max-width:46ch; }
+.cards{ display:flex; flex-direction:column; gap:16px; }
+.vcard{
+  display:flex; align-items:flex-start; gap:18px;
+  padding:26px; border-radius:18px;
+  background:rgba(255,255,255,.03); border:1px solid rgba(245,236,221,.1);
+  transition:border-color .4s ease, background .4s ease, transform .4s ease;
+}
+.vcard:hover{ border-color:rgba(193,101,47,.4); background:rgba(255,255,255,.05); transform:translateY(-3px); }
+.vcard .arrow{
+  flex:0 0 auto; width:44px; height:44px; border-radius:50%;
+  border:1px solid rgba(193,101,47,.5); color:var(--gold);
+  display:flex; align-items:center; justify-content:center; font-size:18px;
+  transition:background .3s, color .3s;
+}
+.vcard:hover .arrow{ background:var(--gold); color:#2c1608; }
+.vcard .no{ font-family:var(--mono); font-size:12px; color:var(--gold); letter-spacing:.12em; }
+.vcard h3{ margin:6px 0 8px; font-size:clamp(18px,2.6vw,22px); font-weight:600; }
+.vcard p{ margin:0; font-size:14.5px; color:rgba(245,236,221,.66); }
+@media (min-width:860px){ #vision .grid{ grid-template-columns:1fr 1.15fr; } }
+
+/* reveal-on-scroll */
+[data-reveal]{ opacity:0; transform:translateY(26px); transition:opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1); }
+[data-reveal].in{ opacity:1; transform:none; }
+
+/* ---------------- footer ---------------- */
+footer{
+  position:relative; z-index:20; background:var(--char-2); color:var(--cream);
+  padding-top:clamp(30px,6vw,60px); overflow:hidden;
+  border-top:1px solid rgba(193,101,47,.12);
+}
+.marquee{ overflow:hidden; white-space:nowrap; padding:10px 0 clamp(30px,6vw,54px); mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent); }
+.marquee .row{ display:inline-flex; align-items:center; animation:marq 78s linear infinite; will-change:transform; }
+.marquee span{
+  font-size:clamp(52px,13vw,150px); font-weight:300; letter-spacing:-.01em;
+  color:transparent; -webkit-text-stroke:1px rgba(193,101,47,.5);
+  padding:0 .28em; line-height:1;
+}
+.marquee .dot{ color:var(--gold); -webkit-text-stroke:0; }
+@keyframes marq{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.foot-grid{
+  display:grid; grid-template-columns:1fr; gap:34px;
+  padding:clamp(30px,6vw,54px) clamp(20px,5vw,44px); border-top:1px solid rgba(245,236,221,.1);
+}
+.foot-brand .fmark{ font-weight:800; font-size:22px; }
+.foot-brand .fmark .six{ color:var(--gold); }
+.foot-brand p{ margin:12px 0 0; font-size:14px; color:rgba(245,236,221,.6); max-width:34ch; }
+.foot-col h4{ font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--gold); margin:0 0 16px; }
+.foot-col a, .foot-col p{ display:block; font-size:14.5px; color:rgba(245,236,221,.74); margin:0 0 11px; transition:color .25s; }
+.foot-col a:hover{ color:var(--gold); }
+.legal{
+  padding:22px clamp(20px,5vw,44px) clamp(28px,5vw,44px); border-top:1px solid rgba(245,236,221,.08);
+  font-size:12px; color:rgba(245,236,221,.44); text-align:center; line-height:1.7;
+}
+@media (min-width:760px){ .foot-grid{ grid-template-columns:1.6fr 1fr 1fr; } }
+
+@media (prefers-reduced-motion:reduce){
+  html{ scroll-behavior:auto; }
+  .marquee .row{ animation:none; }
+  .scroll-cue i{ animation:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ONE fixed cinematic canvas under everything -->
+<canvas id="scene" aria-hidden="true"></canvas>
+
+<!-- Street-view crossfade layers (DOM images over the canvas) -->
+<div class="street-stage" id="streetStage" aria-hidden="true">
+  <img class="street-img" id="stImg1" src="assets/street-front.jpg" alt="">
+  <img class="street-img" id="stImg2" src="assets/street-courtyard.jpg" alt="">
+</div>
+<div class="street-overlay" id="streetOverlay" aria-hidden="true"></div>
+<div class="street-cap" id="cap1" aria-hidden="true"><p class="eyebrow">Street Elevation</p><div class="st-line">Arched entries, tile roofs.</div></div>
+<div class="street-cap" id="cap2" aria-hidden="true"><p class="eyebrow">Courtyard &amp; Pool</p><div class="st-line">A private amenity court.</div></div>
+
+<!-- Preloader (also the ad's loop shot) -->
+<div id="preloader" role="status" aria-label="Loading 5302 N 35th Ave">
+  <div class="pl-mark">5302 N<br><span class="six">35th Ave</span></div>
+  <div class="pl-word">Vision &middot; Phoenix, AZ</div>
+  <div class="pl-count"><span id="plNum">0</span>% &middot; 5302 N 35th</div>
+  <div class="pl-bar" id="plBar"></div>
+</div>
+
+<!-- Nav -->
+<nav id="nav" aria-label="Primary">
+  <a class="nav-mark" href="#top" aria-label="5302 N 35th Ave home">5302 N <span class="six">35th</span></a>
+  <div class="nav-links">
+    <a class="link" href="#site">The Site</a>
+    <a class="link" href="#vision">The Vision</a>
+    <a class="nav-cta" href="https://christianschmaltz5-blip.github.io/hq/feasibility.html">Full Underwriting</a>
+  </div>
+</nav>
+
+<!-- Hero scroll-driven descent: clouds -> real aerial -->
+<a id="top"></a>
+<section id="heroTrack" class="track" aria-label="Aerial descent onto 5302 N 35th Ave"></section>
+
+<div class="hero-overlay" id="heroOverlay" aria-hidden="true">
+  <p class="eyebrow">N 35th Ave &amp; W Vermont Ave &middot; Phoenix, Arizona</p>
+  <h1 class="hero-title">A vacant lot,<br><b>reimagined.</b></h1>
+</div>
+<div class="scroll-cue" id="scrollCue" aria-hidden="true">Scroll<i></i></div>
+
+<!-- Build scroll section (drives the canvas crossfade through construction stages) -->
+<section id="buildTrack" class="track" aria-label="The site takes shape"></section>
+<div class="street-cap" id="buildCap" aria-hidden="true"><p class="eyebrow">The Build</p><div class="st-line" id="buildCapLine">Rising from the ground.</div></div>
+
+<!-- Street-view scroll section (drives the DOM crossfade above) -->
+<section id="streetTrack" class="track" aria-label="A walk through the finished community"></section>
+
+<!-- THE SITE -->
+<section id="site" class="sheet" aria-label="The site">
+  <div class="wrap">
+    <p class="eyebrow" data-reveal>The Site</p>
+    <h2 data-reveal>A fenced, vacant infill parcel &mdash; <b>with a small existing structure.</b></h2>
+    <p class="lede" data-reveal>5302 N 35th Ave sits on the west side of 35th Ave between W Vermont Ave and W Georgia Ave, in the Maryvale / Alhambra area of Phoenix &mdash; a block from Grand Canyon University and surrounded by established low-rise apartment and single-family blocks.</p>
+    <div class="chips" data-reveal>
+      <span class="chip"><b>Phoenix, AZ 85017</b></span>
+      <span class="chip">Currently <b>vacant</b> &middot; fenced</span>
+      <span class="chip">Small existing <b>flat-roof structure</b> on site</span>
+      <span class="chip">1 block from <b>Grand Canyon University</b></span>
+    </div>
+    <p class="plan-cap" data-reveal>This page is a visual concept only. Full underwriting, unit-count analysis and buy/no-buy verdict live at <a href="https://christianschmaltz5-blip.github.io/hq/feasibility.html">the feasibility study</a>.</p>
+  </div>
+</section>
+
+<!-- THE VISION -->
+<section id="vision" class="sheet" aria-label="The vision">
+  <div class="wrap grid">
+    <div>
+      <p class="eyebrow" data-reveal>The Vision</p>
+      <h2 data-reveal>Spanish Mediterranean, <b>built around a courtyard.</b></h2>
+      <p class="lede" data-reveal>Stucco walls, clay-tile rooflines, arched entries and wrought-iron balconies wrap a shared pool courtyard &mdash; the same infill multifamily language used across recent Phoenix redevelopments.</p>
+    </div>
+    <div class="cards">
+      <a class="vcard" href="#site" data-reveal>
+        <div class="arrow">&rarr;</div>
+        <div><div class="no">01</div><h3>Street Elevation</h3><p>Two-story stucco buildings with tile roofs and arched stair entries fronting 35th Ave.</p></div>
+      </a>
+      <a class="vcard" href="#site" data-reveal>
+        <div class="arrow">&rarr;</div>
+        <div><div class="no">02</div><h3>Courtyard &amp; Pool</h3><p>A landscaped interior court with string lighting, palms and a shared pool.</p></div>
+      </a>
+      <a class="vcard" href="#site" data-reveal>
+        <div class="arrow">&rarr;</div>
+        <div><div class="no">03</div><h3>Site Plan</h3><p>The finished aerial view of the built parcel &mdash; see it above by scrolling back to the top.</p></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer aria-label="5302 N 35th Ave footer">
+  <div class="marquee" aria-hidden="true">
+    <div class="row">
+      <span>5302 N 35th Ave</span><span class="dot">&bull;</span><span>Phoenix, AZ</span><span class="dot">&bull;</span>
+      <span>5302 N 35th Ave</span><span class="dot">&bull;</span><span>Phoenix, AZ</span><span class="dot">&bull;</span>
+    </div>
+  </div>
+  <div class="wrap foot-grid">
+    <div class="foot-brand">
+      <div class="fmark">5302 N <span class="six">35th</span></div>
+      <p>A redevelopment vision for a vacant infill lot on N 35th Ave, Phoenix, Arizona.</p>
+    </div>
+    <div class="foot-col">
+      <h4>Quick Links</h4>
+      <a href="#site">The Site</a>
+      <a href="#vision">The Vision</a>
+      <a href="https://christianschmaltz5-blip.github.io/hq/feasibility.html">Full Underwriting</a>
+    </div>
+    <div class="foot-col">
+      <h4>Get in Touch</h4>
+      <p>Christian Schmaltz</p>
+      <a href="mailto:Christianschmaltz5@gmail.com?subject=5302%20N%2035th%20Ave%20—%20Phoenix%2C%20AZ">Christianschmaltz5@gmail.com</a>
+    </div>
+  </div>
+  <div class="wrap legal">
+    Concept visualization &mdash; not an approved site plan. Building form, unit count and program are conceptual and subject to design, engineering and zoning review. Base photography &copy; Google.<br>
+    &copy; 2026 5302 N 35th Ave &middot; Phoenix, AZ
+  </div>
+</footer>
+
+<script>
+(() => {
+  "use strict";
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const RECORD = new URLSearchParams(location.search).has("record");
+
+  /* ---------------- math / easing ---------------- */
+  const clamp=(v,a=0,b=1)=> v<a?a : v>b?b : v;
+  const lerp=(a,b,t)=> a+(b-a)*t;
+  const easeInOut=t=> t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+  const smooth=(x,a,b)=>{ const t=clamp((x-a)/Math.max(1e-6,b-a)); return t*t*(3-2*t); };
+  const easeOut=t=> 1-Math.pow(1-t,3);
+  const mix=(a,b,t)=>{ a=hx(a); b=hx(b); return `rgb(${Math.round(lerp(a[0],b[0],t))},${Math.round(lerp(a[1],b[1],t))},${Math.round(lerp(a[2],b[2],t))})`; };
+  const mixRGBA=(a,b,t,al)=>{ a=hx(a); b=hx(b); return `rgba(${Math.round(lerp(a[0],b[0],t))},${Math.round(lerp(a[1],b[1],t))},${Math.round(lerp(a[2],b[2],t))},${al})`; };
+  const hx=h=>{ h=h.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; };
+  const rgba=(h,al)=>{ const c=hx(h); return `rgba(${c[0]},${c[1]},${c[2]},${al})`; };
+  function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+
+  /* ---------------- images (preloaded; counter drives the preloader) ---------------- */
+  const IMG_SRC={ aerial:"assets/aerial.jpg",
+    buildFraming:"assets/build-framing.jpg", buildRoofed:"assets/build-roofed.jpg", buildFinished:"assets/build-finished.jpg",
+    st1:"assets/street-front.jpg", st2:"assets/street-courtyard.jpg" };
+  const TOTAL=Object.keys(IMG_SRC).length;
+  const img={}; let loadedCount=0;
+  function preload(done){
+    for(const k in IMG_SRC){ const im=new Image(); img[k]=im;
+      const tick=()=>{ if(++loadedCount>=TOTAL && done) done(); };
+      im.onload=tick; im.onerror=tick; im.src=IMG_SRC[k];
+    }
+  }
+
+  /* ---------------- render target (viewport canvas | 1600x900 record canvas) ---------------- */
+  let canvas, ctx, W=0,H=0,DPR=1;
+  function setTargetViewport(){ canvas=document.getElementById("scene"); ctx=canvas.getContext("2d"); resizeViewport(); }
+  function resizeViewport(){
+    DPR=Math.min(devicePixelRatio||1,2);
+    W=Math.max(1,Math.round(innerWidth)); H=Math.max(1,Math.round(innerHeight));
+    canvas.width=Math.round(W*DPR); canvas.height=Math.round(H*DPR);
+    canvas.style.width=W+"px"; canvas.style.height=H+"px";
+    ctx.setTransform(DPR,0,0,DPR,0,0); buildClouds();
+  }
+  function setTargetFixed(el,w,h){
+    canvas=el; ctx=canvas.getContext("2d");
+    DPR=1; W=w; H=h; canvas.width=w; canvas.height=h;
+    ctx.setTransform(1,0,0,1,0,0); buildClouds();
+  }
+
+  /* cover-fit draw: image always covers the viewport (zoom>=1), centred with an
+     optional pan in [-1,1] of the overflow, so no edge ever shows (portrait too).
+     Optional `rise` in [0,1] clips the draw to the bottom rise-fraction of the
+     frame, so the image appears to build up from the ground rather than pop in. */
+  function drawCover(im, zoom, alpha, px, py, rise){
+    if(!im || !im.naturalWidth) return;
+    const ia=im.naturalWidth/im.naturalHeight; let w,h;
+    if(W/H > ia){ w=W*zoom; h=w/ia; } else { h=H*zoom; w=h*ia; }
+    const ox=(W-w)/2 + (px||0)*(w-W)/2, oy=(H-h)/2 + (py||0)*(h-H)/2;
+    ctx.save();
+    if(rise!=null && rise<0.999){ const revealH=H*clamp(rise); ctx.beginPath(); ctx.rect(0,H-revealH,W,revealH); ctx.clip(); }
+    ctx.globalAlpha=alpha; ctx.imageSmoothingQuality="high";
+    try{ ctx.drawImage(im, ox, oy, w, h); }catch(e){}
+    ctx.restore();
+  }
+
+  /* ---------------- procedural desert-dusk sky (pre-rendered offscreen) ---------------- */
+  let cloudLayers=[];
+  function buildClouds(){
+    const CW=1400, CH=800;
+    const RES=Math.min(5,Math.max(1.5,(W/1200)*(DPR||1)*1.15));
+    cloudLayers=[0,1,2].map(li=>{
+      const c=document.createElement("canvas"); c.width=Math.round(CW*RES); c.height=Math.round(CH*RES);
+      const x=c.getContext("2d"); x.scale(RES,RES); const rr=mulberry32(0xC10D+li*97);
+      const n=18-li*3;
+      for(let i=0;i<n;i++){
+        const cx=rr()*CW, cy=(0.22+0.58*rr())*CH, s=(55+rr()*115)*(1+li*0.22);
+        const puffs=8+Math.floor(rr()*7);
+        for(let p=0;p<puffs;p++){
+          const px=cx+(rr()-0.5)*s*3.0, py=cy+rr()*s*0.55+s*0.30, pr=s*(0.38+rr()*0.42);
+          for(const wx of [px-CW,px,px+CW]){
+            const g=x.createRadialGradient(wx,py,0,wx,py,pr);
+            g.addColorStop(0,"rgba(150,108,84,0.50)"); g.addColorStop(0.55,"rgba(150,108,84,0.22)"); g.addColorStop(1,"rgba(150,108,84,0)");
+            x.fillStyle=g; x.beginPath(); x.arc(wx,py,pr,0,7); x.fill();
+          }
+        }
+        for(let p=0;p<puffs;p++){
+          const px=cx+(rr()-0.5)*s*2.8, py=cy-rr()*s*0.6, pr=s*(0.34+rr()*0.4);
+          for(const wx of [px-CW,px,px+CW]){
+            const g=x.createRadialGradient(wx,py-pr*0.3,pr*0.08,wx,py,pr);
+            g.addColorStop(0,"rgba(255,246,235,0.98)"); g.addColorStop(0.45,"rgba(255,231,204,0.55)"); g.addColorStop(0.8,"rgba(255,214,173,0.14)"); g.addColorStop(1,"rgba(255,214,173,0)");
+            x.fillStyle=g; x.beginPath(); x.arc(wx,py,pr,0,7); x.fill();
+          }
+        }
+        const wisps=6+Math.floor(rr()*6);
+        for(let p=0;p<wisps;p++){
+          const px=cx+(rr()-0.5)*s*3.2, py=cy+(rr()-0.5)*s*0.9, pr=s*(0.10+rr()*0.16);
+          for(const wx of [px-CW,px,px+CW]){
+            const g=x.createRadialGradient(wx,py,0,wx,py,pr);
+            g.addColorStop(0,"rgba(255,244,230,0.55)"); g.addColorStop(0.6,"rgba(255,231,204,0.22)"); g.addColorStop(1,"rgba(255,231,204,0)");
+            x.fillStyle=g; x.beginPath(); x.arc(wx,py,pr,0,7); x.fill();
+          }
+        }
+      }
+      return c;
+    });
+  }
+  function drawClouds(cp,time){
+    if(cp<=0.001) return;
+    const sky=ctx.createLinearGradient(0,0,0,H);
+    sky.addColorStop(0,"#cbc2ad"); sky.addColorStop(0.42,"#e8bd83"); sky.addColorStop(1,"#c97f4d");
+    ctx.save(); ctx.globalAlpha=cp; ctx.fillStyle=sky; ctx.fillRect(0,0,W,H); ctx.restore();
+    const gr=ctx.createRadialGradient(W*0.72,H*0.10,0,W*0.72,H*0.10,Math.max(W,H)*0.9);
+    gr.addColorStop(0,rgba("#ffe9c4",0.85*cp)); gr.addColorStop(0.25,rgba("#f4c07d",0.34*cp)); gr.addColorStop(1,rgba("#e0975a",0));
+    ctx.fillStyle=gr; ctx.fillRect(0,0,W,H);
+    ctx.save(); ctx.globalAlpha=cp*0.5; ctx.globalCompositeOperation="lighter";
+    for(let s=0;s<4;s++){ const bx=W*(0.2+s*0.22); const g=ctx.createLinearGradient(bx,0,bx+W*0.16,H); g.addColorStop(0,rgba("#ffe3b4",0.10)); g.addColorStop(1,rgba("#ffe3b4",0)); ctx.fillStyle=g; ctx.beginPath(); ctx.moveTo(bx,0); ctx.lineTo(bx+W*0.1,0); ctx.lineTo(bx+W*0.28,H); ctx.lineTo(bx+W*0.12,H); ctx.closePath(); ctx.fill(); }
+    ctx.restore();
+    const t=time*0.001;
+    cloudLayers.forEach((c,li)=>{
+      const scale=lerp(1,1.9+li*0.6,1-cp), yoff=lerp(-H*0.05, H*0.55*(li+1), 1-cp);
+      const alpha=cp*(0.95-li*0.16); if(alpha<=0.003) return;
+      const w=1400*scale*(W/1200), h=800*scale*(H/760);
+      const drift=(t*(14+li*22))% w;
+      ctx.save(); ctx.globalAlpha=alpha;
+      for(let x=-drift-w; x<W+w; x+=w){ ctx.drawImage(c, x, H*0.04+yoff-h*0.25, w, h); }
+      ctx.restore();
+    });
+  }
+  function frameVignette(){
+    const g=ctx.createRadialGradient(W/2,H*0.46,Math.min(W,H)*0.25,W/2,H*0.46,Math.max(W,H)*0.72);
+    g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,"rgba(0,0,0,0.42)");
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  }
+
+  /* ======================================================================
+     CHOREOGRAPHY — one progress p in [0,1] drives the whole canvas scene:
+     clouds part -> aerial pushes in -> (record only) crossfade through
+     the two street views -> stats card.
+     ====================================================================== */
+  function seg(p){
+    const r1=smooth(p,0.60,0.68), r2=smooth(p,0.82,0.90);
+    return {
+      cloudP: 1-smooth(p,0.04,0.34),
+      zoom:   lerp(1.0,1.08, easeInOut(clamp(p/0.45))),
+      r1, r2,
+      stats: smooth(p,0.90,0.94)*(1-smooth(p,0.985,1.0)),
+    };
+  }
+  function paintCanvas(s,time){
+    ctx.clearRect(0,0,W,H);
+    const dx=reduceMotion?0:Math.sin(time*0.00020)*0.05, dy=reduceMotion?0:Math.cos(time*0.00017)*0.04;
+    drawCover(img.aerial, s.zoom, 1, dx, clamp(dy+0.3,-1,1));
+    if(s.r1>0.001) drawCover(img.st1, 1.06, 1, 0, 0, s.r1);
+    if(s.r2>0.001) drawCover(img.st2, 1.06, 1, 0, 0, s.r2);
+    if(s.cloudP>0.001) drawClouds(s.cloudP,time);
+    frameVignette();
+  }
+
+  /* ======================================================================
+     THE BUILD beat — real photoreal construction-stage photos crossfaded
+     in scroll lockstep (vacant lot -> framing -> roofed & stuccoed ->
+     finished, satellite/Google-Maps-style aerial showing the full
+     complex). Reuses drawCover's cover-fit camera so it lands in the
+     same place as the hero aerial.
+     ====================================================================== */
+  function drawBuild(bp, zoom, time){
+    const stages=[img.aerial, img.buildFraming, img.buildRoofed, img.buildFinished];
+    const segs=stages.length-1, pos=clamp(bp)*segs;
+    const i=Math.min(segs-1, Math.floor(pos)), t=clamp(pos-i);
+    const dx=reduceMotion?0:Math.sin(time*0.00020)*0.05, dy=reduceMotion?0:Math.cos(time*0.00017)*0.04;
+    drawCover(stages[i], zoom, 1, dx, dy);
+    if(t>0.001) drawCover(stages[i+1], zoom, t, dx, dy);
+  }
+
+  /* record / scrub overlays */
+  function drawStats(a){
+    ctx.save(); ctx.globalAlpha=a;
+    const g=ctx.createLinearGradient(0,H*0.4,0,H); g.addColorStop(0,"rgba(16,13,10,0)"); g.addColorStop(1,"rgba(16,13,10,0.75)");
+    ctx.fillStyle=g; ctx.fillRect(0,H*0.4,W,H*0.6);
+    ctx.textAlign="left";
+    ctx.fillStyle="#c1652f"; ctx.font="600 24px system-ui,sans-serif"; ctx.fillText("5302 N 35TH AVE", W*0.08, H*0.66);
+    ctx.fillStyle="#f5ecdd"; ctx.font="300 96px system-ui,sans-serif"; ctx.fillText("Phoenix, AZ", W*0.075, H*0.82);
+    ctx.textAlign="right"; ctx.fillStyle="rgba(245,236,221,0.85)"; ctx.font="600 22px system-ui,sans-serif";
+    ctx.fillText("35TH AVE & VERMONT AVE", W*0.92, H*0.85);
+    ctx.restore();
+  }
+  function drawPre(a){
+    ctx.save(); ctx.globalAlpha=a; ctx.fillStyle="#f5ecdd"; ctx.fillRect(0,0,W,H);
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillStyle="#211c17"; ctx.font="800 78px system-ui,sans-serif"; ctx.fillText("5302 N 35th", W/2, H/2-40);
+    ctx.fillStyle="#c1652f"; ctx.font="800 78px system-ui,sans-serif"; ctx.fillText("Ave", W/2, H/2+50);
+    ctx.fillStyle="#211c17"; ctx.font="600 20px system-ui,sans-serif"; ctx.fillText("V I S I O N", W/2, H/2+138);
+    ctx.restore(); ctx.textBaseline="alphabetic";
+  }
+
+  /* ======================================================================
+     STATE MODELS
+     ====================================================================== */
+  function scrollState(){
+    const vh=innerHeight, y=scrollY;
+    const heroTrack=document.getElementById("heroTrack");
+    const buildTrack=document.getElementById("buildTrack");
+    const streetTrack=document.getElementById("streetTrack");
+    const heroScrub=Math.max(1,heroTrack.offsetHeight-vh);
+    const heroProg=clamp(y/heroScrub);
+    const bTop=buildTrack.offsetTop, bScrub=Math.max(1,buildTrack.offsetHeight-vh);
+    const buildProg=clamp((y-bTop)/bScrub);
+    const stTop=streetTrack.offsetTop, stScrub=Math.max(1,streetTrack.offsetHeight-vh);
+    const stProg=clamp((y-stTop)/stScrub);
+    const heroP = (y < bTop-1) ? heroProg*0.56 : 0.56;
+    return { heroP, heroProg, buildProg, stProg, y, streetTrack };
+  }
+  function recSeg(pp){ const s=seg(pp); s.pre=clamp((1-smooth(pp,0.0,0.05))+smooth(pp,0.95,1.0)); return s; }
+
+  /* ======================================================================
+     HOOKS — __drawAt (scrub whole choreography), __cinescroll (auto-scroll)
+     ====================================================================== */
+  let scrubbing=false, scrubP=0, rafId=0;
+  window.__drawAt=(p)=>{
+    scrubbing=true; scrubP=clamp(p);
+    const s=recSeg(scrubP); paintCanvas(s,performance.now());
+    if(s.stats>0) drawStats(s.stats);
+    if(s.pre>0) drawPre(s.pre);
+    return scrubP;
+  };
+  function nextFrame(){ return new Promise(res=>{ let done=false; const f=()=>{ if(done)return; done=true; res(); }; requestAnimationFrame(f); setTimeout(f,40); }); }
+  window.__cinescroll=async(ms=9000)=>{
+    const start=scrollY, end=document.body.scrollHeight-innerHeight, t0=performance.now();
+    while(true){ const k=clamp((performance.now()-t0)/ms); scrollTo(0, start+(end-start)*smooth(k,0,1)); if(k>=1) break; await nextFrame(); }
+    return true;
+  };
+
+  /* ======================================================================
+     NORMAL BOOT — preloader, scroll loop, IntersectionObserver, nav, streets
+     ====================================================================== */
+  function bootNormal(){
+    setTargetViewport();
+    addEventListener("resize", resizeViewport);
+    addEventListener("scroll", ()=>{ scrubbing=false; }, {passive:true});
+    preload();
+
+    const nav=document.getElementById("nav");
+    const heroOverlay=document.getElementById("heroOverlay");
+    const scrollCue=document.getElementById("scrollCue");
+    const streetOverlay=document.getElementById("streetOverlay");
+    const stImg=[document.getElementById("stImg1"),document.getElementById("stImg2")];
+    const caps=[document.getElementById("cap1"),document.getElementById("cap2")];
+    const buildCap=document.getElementById("buildCap");
+    const buildCapLine=document.getElementById("buildCapLine");
+    const BUILD_LINES=["Framing rises on the fenced lot.","Stucco, tile roofs, balconies going in.","Landscaped courtyard, pool, move-in ready."];
+    let buildLineShown=-1;
+
+    const io=new IntersectionObserver((es)=>{ for(const e of es) if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } },{threshold:0.18});
+    document.querySelectorAll("[data-reveal]").forEach(el=>io.observe(el));
+
+    function loop(now){
+      if(!scrubbing){
+        const s = scrollState();
+        nav.classList.toggle("scrolled", s.y>innerHeight*0.55);
+        heroOverlay.style.opacity = (1-smooth(s.heroProg,0.12,0.34)).toFixed(3);
+        scrollCue.style.opacity = (1-smooth(s.heroProg,0.02,0.12)).toFixed(3);
+
+        const rise=[
+          smooth(s.stProg,0.04,0.34),
+          smooth(s.stProg,0.50,0.82),
+        ];
+        stImg[0].style.clipPath=`inset(${((1-rise[0])*100).toFixed(2)}% 0 0 0)`;
+        stImg[1].style.clipPath=`inset(${((1-rise[1])*100).toFixed(2)}% 0 0 0)`;
+        caps[0].style.opacity=(rise[0]*(1-smooth(s.stProg,0.50,0.64))).toFixed(3);
+        caps[1].style.opacity=rise[1].toFixed(3);
+        streetOverlay.style.opacity=Math.max(rise[0],rise[1]).toFixed(3);
+        buildCap.style.opacity=(smooth(s.buildProg,0.06,0.16)*(1-smooth(s.buildProg,0.82,0.94))).toFixed(3);
+        const buildLineIdx=Math.min(BUILD_LINES.length-1, Math.floor(clamp(s.buildProg)*BUILD_LINES.length));
+        if(buildLineIdx!==buildLineShown){ buildLineShown=buildLineIdx; buildCapLine.textContent=BUILD_LINES[buildLineIdx]; }
+        const covered = s.y > (s.streetTrack.offsetTop + s.streetTrack.offsetHeight - innerHeight*0.1);
+        if(!covered){
+          const bs=seg(s.heroP);
+          paintCanvas(bs, now);
+          if(s.buildProg>0.0001) drawBuild(s.buildProg, bs.zoom, now);
+        }
+      }
+      rafId=requestAnimationFrame(loop);
+    }
+
+    const plNum=document.getElementById("plNum"), plBar=document.getElementById("plBar"), pre=document.getElementById("preloader");
+    const t0=performance.now();
+    (function tick(){
+      const elapsed=performance.now()-t0, ratio=loadedCount/TOTAL;
+      const target = ratio>=1 ? 100 : Math.min(90, Math.max(ratio*100, elapsed/12));
+      const cur=Math.min(100, Math.max(parseFloat(plNum.textContent)||0, Math.round(target)));
+      plNum.textContent=cur; plBar.style.width=cur+"%";
+      if(cur>=100){ setTimeout(()=>pre.classList.add("done"), 240); return; }
+      nextFrame().then(tick);
+    })();
+
+    if(reduceMotion){
+      const draw1=()=>{ if(loadedCount<TOTAL){ requestAnimationFrame(draw1); return; } paintCanvas(seg(0.56),0); };
+      draw1();
+    } else {
+      rafId=requestAnimationFrame(loop);
+    }
+  }
+
+  /* ======================================================================
+     RECORD BOOT — ?record=1 : full choreography into one 1600x900 canvas,
+     captured to webm and auto-downloaded. Normal visitors never see this.
+     ====================================================================== */
+  function bootRecord(){
+    document.getElementById("preloader").classList.add("done");
+    document.getElementById("nav").style.display="none";
+    document.querySelectorAll(".track,.sheet,footer,.hero-overlay,.scroll-cue,.street-stage,.street-overlay,.street-cap").forEach(el=>el.style.display="none");
+    const rec=document.getElementById("scene");
+    rec.style.position="fixed"; rec.style.inset="0"; rec.style.margin="auto"; rec.style.width="min(96vw,1600px)"; rec.style.height="auto"; rec.style.background="#f5ecdd";
+    setTargetFixed(rec,1600,900);
+    preload(run);
+
+    let started=false;
+    function run(){
+      if(started) return; started=true;
+      const DURATION=17000;
+      let chunks=[], rec_;
+      try{
+        const stream=rec.captureStream(60);
+        const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
+        rec_ = new MediaRecorder(stream,{ mimeType:mime, videoBitsPerSecond:12000000 });
+        rec_.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); };
+        rec_.onstop=()=>{ const blob=new Blob(chunks,{type:"video/webm"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="5302-35th-reel-raw.webm"; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},1000); };
+        rec_.start();
+      }catch(err){ console.warn("MediaRecorder unavailable:",err); }
+      const t0=performance.now();
+      function frame(now){
+        const pp=clamp((now-t0)/DURATION);
+        const s=recSeg(pp); paintCanvas(s,now);
+        if(s.stats>0) drawStats(s.stats);
+        if(s.pre>0) drawPre(s.pre);
+        if(pp<1){ requestAnimationFrame(frame); }
+        else { try{ rec_ && rec_.state!=="inactive" && rec_.stop(); }catch(e){} }
+      }
+      requestAnimationFrame(frame);
+    }
+  }
+
+  if(RECORD) bootRecord(); else bootNormal();
+})();
+</script>
+</body>
+</html>
