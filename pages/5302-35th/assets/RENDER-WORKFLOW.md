@@ -1,5 +1,19 @@
 # 5302 N 35th Ave — Image Generation Workflow
 
+## OUTPUT REQUIREMENTS (read this before generating anything)
+- Every image must be exported/downloaded individually at native resolution
+  — never a flattened grid/contact-sheet/comparison image. If the tool tiles
+  multiple scenes into one image, ask it to output each scene as its own
+  standalone image in a separate turn, then download each directly (click
+  the image itself), not a screenshot of the chat.
+- Target 2048px or larger on the long edge — use the tool's HD/upscale
+  option if it has one. hero-existing.jpg, build-finished.jpg, and
+  gallery-front.jpg matter most (they render largest on the page, close to
+  the site's ~1920×1080 hero); the small journey-strip thumbnails tolerate
+  lower resolution better since they display tiny on screen.
+- Source resolution is the ceiling — cropping or upscaling after the fact
+  cannot recover detail that wasn't in the original export.
+
 ## MASTER REFERENCE IMAGE
 Once build-finished.jpg is approved, it becomes the permanent master
 reference. Every gallery image (gallery-front, gallery-corner,
