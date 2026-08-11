@@ -1,5 +1,24 @@
 # 5302 N 35th Ave — Image Generation Workflow
 
+## MASTER REFERENCE IMAGE
+Once build-finished.jpg is approved, it becomes the permanent master
+reference. Every gallery image (gallery-front, gallery-corner,
+gallery-courtyard, gallery-pool, gallery-lobby, gallery-parking,
+gallery-aerial, gallery-night) must use build-finished.jpg as its source —
+never an earlier construction stage, never a fresh regeneration.
+
+Permanently locked once build-finished.jpg is approved:
+- Building footprint
+- Rooflines
+- Window spacing
+- Balcony locations
+- Courtyard dimensions
+- Pool dimensions
+- Parking layout
+- Building height
+- Materials
+- Landscaping
+
 CRITICAL RULE: every image is an edit of the previous image, never a fresh
 generation. The previous output becomes the base for the next prompt.
 Building footprint, proportions, architecture, window placement, balconies,
@@ -41,7 +60,7 @@ Maintain the exact camera position wherever possible within a sequence
 | 05 | build-shell.jpg | build-framing.jpg | windows, stucco, tile roof, balconies |
 | 06 | build-finished.jpg | build-shell.jpg | fully landscaped, pool, courtyard, evening |
 
-## Gallery — every image starts from build-finished.jpg, camera moves only
+## Gallery — every image starts from build-finished.jpg (the master reference), camera moves only
 
 | File | Camera |
 |------|--------|
