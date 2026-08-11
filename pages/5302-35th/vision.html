@@ -117,7 +117,7 @@ a{color:inherit; text-decoration:none}
 .fin-main img.active{ opacity:1; }
 .fin-nav{ position:absolute; top:50%; transform:translateY(-50%); width:34px; height:34px; border-radius:50%; background:rgba(12,10,8,.55); border:1px solid rgba(243,239,232,.25); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:2; font-size:16px; }
 .fin-nav.prev{ left:12px; } .fin-nav.next{ right:12px; }
-.fin-thumbs{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.fin-thumbs{ display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; }
 .fthumb{ position:relative; border-radius:10px; overflow:hidden; aspect-ratio:4/3; background:#26211b; cursor:pointer; border:2px solid transparent; }
 .fthumb.active{ border-color:var(--gold); }
 .fthumb img{ width:100%; height:100%; object-fit:cover; display:block; }
@@ -230,6 +230,7 @@ footer a{ color:var(--gold); }
         <button class="fin-nav prev" id="finPrev" aria-label="Previous photo">&larr;</button>
         <button class="fin-nav next" id="finNext" aria-label="Next photo">&rarr;</button>
         <img data-key="front" class="active" src="assets/gallery-front.jpg" alt="Street frontage, dusk">
+        <img data-key="corner" src="assets/gallery-corner.jpg" alt="Corner of Georgia Ave and 35th Ave">
         <img data-key="courtyard" src="assets/gallery-courtyard.jpg" alt="Courtyard">
         <img data-key="pool" src="assets/gallery-pool.jpg" alt="Resort pool">
         <img data-key="lobby" src="assets/gallery-lobby.jpg" alt="Lobby">
@@ -238,6 +239,7 @@ footer a{ color:var(--gold); }
         <img data-key="night" src="assets/gallery-night.jpg" alt="Night view">
       </div>
       <div class="fin-thumbs" id="finThumbs">
+        <div class="fthumb" data-key="corner"><img src="assets/gallery-corner.jpg" alt=""><div class="flabel">Corner</div></div>
         <div class="fthumb" data-key="courtyard"><img src="assets/gallery-courtyard.jpg" alt=""><div class="flabel">Courtyard</div></div>
         <div class="fthumb" data-key="pool"><img src="assets/gallery-pool.jpg" alt=""><div class="flabel">Resort Pool</div></div>
         <div class="fthumb" data-key="lobby"><img src="assets/gallery-lobby.jpg" alt=""><div class="flabel">Lobby</div></div>
@@ -287,7 +289,7 @@ footer a{ color:var(--gold); }
 <script>
 (() => {
   "use strict";
-  const GALLERY_ORDER = ["front","courtyard","pool","lobby","parking","aerial","night"];
+  const GALLERY_ORDER = ["front","corner","courtyard","pool","lobby","parking","aerial","night"];
   const finMain = document.getElementById("finMain");
   const finThumbs = document.getElementById("finThumbs");
   const finPrev = document.getElementById("finPrev");
