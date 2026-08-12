@@ -7,7 +7,8 @@ LOG=/tmp/arc-mls-report.log
 
 echo "=== $(date) ===" >> "$LOG"
 
-# 1. Pull fresh Paragon listings from inbox → updates js/paragon-listings.js + js/market-data.js
+# 1. Pull fresh Paragon listings from inbox → updates js/market-data.js (MLS detail table only;
+#    the New MLS Listings page/js was removed 2026-08-12)
 cd "$REPO/agents/mls_report"
 $PYTHON parse_paragon_inbox.py >> "$LOG" 2>&1
 
@@ -19,12 +20,7 @@ else
   echo "Not Friday (weekday $(date +%u)) — skipping weekly market report email." >> "$LOG"
 fi
 
-# 3. Bump cache-busting version in paragon-listings.html so browsers always fetch fresh JS
-VER=$(date '+%Y%m%d')
-sed -i '' "s/paragon-listings\.js?v=[0-9]*/paragon-listings.js?v=$VER/g" "$REPO/pages/paragon-listings.html"
-sed -i '' "s/market-data\.js?v=[0-9]*/market-data.js?v=$VER/g" "$REPO/pages/paragon-listings.html"
-
-# 4. Record freshness for the dashboard, then commit and push
+# 3. Record freshness for the dashboard, then commit and push
 cd "$REPO"
 $PYTHON - "market_report" <<'PYEOF' >> "$LOG" 2>&1
 import json, sys, datetime, pathlib
@@ -34,7 +30,7 @@ data = json.loads(path.read_text()) if path.exists() else {}
 data[key] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
 PYEOF
-git add js/paragon-listings.js js/market-data.js pages/paragon-listings.html img/listings/ js/agent-status.json >> "$LOG" 2>&1
+git add js/market-data.js js/agent-status.json >> "$LOG" 2>&1
 git diff --cached --quiet || git commit -m "Auto-update: MLS listings + market data $(date '+%Y-%m-%d')" >> "$LOG" 2>&1
 git push origin main >> "$LOG" 2>&1
 
